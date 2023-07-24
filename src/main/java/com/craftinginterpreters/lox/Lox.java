@@ -1,4 +1,4 @@
-package org.example;
+package com.craftinginterpreters.lox;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Lox {
+    static boolean hadError = false;
+
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
             System.out.println("Usage: Jlox [script]");
@@ -21,10 +23,12 @@ public class Lox {
         }
     }
 
+
     // start jlox from CLI and give path to a file
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
+        if (hadError) System.exit(65);
     }
 
     // Start Jlox without any arguments: give prompts
@@ -36,6 +40,7 @@ public class Lox {
             String line = reader.readLine();
             if (line == null) break;
             run(line);
+            hadError = false;
         }
     }
 
@@ -47,4 +52,14 @@ public class Lox {
             System.out.println(token);
         }
     }
+
+    static void error(int line, String message) {
+        report(line, "", message);
+    }
+
+    private static void report(int line, String where, String message) {
+        System.err.println("[line " + line + "] Error" + where + ": " + message);
+        hadError = true;
+    }
+
 }
