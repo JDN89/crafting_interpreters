@@ -15,14 +15,16 @@ public class Scanner {
     Scanner(String source) {
         this.source = source;
     }
-    List<Token> scanTokens(){
-        while(!isAtEnd()) {
+
+    List<Token> scanTokens() {
+        while (!isAtEnd()) {
             start = current;
-           return scanTokens();
+            return scanTokens();
         }
-        tokens.add(new Token(EOF,"",null,line));
+        tokens.add(new Token(EOF, "", null, line));
         return tokens;
     }
+
     private boolean isAtEnd() {
         return current >= source.length();
     }
