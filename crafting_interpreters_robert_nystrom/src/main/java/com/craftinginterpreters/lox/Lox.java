@@ -7,10 +7,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
+
+// TODO: how to compile, build and execute program
+// place instructions in readme
 
 public class Lox {
     static boolean hadError = false;
+
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
             System.out.println("Usage: jlox[script]");
@@ -32,7 +35,7 @@ public class Lox {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
-        for (; ; ) {
+        for (;;) {
             System.out.println("> ");
             String line = reader.readLine();
             if (line == null) break;
@@ -45,7 +48,7 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         for (Token token : tokens) {
-            System.out.printf("token");
+            System.out.printf("token: " + token);
         }
     }
 
@@ -54,7 +57,7 @@ public class Lox {
     }
 
     private static void report(int line, String where, String message) {
-        System.err.println("[line " + line + "] Error" + where + ": "message);
+        System.err.println("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
     }
 }
