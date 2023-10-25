@@ -10,22 +10,27 @@ use std::process;
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = args().collect();
 
-    match args.len() {
-        arg_len if arg_len as usize > 1 => {
-            eprintln!("Usage: rlox [script]");
-            process::exit(64);
-        }
-        1 => run_file(&args[0])?,
-        _ => run_prompt()?,
+    // we passed [0] program name, [1] path to file [x > 1] argumets to many
+    if args.len() > 2 {
+        eprintln!("Usage: rlox [script]");
+        process::exit(64);
+        // arg[0] is the programs name and arg[1] is the file_path we'll pass it
+    } else if args.len() == 2 {
+        run_file(&args[1])?;
+    } else {
+        run_prompt()?;
     }
-    // return ok void
+
     Ok(())
 }
 
 // possible need of converson to Box<dyn Error>
 fn run_file(file_path: &str) -> Result<(), io::Error> {
     let contents = fs::read_to_string(file_path)?;
-    run(contents);
+    if let Err(e) = run(&contents) {
+        e.report();
+        process::exit(65);
+    }
     Ok(())
 }
 
@@ -46,8 +51,35 @@ fn run_prompt() -> Result<(), io::Error> {
             break;
         }
 
-        run(&buf);
+        if let Err(e) = run(&buf) {
+            e.report()
+        }
     }
 
     Ok(())
+}
+
+fn run(source: &String) -> Result<(), LoxError> {
+    todo!()
+    // let scanner: Scanner = new Scanner(source);
+    // let tokens: Vec<Token> = scanner.scanTokens();
+    // for token in tokens  {
+    //     println!(token)
+    //
+    // }
+}
+
+struct LoxError {
+    line: u32,
+    location: String,
+    message: String,
+}
+
+impl LoxError {
+    fn report(&self) {
+        eprintln!(
+            "[line {}] Error{}: {}",
+            self.line, self.location, self.message
+        );
+    }
 }

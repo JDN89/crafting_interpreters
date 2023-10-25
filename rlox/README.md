@@ -6,6 +6,8 @@
 
 - report error
 
+- Part where you write java code to producre ast -> look into how to do this in rust with macros
+
 ## Error handling:
 
 ? propagates the error to the caller of the function, so unwrap OR return ERR(From::from(err)). In our case the cli is the caller of main
