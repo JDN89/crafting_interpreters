@@ -5,9 +5,12 @@ use std::io::BufRead;
 use std::io::Write;
 use std::process;
 
+mod token_type;
+
 // lox is a scripting language -> executes directly from source.
 // run code through a command-line interface (CLI) or by providing a path to a script file.
 fn main() -> Result<(), io::Error> {
+    token_type::test();
     let args: Vec<String> = args().collect();
 
     // we passed [0] program name, [1] path to file [x > 1] argumets to many
