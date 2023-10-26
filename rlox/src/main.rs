@@ -69,6 +69,8 @@ fn run(source: &String) -> Result<(), LoxError> {
     // }
 }
 
+// todo!("place in seperate file")
+// plus look up how to make custom erros and refactor
 struct LoxError {
     line: u32,
     location: String,

@@ -19,7 +19,7 @@ impl Config {
         };
 
         let file_path = match args.next() {
-            Some(arg) => arg,
+            Some(arg) => ar,
             None => return Err("Didn't get a file path"),
         };
 

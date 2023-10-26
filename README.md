@@ -1,14 +1,21 @@
 # NOTES
 
+# RESOURCES:
+
+[Discussion Jonathan Blow](https://www.youtube.com/watch?v=MnctEW1oL-E&t=3153s)
+[Crafting Interpreters - Robert Nystrom] (https://craftinginterpreters.com/) 
+
+
+# Crafting Interpresters: Robert Nystrom
+
 ## CHAPTER 1: INTRODUCTION
-#### Scanning or Lexing
-- The scanner takes in the linear stream of characters and chunks them together into a series of tokens. 
+### Scanning or Lexing
+The __scanner__ processes a linear stream of characters, grouping them into _tokens__ based on predefined rules. A __lexeme__ is the smallest substring of source code, representing the most basic sequence of characters that conveys meaning. A __token__ comprises a lexeme along with additional useful data.
   - Identifier: min
   - Keyword: if
   - Literal: 123
   - Operator: + 
   - Separator: ,
-- The scanner has rules of what constitutes a token. The scanner then uses these rules to scan the input stream and identify the tokens that are pressen
 
 #### Parsing
 - Put the tokens and build an Abstract Syntax Tree that represents the program's syntax.
