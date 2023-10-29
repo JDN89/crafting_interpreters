@@ -1,3 +1,5 @@
+// LEARNED:
+
 use crate::lox_error::LoxError;
 use crate::token::Token;
 use crate::token_type::TokenType::{self, *};
@@ -54,15 +56,19 @@ impl Scanner {
         self.advance();
     }
 
-    fn advance(&self) -> char {
-        // CHECH: not sure that this will return the corrcect char -> keep an eye out
-        let index_next_character = self.current + 1;
-        self.source.chars().nth(index_next_character).unwrap() // TODO: add error handling
+    fn advance(&mut self) -> char {
+        // CHECK: not sure that this will return the corrcect char -> keep an eye out
+        self.current += 1; // current not used after this funciton call? because +1
+        self.source.chars().nth(self.current).unwrap() // TODO: add error handling
     }
 
     fn add_token(&mut self, ttype: TokenType) {
+        self.add_token_object(ttype, None);
+    }
+
+    fn add_token_object(&mut self, ttype: TokenType, literal: Option<String>) {
         let lexeme = &self.source[self.start..self.current];
-        let token = Token::new(ttype, lexeme.to_string(), None, self.line);
+        let token = Token::new(ttype, lexeme.to_string(), literal, self.line);
         self.tokens.push(token);
     }
 }

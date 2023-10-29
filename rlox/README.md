@@ -1,12 +1,9 @@
 # learned rust
 
 ## TODO
-- create LoxError struct -> throw error in the appropriate places
-- place struct in Enum later on
+- create better error handling and throw errors in the appropriate places.
+- now I'm passing String everywhere, not better to use &str -> look into: life time hell?
 
-- report error
-
-- Part where you write java code to producre ast -> look into how to do this in rust with macros
 
 ## Error handling:
 
