@@ -5,6 +5,13 @@ use std::io::BufRead;
 use std::io::Write;
 use std::process;
 
+mod lox_error;
+mod scanner;
+mod token;
+mod token_type;
+use crate::lox_error::LoxError;
+use crate::scanner::Scanner;
+
 // lox is a scripting language -> executes directly from source.
 // run code through a command-line interface (CLI) or by providing a path to a script file.
 fn main() -> Result<(), io::Error> {
@@ -60,28 +67,10 @@ fn run_prompt() -> Result<(), io::Error> {
 }
 
 fn run(source: &String) -> Result<(), LoxError> {
-    todo!()
-    // let scanner: Scanner = new Scanner(source);
-    // let tokens: Vec<Token> = scanner.scanTokens();
-    // for token in tokens  {
-    //     println!(token)
-    //
-    // }
-}
-
-// todo!("place in seperate file");
-// plus look up how to make custom erros and refactor
-struct LoxError {
-    line: u32,
-    location: String,
-    message: String,
-}
-
-impl LoxError {
-    fn report(&self) {
-        eprintln!(
-            "[line {}] Error{}: {}",
-            self.line, self.location, self.message
-        );
+    let mut scanner = Scanner::build_scanner(source.to_string());
+    let tokens = scanner.scan_tokens()?;
+    for token in tokens {
+        println!("{:?}", token); // Use {:?} to format the token
     }
+    Ok(())
 }

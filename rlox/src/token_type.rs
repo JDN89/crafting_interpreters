@@ -1,5 +1,5 @@
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen,
@@ -24,7 +24,7 @@ pub enum TokenType {
     LessEqual,
     // Literals.
     Identifier,
-    String,
+    r#String,
     Number,
     // Keywords.
     And,
