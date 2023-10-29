@@ -12,16 +12,16 @@ pub struct Token {
     token_type: TokenType,
     lexeme: String,
     literal: Option<String>, // change to appropriate type later
-    line: i32,
+    line: usize,
 }
 
-#[allow(unused)]
+#[allow(unused, dead_code)]
 impl Token {
-    pub fn build_token(
+    pub fn new(
         token_type: TokenType,
         lexeme: String,
         literal: Option<String>,
-        line: i32,
+        line: usize,
     ) -> Self {
         Token {
             token_type,

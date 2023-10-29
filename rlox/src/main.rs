@@ -67,7 +67,7 @@ fn run_prompt() -> Result<(), io::Error> {
 }
 
 fn run(source: &String) -> Result<(), LoxError> {
-    let mut scanner = Scanner::build_scanner(source.to_string());
+    let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;
     for token in tokens {
         println!("{:?}", token); // Use {:?} to format the token
