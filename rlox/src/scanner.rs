@@ -57,11 +57,12 @@ impl Scanner {
     }
 
     fn advance(&mut self) -> char {
-        // CHECK: not sure that this will return the corrcect char -> keep an eye out
+        let current_character = self.source.chars().nth(self.current).unwrap(); // TODO: add error handling
         self.current += 1; // current not used after this funciton call? because +1
-        self.source.chars().nth(self.current).unwrap() // TODO: add error handling
+        current_character
     }
 
+    // we're going ot handle literals here later
     fn add_token(&mut self, ttype: TokenType) {
         self.add_token_object(ttype, None);
     }
