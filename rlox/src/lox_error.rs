@@ -1,23 +1,23 @@
 // todo: look up how to create custom errors
 pub struct LoxError {
-    line: u32,
-    location: String,
+    line: usize,
+    location: usize,
     message: String,
 }
 
 #[allow(dead_code)]
 impl LoxError {
-    pub fn new(line: u32, location: String, message: String) -> Self {
+    pub fn new(line: usize, location: usize, message: &str) -> Self {
         Self {
             line,
             location,
-            message,
+            message: message.to_string(),
         }
     }
 
     pub fn report(&self) {
         eprintln!(
-            "[line {}] Error{}: {}",
+            "[line {}, position {}] Error: {}",
             self.line, self.location, self.message
         );
     }

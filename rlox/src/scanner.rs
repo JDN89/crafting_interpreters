@@ -34,10 +34,10 @@ impl Scanner {
         while !self.is_at_end() {
             // We are at the beginning of the next lexeme
             self.start = self.current;
-            self.scan_token();
+            self.scan_token()?;
         }
 
-        // add at the end of source code an EOF.  not needed but cleaner
+        // add at the end of source code an EOF. Not needed but cleaner
         self.tokens
             .push(Token::new(Eof, "".to_string(), None, self.line));
         Ok(&self.tokens)
@@ -47,13 +47,18 @@ impl Scanner {
         self.current >= self.source.len()
     }
 
-    // CHECK: throw error at some point?
-    fn scan_token(&mut self) {
+    fn scan_token(&mut self) -> Result<(), LoxError> {
         match self.advance() {
             '(' => self.add_token(LeftParen),
-            _ => (), // TODO catch all should be?
+            _ => {
+                return Err(LoxError::new(
+                    self.line,                  // Specify the line
+                    self.current,               // Specify the location
+                    "Character not recognized", // Specify the message
+                ));
+            }
         }
-        self.advance();
+        Ok(())
     }
 
     fn advance(&mut self) -> char {

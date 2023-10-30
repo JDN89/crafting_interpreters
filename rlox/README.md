@@ -1,3 +1,7 @@
+# Learned java
+- post increment is first using the variable and then adding to it charAt(i++), gets the char at index i and then increments the index
+- pre increment means incrementing the variable before using it
+
 # learned rust
 
 ## TODO
