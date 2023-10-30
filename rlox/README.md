@@ -5,6 +5,7 @@
 # learned rust
 
 ## TODO
+- now I have an error, because when we enter we add a line break at the end of our prompt, example ( + enter =  "(/n"
 - create better error handling and throw errors in the appropriate places.
 - now I'm passing String everywhere, not better to use &str -> look into: life time hell?
 

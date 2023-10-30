@@ -50,6 +50,16 @@ impl Scanner {
     fn scan_token(&mut self) -> Result<(), LoxError> {
         match self.advance() {
             '(' => self.add_token(LeftParen),
+            ')' => self.add_token(RightParen),
+            '{' => self.add_token(LeftBrace),
+            '}' => self.add_token(RightBrace),
+            ',' => self.add_token(Comma),
+            '.' => self.add_token(Dot),
+            '-' => self.add_token(Minus),
+            '+' => self.add_token(Plus),
+            ';' => self.add_token(Semicolon),
+            '*' => self.add_token(Star),
+            // _ => (),
             _ => {
                 return Err(LoxError::new(
                     self.line,                  // Specify the line
