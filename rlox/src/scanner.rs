@@ -59,6 +59,34 @@ impl Scanner {
             '+' => self.add_token(Plus),
             ';' => self.add_token(Semicolon),
             '*' => self.add_token(Star),
+            '!' => {
+                if self.is_match('=') {
+                    self.add_token(BangEqual)
+                } else {
+                    self.add_token(Bang)
+                }
+            }
+            '=' => {
+                if self.is_match('=') {
+                    self.add_token(EqualEqual)
+                } else {
+                    self.add_token(Equal)
+                }
+            }
+            '<' => {
+                if self.is_match('=') {
+                    self.add_token(LessEqual)
+                } else {
+                    self.add_token(Less)
+                }
+            }
+            '>' => {
+                if self.is_match('=') {
+                    self.add_token(GreaterEqual)
+                } else {
+                    self.add_token(Greater)
+                }
+            }
             // _ => (),
             _ => {
                 return Err(LoxError::new(
@@ -86,5 +114,17 @@ impl Scanner {
         let lexeme = &self.source[self.start..self.current];
         let token = Token::new(ttype, lexeme.to_string(), literal, self.line);
         self.tokens.push(token);
+    }
+
+    fn is_match(&mut self, expected: char) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+        if self.source.chars().nth(self.current).unwrap() != expected {
+            return false;
+        } else {
+            self.current += 1;
+            return true;
+        }
     }
 }
