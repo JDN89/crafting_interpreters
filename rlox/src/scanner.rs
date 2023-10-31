@@ -87,6 +87,15 @@ impl Scanner {
                     self.add_token(Greater)
                 }
             }
+            '/' => {
+                if self.is_match('/') {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                    self.add_token(Slash);
+                }
+            }
+
             // _ => (),
             _ => {
                 return Err(LoxError::new(
@@ -126,5 +135,12 @@ impl Scanner {
             self.current += 1;
             return true;
         }
+    }
+
+    fn peek(&self) -> char {
+        if self.is_at_end() {
+            return '\0';
+        }
+        return self.source.chars().nth(self.current).unwrap_or('\0'); // TODO: add error handling
     }
 }
