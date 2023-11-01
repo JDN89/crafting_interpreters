@@ -3,11 +3,12 @@
 - pre increment means incrementing the variable before using it
 
 # learned rust
+- Do you want your struct to own the String of reference it? In most cases you want your string to own it. Otherwise you have to start adding lifetimes in order to prevent the sturct outliving the &str ref. 
 
 ## TODO
-- now I have an error, because when we enter we add a line break at the end of our prompt, example ( + enter =  "(/n"
+
+- TODO fix bug -> lexeme of string literal is fucked up -> start up java program
 - create better error handling and throw errors in the appropriate places.
-- now I'm passing String everywhere, not better to use &str -> look into: life time hell?
 
 
 ## Error handling:
