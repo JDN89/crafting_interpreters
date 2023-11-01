@@ -12,18 +12,13 @@ use crate::token_type::TokenType;
 pub struct Token {
     token_type: TokenType,
     lexeme: String,
-    literal: Option<String>, // TODO: change to appropriate type later
+    literal: String, // TODO: change to appropriate type later
     line: usize,
 }
 
 #[allow(unused, dead_code)]
 impl Token {
-    pub fn new(
-        token_type: TokenType,
-        lexeme: String,
-        literal: Option<String>,
-        line: usize,
-    ) -> Self {
+    pub fn new(token_type: TokenType, lexeme: String, literal: String, line: usize) -> Self {
         Token {
             token_type,
             lexeme,

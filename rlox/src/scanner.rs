@@ -39,7 +39,7 @@ impl Scanner {
 
         // add at the end of source code an EOF. Not needed but cleaner
         self.tokens
-            .push(Token::new(Eof, "".to_string(), None, self.line));
+            .push(Token::new(Eof, "".to_string(), "".to_string(), self.line));
         Ok(&self.tokens)
     }
 
@@ -99,6 +99,7 @@ impl Scanner {
             // Ignore whitespaces
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
+            '"' => self.string()?,
 
             // _ => (),
             _ => {
@@ -126,8 +127,12 @@ impl Scanner {
     fn add_token_object(&mut self, ttype: TokenType, literal: Option<String>) {
         // Comments get consumed until the end of the line
         let lexeme = &self.source[self.start..self.current];
-        let token = Token::new(ttype, lexeme.to_string(), literal, self.line);
-        self.tokens.push(token);
+        let token = match literal {
+            None => Token::new(ttype, lexeme.to_string(), "".to_string(), self.line),
+            Some(value) => Token::new(ttype, lexeme.to_string(), value.to_string(), self.line),
+        };
+        let tokens = self.tokens.push(token);
+        tokens
     }
 
     fn is_match(&mut self, expected: char) -> bool {
@@ -147,5 +152,25 @@ impl Scanner {
             return '\0';
         }
         return self.source.chars().nth(self.current).unwrap_or('\0'); // TODO: add error handling
+    }
+
+    fn string(&mut self) -> Result<(), LoxError> {
+        // if '"' we skip while loop and jump to self.advance() to consume the closing ".
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+        if self.is_at_end() {
+            return Err(LoxError::new(self.line, self.current, "Unterminated tring"));
+        }
+        self.advance(); // consume the closing ".
+
+        //Trim the surrounding quotes
+        let string_value = &self.source[self.start + 1..self.current - 1];
+        self.add_token_object(String, Some(string_value.to_string()));
+
+        Ok(())
     }
 }
