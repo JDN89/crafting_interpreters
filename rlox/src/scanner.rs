@@ -89,12 +89,16 @@ impl Scanner {
             }
             '/' => {
                 if self.is_match('/') {
+                    // A comment goes until the end of the line
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance();
                     }
                     self.add_token(Slash);
                 }
             }
+            // Ignore whitespaces
+            ' ' | '\r' | '\t' => (),
+            '\n' => self.line += 1,
 
             // _ => (),
             _ => {
@@ -120,6 +124,7 @@ impl Scanner {
     }
 
     fn add_token_object(&mut self, ttype: TokenType, literal: Option<String>) {
+        // Comments get consumed until the end of the line
         let lexeme = &self.source[self.start..self.current];
         let token = Token::new(ttype, lexeme.to_string(), literal, self.line);
         self.tokens.push(token);
