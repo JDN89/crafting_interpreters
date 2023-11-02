@@ -1,7 +1,7 @@
 // LEARNED:
 
 use crate::lox_error::LoxError;
-use crate::token::Token;
+use crate::token::{Literal, Token};
 use crate::token_type::TokenType::{self, *};
 use std::string::String;
 
@@ -38,8 +38,12 @@ impl Scanner {
         }
 
         // add at the end of source code an EOF. Not needed but cleaner
-        self.tokens
-            .push(Token::new(Eof, "".to_string(), "".to_string(), self.line));
+        self.tokens.push(Token::new(
+            Eof,
+            "".to_string(),
+            Literal::String("".to_string()),
+            self.line,
+        ));
         Ok(&self.tokens)
     }
 
@@ -104,7 +108,7 @@ impl Scanner {
             // _ => (),
             c => {
                 if self.check_is_digit(c) {
-                    self.consume_number();
+                    self.consume_number()?;
                 } else {
                     return Err(LoxError::new(
                         self.line,
@@ -128,12 +132,28 @@ impl Scanner {
         self.add_token_object(ttype, None);
     }
 
-    fn add_token_object(&mut self, ttype: TokenType, literal: Option<String>) {
+    fn add_token_object(&mut self, ttype: TokenType, literal: Option<Literal>) {
         // Comments get consumed until the end of the line
         let lexeme = &self.source[self.start..self.current];
         let token = match literal {
-            None => Token::new(ttype, lexeme.to_string(), "".to_string(), self.line),
-            Some(value) => Token::new(ttype, lexeme.to_string(), value.to_string(), self.line),
+            None => Token::new(
+                ttype,
+                lexeme.to_string(),
+                Literal::String("".to_string()),
+                self.line,
+            ),
+            Some(Literal::String(value)) => Token::new(
+                ttype,
+                lexeme.to_string(),
+                Literal::String(value.to_string()),
+                self.line,
+            ),
+            Some(Literal::Integer(value)) => Token::new(
+                ttype,
+                lexeme.to_string(),
+                Literal::Integer(value),
+                self.line,
+            ),
         };
         let tokens = self.tokens.push(token);
         tokens
@@ -174,7 +194,7 @@ impl Scanner {
 
         //Trim the surrounding quotes
         let string_value = &self.source[self.start + 1..self.current - 1];
-        self.add_token_object(String, Some(string_value.to_string()));
+        self.add_token_object(String, Some(Literal::String(string_value.to_string())));
 
         Ok(())
     }
@@ -183,7 +203,7 @@ impl Scanner {
         return c >= '0' && c <= '9';
     }
 
-    fn consume_number(&mut self) {
+    fn consume_number(&mut self) -> Result<(), LoxError> {
         while self.check_is_digit(self.peek()) {
             self.advance();
         }
@@ -197,11 +217,19 @@ impl Scanner {
                 self.advance();
             }
         }
+        let num = self.source[self.start..self.current].parse::<u32>();
 
-        self.add_token_object(
-            Number,
-            Some(self.source[self.start..self.current].to_string()),
-        )
+        match num {
+            Ok(num) => self.add_token_object(Number, Some(Literal::Integer(num))),
+            Err(_) => {
+                return Err(LoxError::new(
+                    self.line,
+                    self.current,
+                    "Couldn't parse integer",
+                ))
+            }
+        }
+        Ok(())
     }
 
     fn peek_next(&self) -> char {

@@ -12,13 +12,20 @@ use crate::token_type::TokenType;
 pub struct Token {
     token_type: TokenType,
     lexeme: String,
-    literal: String, // TODO: change to appropriate type later
+    literal: Literal, // TODO: change to appropriate type later
     line: usize,
+}
+
+// TODO: can't we make literal of type T??
+#[derive(Debug, Clone)]
+pub enum Literal {
+    String(String),
+    Integer(u32),
 }
 
 #[allow(unused, dead_code)]
 impl Token {
-    pub fn new(token_type: TokenType, lexeme: String, literal: String, line: usize) -> Self {
+    pub fn new(token_type: TokenType, lexeme: String, literal: Literal, line: usize) -> Self {
         Token {
             token_type,
             lexeme,
