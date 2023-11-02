@@ -102,12 +102,16 @@ impl Scanner {
             '"' => self.string()?,
 
             // _ => (),
-            _ => {
-                return Err(LoxError::new(
-                    self.line,                  // Specify the line
-                    self.current,               // Specify the location
-                    "Character not recognized", // Specify the message
-                ));
+            c => {
+                if self.check_is_digit(c) {
+                    self.consume_number();
+                } else {
+                    return Err(LoxError::new(
+                        self.line,
+                        self.current,
+                        "Unexpected character",
+                    ));
+                }
             }
         }
         Ok(())
@@ -154,6 +158,7 @@ impl Scanner {
         return self.source.chars().nth(self.current).unwrap_or('\0'); // TODO: add error handling
     }
 
+    // TODO fix bug -> lexeme of string literal is fucked up -> start up java program
     fn string(&mut self) -> Result<(), LoxError> {
         // if '"' we skip while loop and jump to self.advance() to consume the closing ".
         while self.peek() != '"' && !self.is_at_end() {
@@ -172,5 +177,37 @@ impl Scanner {
         self.add_token_object(String, Some(string_value.to_string()));
 
         Ok(())
+    }
+
+    fn check_is_digit(&self, c: char) -> bool {
+        return c >= '0' && c <= '9';
+    }
+
+    fn consume_number(&mut self) {
+        while self.check_is_digit(self.peek()) {
+            self.advance();
+        }
+
+        // Look for a fractional part.
+        if self.peek() == '.' && self.check_is_digit(self.peek_next()) {
+            //consume the "."
+            self.advance();
+
+            while self.check_is_digit(self.peek()) {
+                self.advance();
+            }
+        }
+
+        self.add_token_object(
+            Number,
+            Some(self.source[self.start..self.current].to_string()),
+        )
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            return '\0';
+        }
+        return self.source.chars().nth(self.current + 1).unwrap(); //TODO error handling
     }
 }
