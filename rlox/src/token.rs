@@ -16,7 +16,7 @@ pub struct Token {
     line: usize,
 }
 
-// TODO: can't we make literal of type T??
+// CHECK: change to generic if you need to store more types in Literal
 #[derive(Debug, Clone)]
 pub enum Literal {
     String(String),

@@ -5,6 +5,32 @@ use crate::token::{Literal, Token};
 use crate::token_type::TokenType::{self, *};
 use std::string::String;
 
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+
+lazy_static! {
+    static ref KEYWORDS: HashMap<String, TokenType> = {
+        let mut map = HashMap::new();
+        map.insert("and".to_string(), TokenType::And);
+        map.insert("class".to_string(), TokenType::Class);
+        map.insert("else".to_string(), TokenType::Else);
+        map.insert("false".to_string(), TokenType::False);
+        map.insert("for".to_string(), TokenType::For);
+        map.insert("fun".to_string(), TokenType::Fun);
+        map.insert("if".to_string(), TokenType::If);
+        map.insert("nil".to_string(), TokenType::Nil);
+        map.insert("or".to_string(), TokenType::Or);
+        map.insert("print".to_string(), TokenType::Print);
+        map.insert("return".to_string(), TokenType::Return);
+        map.insert("super".to_string(), TokenType::Super);
+        map.insert("this".to_string(), TokenType::This);
+        map.insert("true".to_string(), TokenType::True);
+        map.insert("var".to_string(), TokenType::Var);
+        map.insert("while".to_string(), TokenType::While);
+        map
+    };
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Scanner {
@@ -109,6 +135,8 @@ impl Scanner {
             c => {
                 if self.check_is_digit(c) {
                     self.consume_number()?;
+                } else if self.is_alpha(c) {
+                    self.identifier();
                 } else {
                     return Err(LoxError::new(
                         self.line,
@@ -237,5 +265,24 @@ impl Scanner {
             return '\0';
         }
         return self.source.chars().nth(self.current + 1).unwrap(); //TODO error handling
+    }
+
+    fn identifier(&mut self) {
+        while self.is_alpha_numeric(self.peek()) {
+            self.advance();
+        }
+        let txt = self.source[self.start..self.current].to_string();
+        let ttype = KEYWORDS.get(&txt);
+        match ttype {
+            None => self.add_token(Identifier),
+            Some(value) => self.add_token(value.clone()),
+        }
+    }
+
+    fn is_alpha(&self, c: char) -> bool {
+        return c >= 'a' && c <= 'z' || c >= 'A' && c >= 'Z' || c == '_';
+    }
+    fn is_alpha_numeric(&self, c: char) -> bool {
+        return self.is_alpha(c) || self.check_is_digit(c);
     }
 }
