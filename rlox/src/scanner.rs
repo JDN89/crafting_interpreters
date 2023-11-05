@@ -68,7 +68,8 @@ impl Scanner {
             Literal::String("".to_string()),
             self.line,
         ));
-        // Return Vec<Token> directly so the caller can have full ownership
+        // clone so the caller has ownership of the tokens
+        // TODO: check if we really need clone
         Ok(self.tokens.clone())
     }
 
@@ -123,13 +124,14 @@ impl Scanner {
             '/' => {
                 if self.is_match('/') {
                     // A comment goes until the end of the line
-                    while self.peek() != '\n' && !self.is_at_end() {
+                    while self.peek() != Some('\n') && !self.is_at_end() {
                         self.advance()?;
                     }
                 } else {
                     self.add_token(Slash);
                 }
             }
+
             // Ignore whitespaces
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
@@ -138,7 +140,7 @@ impl Scanner {
 
             // _ => (),
             c => {
-                if self.check_is_digit(c) {
+                if self.check_is_digit(Some(c)) {
                     self.consume_number()?;
                 } else if self.is_alpha(c) {
                     self.identifier()?;
@@ -214,18 +216,15 @@ impl Scanner {
         }
     }
 
-    fn peek(&self) -> char {
-        if self.is_at_end() {
-            return '\0';
-        }
-        return self.source.chars().nth(self.current).unwrap_or('\0'); // TODO: add error handling
+    fn peek(&self) -> Option<char> {
+        return self.source.chars().nth(self.current); // TODO: add error handling
     }
 
     // TODO fix bug -> lexeme of string literal is fucked up -> start up java program
     fn string(&mut self) -> Result<(), LoxError> {
         // if '"' we skip while loop and jump to self.advance() to consume the closing ".
-        while self.peek() != '"' && !self.is_at_end() {
-            if self.peek() == '\n' {
+        while self.peek() != Some('"') && !self.is_at_end() {
+            if self.peek() == Some('\n') {
                 self.line += 1;
             }
             self.advance()?;
@@ -242,8 +241,12 @@ impl Scanner {
         Ok(())
     }
 
-    fn check_is_digit(&self, c: char) -> bool {
-        return c >= '0' && c <= '9';
+    fn check_is_digit(&self, c: Option<char>) -> bool {
+        if let Some(ch) = c {
+            return ch >= '0' && ch <= '9';
+        } else {
+            false
+        }
     }
 
     fn consume_number(&mut self) -> Result<(), LoxError> {
@@ -252,7 +255,7 @@ impl Scanner {
         }
 
         // Look for a fractional part.
-        if self.peek() == '.' && self.check_is_digit(self.peek_next()) {
+        if self.peek() == Some('.') && self.check_is_digit(self.peek_next()) {
             //consume the "."
             self.advance()?;
 
@@ -260,7 +263,7 @@ impl Scanner {
                 self.advance()?;
             }
         }
-        let num = self.source[self.start..self.current].parse::<u32>();
+        let num = self.source[self.start..self.current].parse::<f64>();
 
         match num {
             Ok(num) => self.add_token_object(Number, Some(Literal::Integer(num))),
@@ -275,11 +278,11 @@ impl Scanner {
         Ok(())
     }
 
-    fn peek_next(&self) -> char {
+    fn peek_next(&self) -> Option<char> {
         if self.current + 1 >= self.source.len() {
-            return '\0';
+            return None;
         }
-        return self.source.chars().nth(self.current + 1).unwrap(); //TODO error handling
+        return self.source.chars().nth(self.current + 1);
     }
 
     fn identifier(&mut self) -> Result<(), LoxError> {
@@ -290,6 +293,8 @@ impl Scanner {
         let ttype = KEYWORDS.get(&txt);
         match ttype {
             None => self.add_token(Identifier),
+
+            // TODO: get rid of clone
             Some(value) => self.add_token(value.clone()),
         }
         Ok(())
@@ -298,7 +303,18 @@ impl Scanner {
     fn is_alpha(&self, c: char) -> bool {
         return c >= 'a' && c <= 'z' || c >= 'A' && c >= 'Z' || c == '_';
     }
-    fn is_alpha_numeric(&self, c: char) -> bool {
-        return self.is_alpha(c) || self.check_is_digit(c);
+    fn is_alpha_numeric(&self, option_c: Option<char>) -> bool {
+        if let Some(c) = option_c {
+            return self.is_alpha(c) || self.check_is_digit(option_c);
+        } else {
+            false
+        }
     }
+
+    // fn scan_block_comment(&self) -> Result<(), LoxError> {
+    //     loop {
+    //         match self.peek() {}
+    //     }
+    // }
 }
+

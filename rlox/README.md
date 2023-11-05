@@ -6,6 +6,7 @@
 - Do you want your struct to own the String of reference it? In most cases you want your string to own it. Otherwise you have to start adding lifetimes in order to prevent the sturct outliving the &str ref. 
 - I put a field of a struct in an enum, because it could be of type String or u32. Maybe I'll turn it into a generic later.
 - tubo fish ::<u32>(), it looks like a fish, moves like a fish and parse like a parser.
+
 ## Error handling
 - ? propagates the error to the caller of the function, so unwrap OR return ERR(From::from(err)). In our case the cli is the caller of main
 - creating custom errors and throwing them if  `ok_or_else` && `unwrap_or_else(|| {Err(create custom error)})` fails

@@ -19,7 +19,7 @@ pub struct Token {
 #[derive(Debug, Clone)]
 pub enum Literal {
     String(String),
-    Integer(u32),
+    Integer(f64),
 }
 
 #[allow(unused, dead_code)]
