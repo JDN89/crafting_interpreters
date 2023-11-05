@@ -127,6 +127,8 @@ impl Scanner {
                     while self.peek() != Some('\n') && !self.is_at_end() {
                         self.advance()?;
                     }
+                } else if self.is_match('*') {
+                    self.scan_block_comment()?;
                 } else {
                     self.add_token(Slash);
                 }
@@ -311,10 +313,38 @@ impl Scanner {
         }
     }
 
-    // fn scan_block_comment(&self) -> Result<(), LoxError> {
-    //     loop {
-    //         match self.peek() {}
-    //     }
-    // }
+    fn scan_block_comment(&mut self) -> Result<(), LoxError> {
+        loop {
+            match self.peek() {
+                Some('*') => {
+                    self.advance()?;
+                    if self.is_match('/') {
+                        return Ok(());
+                    }
+                }
+                Some('/') => {
+                    self.advance()?;
+                    if self.is_match('*') {
+                        self.scan_block_comment()?;
+                    }
+                }
+                Some('\n') => {
+                    // consume \n and go to the next line and increase line counter with one
+                    self.advance()?;
+                    self.line += 1;
+                }
+                None => {
+                    return Err(LoxError::new(
+                        self.line,
+                        self.current,
+                        "Unterminated comment",
+                    ));
+                }
+                _ => {
+                    self.advance()?;
+                }
+            }
+        }
+    }
 }
 
