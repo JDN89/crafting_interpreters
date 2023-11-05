@@ -77,6 +77,7 @@ impl Scanner {
     }
 
     fn scan_token(&mut self) -> Result<(), LoxError> {
+        // match and return to scan_tokens until we reach end of source code
         match self.advance()? {
             '(' => self.add_token(LeftParen),
             ')' => self.add_token(RightParen),
@@ -89,6 +90,7 @@ impl Scanner {
             ';' => self.add_token(Semicolon),
             '*' => self.add_token(Star),
             '!' => {
+                //current is set to +1 after advance call so we match on the the char after !
                 if self.is_match('=') {
                     self.add_token(BangEqual)
                 } else {
@@ -128,6 +130,7 @@ impl Scanner {
             // Ignore whitespaces
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
+
             '"' => self.string()?,
 
             // _ => (),
@@ -169,6 +172,7 @@ impl Scanner {
 
     fn add_token_object(&mut self, ttype: TokenType, literal: Option<Literal>) {
         // Comments get consumed until the end of the line
+        // for String the lexeme is different
         let lexeme = &self.source[self.start..self.current];
         let token = match literal {
             None => Token::new(
@@ -179,7 +183,7 @@ impl Scanner {
             ),
             Some(Literal::String(value)) => Token::new(
                 ttype,
-                lexeme.to_string(),
+                self.source[self.start + 1..self.current - 1].to_string(),
                 Literal::String(value.to_string()),
                 self.line,
             ),
@@ -198,6 +202,7 @@ impl Scanner {
         if self.is_at_end() {
             return false;
         }
+        // Current is set to +1 after advance call so we match on the the char after !
         if self.source.chars().nth(self.current).unwrap() != expected {
             return false;
         } else {

@@ -12,11 +12,10 @@ use crate::token_type::TokenType;
 pub struct Token {
     token_type: TokenType,
     lexeme: String,
-    literal: Literal, // TODO: change to appropriate type later
+    literal: Literal,
     line: usize,
 }
 
-// CHECK: change to generic if you need to store more types in Literal
 #[derive(Debug, Clone)]
 pub enum Literal {
     String(String),
