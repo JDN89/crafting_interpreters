@@ -1,5 +1,3 @@
-// LEARNED:
-
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
 use crate::token_type::TokenType::{self, *};
@@ -54,23 +52,24 @@ impl Scanner {
         }
     }
 
-    // CHECK could we encounter an error during the scan_tokens process? if create and pass it up
-    // through the chain
-    pub fn scan_tokens(&mut self) -> Result<&Vec<Token>, LoxError> {
+    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, LoxError> {
         while !self.is_at_end() {
             // We are at the beginning of the next lexeme
+            // start = 0 current =5, next lexeme start = 5
             self.start = self.current;
             self.scan_token()?;
         }
 
-        // add at the end of source code an EOF. Not needed but cleaner
+        // add at the end of source code an EOF when is_at_end is true.
+        // Not needed but cleaner
         self.tokens.push(Token::new(
             Eof,
             "".to_string(),
             Literal::String("".to_string()),
             self.line,
         ));
-        Ok(&self.tokens)
+        // Return Vec<Token> directly so the caller can have full ownership
+        Ok(self.tokens.clone())
     }
 
     fn is_at_end(&self) -> bool {
@@ -78,7 +77,7 @@ impl Scanner {
     }
 
     fn scan_token(&mut self) -> Result<(), LoxError> {
-        match self.advance() {
+        match self.advance()? {
             '(' => self.add_token(LeftParen),
             ')' => self.add_token(RightParen),
             '{' => self.add_token(LeftBrace),
@@ -121,7 +120,7 @@ impl Scanner {
                 if self.is_match('/') {
                     // A comment goes until the end of the line
                     while self.peek() != '\n' && !self.is_at_end() {
-                        self.advance();
+                        self.advance()?;
                     }
                     self.add_token(Slash);
                 }
@@ -136,7 +135,7 @@ impl Scanner {
                 if self.check_is_digit(c) {
                     self.consume_number()?;
                 } else if self.is_alpha(c) {
-                    self.identifier();
+                    self.identifier()?;
                 } else {
                     return Err(LoxError::new(
                         self.line,
@@ -149,10 +148,18 @@ impl Scanner {
         Ok(())
     }
 
-    fn advance(&mut self) -> char {
-        let current_character = self.source.chars().nth(self.current).unwrap(); // TODO: add error handling
-        self.current += 1; // current not used after this funciton call? because +1
-        current_character
+    // Consume the current character and return it,
+    // increase current with one
+    fn advance(&mut self) -> Result<char, LoxError> {
+        let current_character = self.source.chars().nth(self.current).ok_or_else(|| {
+            LoxError::new(
+                self.line,
+                self.current,
+                "Couldn't consume character at this position",
+            )
+        })?;
+        self.current += 1;
+        Ok(current_character)
     }
 
     // we're going ot handle literals here later
@@ -213,12 +220,12 @@ impl Scanner {
             if self.peek() == '\n' {
                 self.line += 1;
             }
-            self.advance();
+            self.advance()?;
         }
         if self.is_at_end() {
             return Err(LoxError::new(self.line, self.current, "Unterminated tring"));
         }
-        self.advance(); // consume the closing ".
+        self.advance()?; // consume the closing ".
 
         //Trim the surrounding quotes
         let string_value = &self.source[self.start + 1..self.current - 1];
@@ -233,16 +240,16 @@ impl Scanner {
 
     fn consume_number(&mut self) -> Result<(), LoxError> {
         while self.check_is_digit(self.peek()) {
-            self.advance();
+            self.advance()?;
         }
 
         // Look for a fractional part.
         if self.peek() == '.' && self.check_is_digit(self.peek_next()) {
             //consume the "."
-            self.advance();
+            self.advance()?;
 
             while self.check_is_digit(self.peek()) {
-                self.advance();
+                self.advance()?;
             }
         }
         let num = self.source[self.start..self.current].parse::<u32>();
@@ -267,9 +274,9 @@ impl Scanner {
         return self.source.chars().nth(self.current + 1).unwrap(); //TODO error handling
     }
 
-    fn identifier(&mut self) {
+    fn identifier(&mut self) -> Result<(), LoxError> {
         while self.is_alpha_numeric(self.peek()) {
-            self.advance();
+            self.advance()?;
         }
         let txt = self.source[self.start..self.current].to_string();
         let ttype = KEYWORDS.get(&txt);
@@ -277,6 +284,7 @@ impl Scanner {
             None => self.add_token(Identifier),
             Some(value) => self.add_token(value.clone()),
         }
+        Ok(())
     }
 
     fn is_alpha(&self, c: char) -> bool {
