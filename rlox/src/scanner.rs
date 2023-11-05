@@ -118,12 +118,15 @@ impl Scanner {
                     self.add_token(Greater)
                 }
             }
+
+            // fix comments
             '/' => {
                 if self.is_match('/') {
                     // A comment goes until the end of the line
                     while self.peek() != '\n' && !self.is_at_end() {
                         self.advance()?;
                     }
+                } else {
                     self.add_token(Slash);
                 }
             }
