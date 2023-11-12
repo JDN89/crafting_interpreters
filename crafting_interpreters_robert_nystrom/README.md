@@ -1,14 +1,10 @@
 # JLox, A Tree Walk Interpreter
 
-## Scanning
-
-Convert raw source code in `tokens` (keyword, identifier, operator, separator, literal)
-
-- keyword: if, while, for,...
-- Identifiers: name of var, functions, obj,...
-- Operator: + / -
-- Separators: ; , { ...
-- Literals: values that are written directly into the source code. These are fixed unchanging values. 
+## Project
+- 
+- javac com/craftinginterpreters/tool/GenerateAst.java
+- java com/craftinginterpreters/tool/GenerateAst .
+  - change . to the right destination folder
 
 ## Side notes
 - Lox is a scripting language -> executes directly from source
