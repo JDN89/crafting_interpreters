@@ -5,10 +5,12 @@ use std::io::BufRead;
 use std::io::Write;
 use std::process;
 
+mod example;
 mod lox_error;
 mod scanner;
 mod token;
 mod token_type;
+use crate::example::Expr;
 use crate::lox_error::LoxError;
 use crate::scanner::Scanner;
 
