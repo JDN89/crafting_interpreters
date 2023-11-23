@@ -7,3 +7,15 @@ edition = "2021"
 
 [dependencies]
 lazy_static = '1.4.0'
+
+[lib]
+name = "_lox"
+path = "src/lox/lib.rs"
+
+[[bin]]
+name = "lox"
+path = "src/bin/main.rs"
+
+[[bin]]
+name = "generate_ast"
+path = "src/bin/launch_ast_generator.rs"

@@ -8,7 +8,7 @@
 
 # Crafting Interpresters: Robert Nystrom
 
-## Scanning or Lexing
+## Scanning or Lexing - regular language
 The __scanner__ processes a linear stream of characters, grouping them into __tokens__ based on predefined rules. A __lexeme__ is the smallest substring of source code, representing the most basic sequence of characters that conveys meaning. A __token__ comprises a lexeme along with additional useful data.
   - Identifier: min
   - Keyword: if
@@ -16,18 +16,36 @@ The __scanner__ processes a linear stream of characters, grouping them into __to
   - Operator: + 
   - Separator: ,
 
-#### Parsing
-- Put the tokens and build an Abstract Syntax Tree that represents the program's syntax.
-- The tree is then used by the compiler to produce the next steps of the process
+## Parsing into AST - context free grammar
 
-3 + 4 * 5
-- first multiplication then addition
-        +
-       / \
-      3   *
-         / \
-        4   5
-- The parser gives structure and meaning to the flat tokens
++----------------------+-----------------------------+------------------------+
+|   Level of Grammar   |        Alphabet (Lexemes)   |        Strings         |
++----------------------+-----------------------------+------------------------+
+| Lexical Analysis     | Individual characters       | Valid lexemes (tokens) |
+|                      | (e.g., 'a', '1', '+', etc.) | (e.g., "if", "123", "+")|
++----------------------+-----------------------------+------------------------+
+| Syntactic Analysis   | Entire tokens               | Sequences of tokens    |
+| (Parser's Grammar)    | (e.g., 'if', '123', '+')    | (e.g., "if (x > 0)")   |
++----------------------+-----------------------------+------------------------+
+
+The lexical phase the scanner broked down the source code and transformed them into lexemes. In the syntactic analysis phase the parser analyzes sequence of tokens and puts them into an AST based on the relationship between the tokens.
+
+The AST is constructed based on Grammar rules called productions and represents the hierarchical structure of the language. The grammar rules define how valid sequences of tokens (lexemes) can be assembled into meaningful expressions and statements
+
+- Terminal: lexeme.
+- Non Terminal: reference to another business rule.
+
+The AST is an intermediate representation of the source code and is used for further analysis.
+
+
+| Production Rule | Syntax                                             | Description                                           |
+|------------------|----------------------------------------------------|-------------------------------------------------------|
+| expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
+| literal          | `NUMBER \| STRING \| "true" \| "false" \| "nil"` | A literal can be a number, string, true, false, or nil. |
+| grouping         | `("(" expression ")")`                             | A grouping is an expression enclosed in parentheses.   |
+| unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
+| binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
+| operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
 
 #### Binding or Resulotion
 - identify what each identifier in the source code refers to.
