@@ -1,6 +1,5 @@
-use std::fs::File;
-use std::io::{stdin, stdout, Read, Write, BufReader, BufRead};
 use std::{fs, io, process};
+use std::io::{BufRead, Read, Write};
 
 pub use lox_error::*;
 use scanner::Scanner;
