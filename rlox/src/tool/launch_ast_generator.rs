@@ -4,7 +4,7 @@ use std::io::Write;
 fn main() {
     if let Err(e) = generate_ast(
         "src",
-        "expr",
+        "Expr",
         &[
             "Binary: Box<Expr> left, Token operator, Box<Expr> right",
             "Grouping: Box<Expr> expression",
@@ -29,7 +29,7 @@ fn main() {
             let class_name = type_def_parts[0].trim();
             let fields = type_def_parts[1].trim();
 
-            writeln!(file, "    {}({}),", class_name, fields)?;
+            writeln!(file, "    {}({}{}),", class_name, class_name, base_name)?;
         }
 
         writeln!(file, "}}\n")?;
@@ -39,36 +39,34 @@ fn main() {
             let class_name = type_def_parts[0].trim();
             let fields = type_def_parts[1].trim();
 
-            writeln!(file, "pub struct {} {{", class_name)?;
+            writeln!(file, "pub struct {}{} {{", class_name, base_name)?;
 
             // Constructor
-            writeln!(file, "    pub fn new({}) -> Self {{", fields)?;
             for field in fields.split(", ") {
-                let field_name = field.split_whitespace().last().unwrap();
-                writeln!(file, "        {}: {},", field_name, field)?;
+                let mut iter = field.split_whitespace();
+                let field_type = iter.nth(0).unwrap();
+                let field_name = iter.last().unwrap();
+                // let field_name = field.split_whitespace().last().unwrap();
+                // let field_type = field.split_whitespace()
+                writeln!(file, "        {}: {},", field_name, field_type)?;
             }
-            writeln!(file, "        {} {{ {} }}", class_name, fields)?;
             writeln!(file, "    }}\n")?;
 
+            // put in impl of expr
             // Visitor pattern
-            writeln!(
-                file,
-                "    pub fn accept<R>(&self, visitor: &dyn {}Visitor<R>) -> Result<R, LoxError> {{",
-                base_name
-            )?;
-            writeln!(
-                file,
-                "        visitor.visit_{}(self)",
-                class_name.to_lowercase()
-            )?;
-            writeln!(file, "    }}\n")?;
+            // writeln!(
+            //     file,
+            //     "    pub fn accept<R>(&self, visitor: &dyn {}Visitor<R>) -> Result<R, LoxError> {{",
+            //     base_name
+            // )?;
+            // writeln!(
+            //     file,
+            //     "        visitor.visit_{}(self)",
+            //     class_name.to_lowercase()
+            // )?;
+            // writeln!(file, "    }}\n")?;
 
             // Fields
-            for field in fields.split(", ") {
-                writeln!(file, "    pub {},", field)?;
-            }
-
-            writeln!(file, "}}\n")?;
         }
 
         // Visitor trait
@@ -84,6 +82,25 @@ fn main() {
             )?;
         }
         writeln!(file, "}}")?;
+
+        for type_def in types {
+            let type_def_parts: Vec<&str> = type_def.split(':').map(|s| s.trim()).collect();
+            let class_name = type_def_parts[0].trim();
+
+            writeln!(file, "impl {}{} {{", class_name, base_name)?;
+            writeln!(
+                file,
+                "    pub fn accept<R>(&self, visitor: &dyn {}Visitor<R>) -> Result<R, LoxError> {{",
+                base_name
+            )?;
+            writeln!(
+                file,
+                "        visitor.visit_{}(self)",
+                class_name.to_lowercase()
+            )?;
+            writeln!(file, "    }}\n")?;
+            writeln!(file, "    }}\n")?;
+        }
 
         Ok(())
     }

@@ -14,8 +14,8 @@ path = "src/lox/lib.rs"
 
 [[bin]]
 name = "lox"
-path = "src/bin/main.rs"
+path = "src/lox/main.rs"
 
 [[bin]]
 name = "generate_ast"
-path = "src/bin/launch_ast_generator.rs"
+path = "src/tool/launch_ast_generator.rs"
