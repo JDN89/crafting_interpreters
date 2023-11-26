@@ -1,5 +1,5 @@
 extern crate _lox;
-use _lox::{run_file, run_prompt, test_ast_printer};
+use _lox::{run_file, run_prompt};
 
 use std::env::args;
 use std::{io, process};
@@ -9,7 +9,7 @@ use std::{io, process};
 fn main() -> Result<(), io::Error> {
     //test AST Printer
 
-    test_ast_printer();
+    _lox::test_ast_printer();
     let args: Vec<String> = args().collect();
 
     // we passed [0] program name, [1] path to file [x > 1] argumets to many

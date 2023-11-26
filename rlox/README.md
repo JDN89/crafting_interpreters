@@ -4,6 +4,13 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin lox
 - cargo run --bin generate_ast
 
+## TODO
+- place breakpoints and go in detail through the code
+- make Literal in Token an option;
+- place ast printer in a unit test?
+
+    pub literal: Literal,
+
 # Learned java
 - post increment is first using the variable and then adding to it charAt(i++), gets the char at index i and then increments the index
 - pre increment means incrementing the variable before using it
@@ -27,10 +34,4 @@ Resources
 [Defining an Error type](https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/reenter_question_mark.html)
 
 
-## TODO
-
-- TODO fix bug -> lexeme of string literal is fucked up -> start up java program
-- create better error handling and throw errors in the appropriate places.
-- Try to create custom errors and return and transform them as needed? -> custom errors overkill?
-- Do I need another error instead of loxErro? Not for now
 

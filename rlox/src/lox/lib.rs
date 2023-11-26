@@ -65,7 +65,7 @@ pub fn test_ast_printer() {
             operator: Token {
                 token_type: TokenType::Minus,
                 lexeme: "-".to_string(),
-                literal: token::Literal::Integer(123.0),
+                literal: crate::token::Literal::Integer(123.0),
                 line: 1,
             },
             right: Box::new(Expr::Literal(LiteralExpr {
@@ -85,5 +85,10 @@ pub fn test_ast_printer() {
         })),
     });
 
-    println!("{}", ast_printer::AstPrinter {}.print(&expression).unwrap());
+    println!(
+        "{}",
+        crate::ast_printer::AstPrinter {}
+            .print(&expression)
+            .unwrap()
+    );
 }

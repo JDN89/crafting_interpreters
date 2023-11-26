@@ -1,5 +1,4 @@
 use std::fmt::Display;
-use std::io::Write;
 
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};

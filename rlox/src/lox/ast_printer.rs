@@ -1,4 +1,9 @@
-use crate::{expr::*, LoxError};
+use crate::{
+    expr::*,
+    token::{self, Token},
+    token_type::TokenType,
+    LoxError,
+};
 
 pub struct AstPrinter {}
 
