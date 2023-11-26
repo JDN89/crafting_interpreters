@@ -1,14 +1,14 @@
+use std::io::{BufRead, Write};
 use std::{fs, io, process};
-use std::io::{BufRead, Read, Write};
 
 pub use lox_error::*;
 use scanner::Scanner;
 
+mod expr;
 mod lox_error;
 mod scanner;
 mod token;
 mod token_type;
-
 
 // possible need of converson to Box<dyn Error>
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {

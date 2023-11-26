@@ -18,4 +18,4 @@ path = "src/lox/main.rs"
 
 [[bin]]
 name = "generate_ast"
-path = "src/tool/launch_ast_generator.rs"
+path = "src/tool/ast_generator.rs"

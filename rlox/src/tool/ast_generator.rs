@@ -3,12 +3,12 @@ use std::io::Write;
 
 fn main() {
     if let Err(e) = generate_ast(
-        "src",
+        "src/lox",
         "Expr",
         &[
             "Binary: Box<Expr> left, Token operator, Box<Expr> right",
             "Grouping: Box<Expr> expression",
-            "Literal: Literal literal",
+            "Literal: Literal value",
             "Unary: Token operator, Box<Expr> right",
         ],
     ) {
@@ -19,15 +19,14 @@ fn main() {
         let path = format!("{}/{}.rs", output_dir, base_name.to_lowercase());
         let mut file = File::create(&path)?;
 
-        writeln!(file, "use crate::token::Token;")?;
-        writeln!(file, "use crate::literal::Literal;")?;
+        writeln!(file, "use crate::token::{{Token, Literal}};")?;
+        writeln!(file, "use crate::lox_error::LoxError;")?;
         writeln!(file, "\n#[derive(Debug)]")?;
         writeln!(file, "pub enum {} {{", base_name)?;
 
         for type_def in types {
             let type_def_parts: Vec<&str> = type_def.split(':').map(|s| s.trim()).collect();
             let class_name = type_def_parts[0].trim();
-            let fields = type_def_parts[1].trim();
 
             writeln!(file, "    {}({}{}),", class_name, class_name, base_name)?;
         }
@@ -39,6 +38,7 @@ fn main() {
             let class_name = type_def_parts[0].trim();
             let fields = type_def_parts[1].trim();
 
+            writeln!(file, "\n#[derive(Debug)]")?;
             writeln!(file, "pub struct {}{} {{", class_name, base_name)?;
 
             // Constructor
@@ -51,22 +51,6 @@ fn main() {
                 writeln!(file, "        {}: {},", field_name, field_type)?;
             }
             writeln!(file, "    }}\n")?;
-
-            // put in impl of expr
-            // Visitor pattern
-            // writeln!(
-            //     file,
-            //     "    pub fn accept<R>(&self, visitor: &dyn {}Visitor<R>) -> Result<R, LoxError> {{",
-            //     base_name
-            // )?;
-            // writeln!(
-            //     file,
-            //     "        visitor.visit_{}(self)",
-            //     class_name.to_lowercase()
-            // )?;
-            // writeln!(file, "    }}\n")?;
-
-            // Fields
         }
 
         // Visitor trait
@@ -75,10 +59,11 @@ fn main() {
             let type_name = type_def.split(':').next().unwrap().trim();
             writeln!(
                 file,
-                "    fn visit_{}(&self, {}expr: &{}) -> Result<R, LoxError>;",
+                "    fn visit_{}(&self, {}: &{}{}) -> Result<R, LoxError>;",
                 type_name.to_lowercase(),
                 base_name.to_lowercase(),
-                type_name
+                type_name,
+                base_name
             )?;
         }
         writeln!(file, "}}")?;
