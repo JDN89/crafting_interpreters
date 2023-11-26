@@ -9,6 +9,17 @@ pub enum Expr {
     Unary(UnaryExpr),
 }
 
+impl Expr {
+    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
+        match self {
+            Expr::Binary(expr) => visitor.visit_binary(&expr),
+            Expr::Grouping(expr) => visitor.visit_grouping(&expr),
+            Expr::Literal(expr) => visitor.visit_literal(&expr),
+            Expr::Unary(expr) => visitor.visit_unary(&expr),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct BinaryExpr {
     left: Box<Expr>,
@@ -37,27 +48,4 @@ pub trait ExprVisitor<R> {
     fn visit_grouping(&self, expr: &GroupingExpr) -> Result<R, LoxError>;
     fn visit_literal(&self, expr: &LiteralExpr) -> Result<R, LoxError>;
     fn visit_unary(&self, expr: &UnaryExpr) -> Result<R, LoxError>;
-}
-impl BinaryExpr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
-        visitor.visit_binary(self)
-    }
-}
-
-impl GroupingExpr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
-        visitor.visit_grouping(self)
-    }
-}
-
-impl LiteralExpr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
-        visitor.visit_literal(self)
-    }
-}
-
-impl UnaryExpr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
-        visitor.visit_unary(self)
-    }
 }

@@ -4,6 +4,7 @@ use std::{fs, io, process};
 pub use lox_error::*;
 use scanner::Scanner;
 
+mod ast_printer;
 mod expr;
 mod lox_error;
 mod scanner;

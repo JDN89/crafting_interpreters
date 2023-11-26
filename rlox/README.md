@@ -12,6 +12,7 @@ Project contains executable for Lox and AST struct generator
 - Do you want your struct to own the String of reference it? In most cases you want your string to own it. Otherwise you have to start adding lifetimes in order to prevent the sturct outliving the &str ref. 
 - I put a field of a struct in an enum, because it could be of type String or u32. Maybe I'll turn it into a generic later.
 - tubo fish ::<u32>(), it looks like a fish, moves like a fish and parse like a parser.
+-  dyn: Short for "dynamic," this keyword is used to indicate that we're working with trait objects, where the concrete type implementing the trait is known only at runtime.
 
 ## Error handling
 - ? propagates the error to the caller of the function, so unwrap OR return ERR(From::from(err)). In our case the cli is the caller of main

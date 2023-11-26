@@ -1,10 +1,8 @@
-
 extern crate _lox;
 use _lox::{run_file, run_prompt};
 
 use std::env::args;
 use std::{io, process};
-
 
 // lox is a scripting language -> executes directly from source.
 // run code through a command-line interface (CLI) or by providing a path to a script file.
@@ -24,5 +22,3 @@ fn main() -> Result<(), io::Error> {
 
     Ok(())
 }
-
-

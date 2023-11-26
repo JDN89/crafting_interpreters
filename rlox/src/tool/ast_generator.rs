@@ -22,6 +22,8 @@ fn main() {
         writeln!(file, "use crate::token::{{Token, Literal}};")?;
         writeln!(file, "use crate::lox_error::LoxError;")?;
         writeln!(file, "\n#[derive(Debug)]")?;
+
+        // Declare the types of expressions in an enum value
         writeln!(file, "pub enum {} {{", base_name)?;
 
         for type_def in types {
@@ -33,6 +35,36 @@ fn main() {
 
         writeln!(file, "}}\n")?;
 
+        // impl accept method for enum members
+        writeln!(file, "impl {} {{", base_name)?;
+
+        writeln!(
+            file,
+            "    pub fn accept<R>(&self, visitor: &dyn {}Visitor<R>) -> Result<R, LoxError> {{",
+            base_name
+        )?;
+
+        writeln!(file, "match self {{")?;
+
+        for type_def in types {
+            let type_def_parts: Vec<&str> = type_def.split(':').map(|s| s.trim()).collect();
+            let class_name = type_def_parts[0].trim();
+
+            writeln!(
+                file,
+                "    {}::{} ({}) => visitor.visit_{}(&{}),",
+                base_name,
+                class_name,
+                base_name.to_lowercase(),
+                class_name.to_lowercase(),
+                base_name.to_lowercase()
+            )?;
+        }
+        writeln!(file, "    }}\n")?;
+        writeln!(file, "    }}\n")?;
+        writeln!(file, "    }}\n")?;
+
+        // Declare the productions under Expression (each kind of expression)
         for type_def in types {
             let type_def_parts: Vec<&str> = type_def.split(':').map(|s| s.trim()).collect();
             let class_name = type_def_parts[0].trim();
@@ -67,25 +99,6 @@ fn main() {
             )?;
         }
         writeln!(file, "}}")?;
-
-        for type_def in types {
-            let type_def_parts: Vec<&str> = type_def.split(':').map(|s| s.trim()).collect();
-            let class_name = type_def_parts[0].trim();
-
-            writeln!(file, "impl {}{} {{", class_name, base_name)?;
-            writeln!(
-                file,
-                "    pub fn accept<R>(&self, visitor: &dyn {}Visitor<R>) -> Result<R, LoxError> {{",
-                base_name
-            )?;
-            writeln!(
-                file,
-                "        visitor.visit_{}(self)",
-                class_name.to_lowercase()
-            )?;
-            writeln!(file, "    }}\n")?;
-            writeln!(file, "    }}\n")?;
-        }
 
         Ok(())
     }
