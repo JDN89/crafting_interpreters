@@ -4,6 +4,10 @@ use std::{fs, io, process};
 pub use lox_error::*;
 use scanner::Scanner;
 
+use crate::token::Token;
+use crate::token_type::TokenType;
+use crate::{expr::*, LoxError};
+
 mod ast_printer;
 mod expr;
 mod lox_error;
@@ -53,4 +57,33 @@ fn run(source: &String) -> Result<(), LoxError> {
         println!("{:?}", token); // Use {:?} to format the token
     }
     Ok(())
+}
+// test ast printer
+pub fn test_ast_printer() {
+    let expression = Expr::Binary(BinaryExpr {
+        left: Box::new(Expr::Unary(UnaryExpr {
+            operator: Token {
+                token_type: TokenType::Minus,
+                lexeme: "-".to_string(),
+                literal: token::Literal::Integer(123.0),
+                line: 1,
+            },
+            right: Box::new(Expr::Literal(LiteralExpr {
+                value: token::Literal::Integer(123.0),
+            })),
+        })),
+        operator: Token {
+            token_type: TokenType::Star,
+            lexeme: "*".to_string(),
+            literal: token::Literal::Integer(0.0),
+            line: 1,
+        },
+        right: Box::new(Expr::Grouping(GroupingExpr {
+            expression: Box::new(Expr::Literal(LiteralExpr {
+                value: token::Literal::Integer(45.67),
+            })),
+        })),
+    });
+
+    println!("{}", ast_printer::AstPrinter {}.print(&expression).unwrap());
 }

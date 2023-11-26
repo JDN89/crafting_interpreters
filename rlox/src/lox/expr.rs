@@ -1,3 +1,6 @@
+use std::fmt::Display;
+use std::io::Write;
+
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
 
@@ -22,25 +25,33 @@ impl Expr {
 
 #[derive(Debug)]
 pub struct BinaryExpr {
-    left: Box<Expr>,
-    operator: Token,
-    right: Box<Expr>,
+    pub left: Box<Expr>,
+    pub operator: Token,
+    pub right: Box<Expr>,
 }
 
 #[derive(Debug)]
 pub struct GroupingExpr {
-    expression: Box<Expr>,
+    pub expression: Box<Expr>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LiteralExpr {
-    value: Literal,
+    pub value: Literal,
+}
+impl Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::String(s) => write!(f, "{}", s),
+            Self::Integer(i) => write!(f, "{}", i),
+        }
+    }
 }
 
 #[derive(Debug)]
 pub struct UnaryExpr {
-    operator: Token,
-    right: Box<Expr>,
+    pub operator: Token,
+    pub right: Box<Expr>,
 }
 
 pub trait ExprVisitor<R> {

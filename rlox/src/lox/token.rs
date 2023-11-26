@@ -10,10 +10,10 @@ use crate::token_type::TokenType;
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Token {
-    token_type: TokenType,
-    lexeme: String,
-    literal: Literal,
-    line: usize,
+    pub token_type: TokenType,
+    pub lexeme: String,
+    pub literal: Literal,
+    pub line: usize,
 }
 
 #[derive(Debug, Clone)]

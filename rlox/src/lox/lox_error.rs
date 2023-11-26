@@ -1,4 +1,6 @@
 // todo: look up how to create custom errors
+
+#[derive(Debug)]
 pub struct LoxError {
     line: usize,
     location: usize,
