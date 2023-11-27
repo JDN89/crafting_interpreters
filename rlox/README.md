@@ -1,4 +1,13 @@
 
+| Production Rule | Syntax                                             | Description                                           |
+|------------------|----------------------------------------------------|-------------------------------------------------------|
+| expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
+| literal          | `NUMBER \| STRING \| "true" \| "false" \| "nil"` | A literal can be a number, string, true, false, or nil. |
+| grouping         | `("(" expression ")")`                             | A grouping is an expression enclosed in parentheses.   |
+| unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
+| binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
+| operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
+
 # RLOX - ruts implementation of Lox
 Project contains executable for Lox and AST struct generator
 - cargo run --bin lox

@@ -24,7 +24,7 @@ impl Expr {
 
 #[derive(Debug)]
 pub struct BinaryExpr {
-    pub left: Box<Expr>,
+    pub left: Box<Expr>, // left can be: literal/ unary/ grouping/ binary
     pub operator: Token,
     pub right: Box<Expr>,
 }
