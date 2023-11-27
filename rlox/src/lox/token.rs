@@ -2,7 +2,7 @@
 
 // In rust modules are not mapped to the FS like f.e. Java
 // you can declare a module with the mod keyword and have multiple mods in the same file
-// In rust Sub modules must be declared within the parent module -> in our case inside the main.rs
+// In rust Sub modules must be declared within the parent module -> in our case inside the lib.rs
 // file
 
 use crate::token_type::TokenType;

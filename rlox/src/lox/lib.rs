@@ -58,37 +58,3 @@ fn run(source: &String) -> Result<(), LoxError> {
     }
     Ok(())
 }
-// test ast printer
-pub fn test_ast_printer() {
-    let expression = Expr::Binary(BinaryExpr {
-        left: Box::new(Expr::Unary(UnaryExpr {
-            operator: Token {
-                token_type: TokenType::Minus,
-                lexeme: "-".to_string(),
-                literal: Some(crate::token::Literal::Integer(123.0)),
-                line: 1,
-            },
-            right: Box::new(Expr::Literal(LiteralExpr {
-                value: token::Literal::Integer(123.0),
-            })),
-        })),
-        operator: Token {
-            token_type: TokenType::Star,
-            lexeme: "*".to_string(),
-            literal: None,
-            line: 1,
-        },
-        right: Box::new(Expr::Grouping(GroupingExpr {
-            expression: Box::new(Expr::Literal(LiteralExpr {
-                value: token::Literal::Integer(45.67),
-            })),
-        })),
-    });
-
-    println!(
-        "{}",
-        crate::ast_printer::AstPrinter {}
-            .print(&expression)
-            .unwrap()
-    );
-}

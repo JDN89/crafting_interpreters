@@ -7,9 +7,6 @@ use std::{io, process};
 // lox is a scripting language -> executes directly from source.
 // run code through a command-line interface (CLI) or by providing a path to a script file.
 fn main() -> Result<(), io::Error> {
-    //test AST Printer
-
-    _lox::test_ast_printer();
     let args: Vec<String> = args().collect();
 
     // we passed [0] program name, [1] path to file [x > 1] argumets to many
@@ -22,8 +19,6 @@ fn main() -> Result<(), io::Error> {
     } else {
         run_prompt()?;
     }
-
-    //test AST printer
 
     Ok(())
 }

@@ -53,7 +53,7 @@ impl ExprVisitor<String> for AstPrinter {
 //             operator: Token {
 //                 token_type: TokenType::Minus,
 //                 lexeme: "-".to_string(),
-//                 literal: crate::token::Literal::Integer(123.0),
+//                 literal: Some(crate::token::Literal::Integer(123.0)),
 //                 line: 1,
 //             },
 //             right: Box::new(Expr::Literal(LiteralExpr {
@@ -63,7 +63,7 @@ impl ExprVisitor<String> for AstPrinter {
 //         operator: Token {
 //             token_type: TokenType::Star,
 //             lexeme: "*".to_string(),
-//             literal: token::Literal::Integer(0.0),
+//             literal: None,
 //             line: 1,
 //         },
 //         right: Box::new(Expr::Grouping(GroupingExpr {
