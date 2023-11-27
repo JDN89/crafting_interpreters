@@ -62,12 +62,8 @@ impl Scanner {
 
         // add at the end of source code an EOF when is_at_end is true.
         // Not needed but cleaner
-        self.tokens.push(Token::new(
-            Eof,
-            "".to_string(),
-            Literal::String("".to_string()),
-            self.line,
-        ));
+        self.tokens
+            .push(Token::new(Eof, "".to_string(), None, self.line));
         // clone so the caller has ownership of the tokens
         // TODO: check if we really need clone
         Ok(self.tokens.clone())
@@ -185,19 +181,19 @@ impl Scanner {
             None => Token::new(
                 ttype,
                 lexeme.to_string(),
-                Literal::String("".to_string()),
+                Some(Literal::String("".to_string())),
                 self.line,
             ),
             Some(Literal::String(value)) => Token::new(
                 ttype,
                 self.source[self.start + 1..self.current - 1].to_string(),
-                Literal::String(value.to_string()),
+                Some(Literal::String(value.to_string())),
                 self.line,
             ),
             Some(Literal::Integer(value)) => Token::new(
                 ttype,
                 lexeme.to_string(),
-                Literal::Integer(value),
+                Some(Literal::Integer(value)),
                 self.line,
             ),
         };

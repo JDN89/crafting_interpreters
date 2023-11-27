@@ -12,7 +12,7 @@ use crate::token_type::TokenType;
 pub struct Token {
     pub token_type: TokenType,
     pub lexeme: String,
-    pub literal: Literal,
+    pub literal: Option<Literal>,
     pub line: usize,
 }
 
@@ -24,7 +24,12 @@ pub enum Literal {
 
 #[allow(unused, dead_code)]
 impl Token {
-    pub fn new(token_type: TokenType, lexeme: String, literal: Literal, line: usize) -> Self {
+    pub fn new(
+        token_type: TokenType,
+        lexeme: String,
+        literal: Option<Literal>,
+        line: usize,
+    ) -> Self {
         Token {
             token_type,
             lexeme,
