@@ -33,7 +33,7 @@ The lexical phase the scanner broked down the source code and transformed them i
 The AST is constructed based on Grammar rules called productions and represents the hierarchical structure of the language. The grammar rules define how valid sequences of tokens (lexemes) can be assembled into meaningful expressions and statements
 
 - Terminal: lexeme.
-- Non Terminal: reference to another business rule.
+- Non Terminal: reference to another production rule.
 
 The AST is an intermediate representation of the source code and is used for further analysis.
 
@@ -46,6 +46,61 @@ The AST is an intermediate representation of the source code and is used for fur
 | unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
 | binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
 | operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
+
+## Parsing Expressions
+Given a valid sequence of tokens, produce a corresponding syntax tree.
+Given an invalid sequence of tokens, detact any errors and tell the user about their mistakes.
+
+Given a series of tokens we map the tokens to a terminal to figure out which rule could have generated this token.
+We have one issues, right now there is som ambiguity as to how the series of tokens were produced.
+- 6/3-1
+Starting at expression, pick binary.
+For the left-hand expression, pick NUMBER, and use 6.
+For the operator, pick "/".
+For the right-hand expression, pick binary again.
+In that nested binary expression, pick 3 - 1.
+
+Another is:
+
+Starting at expression, pick binary.
+For the left-hand expression, pick binary again.
+In that nested binary expression, pick 6 / 3.
+Back at the outer binary, for the operator, pick "-".
+For the right-hand expression, pick NUMBER, and use 1.
+
+To avoid this we have rules of precedence and Associativity. Precedence determines which operator is evaluated first in an expression containing a mixture of different operators. Associativity determines which operator is evaluated first in a series of the same operator.
+
+| Rule            | Production                                                |
+|-----------------|-----------------------------------------------------------|
+| expression      | → equality ;                                             |
+| equality        | → comparison ( ( "!=" \| "==" ) comparison )* ;         |
+| comparison      | → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;        |
+| term            | → factor ( ( "-" \| "+" ) factor )* ;                    |
+| factor          | → unary ( ( "/" \| "*" ) unary )* ;                      |
+| unary           | → ( "!" \| "-" ) unary \| primary ;                     |
+| primary         | → NUMBER \| STRING \| "true" \| "false" \| "nil"         |
+|                 | \| "(" expression ")" ;                                   |
+
+#### Recursive Descent Parsing
+
+Top-down parser where each nonterminal in the grammar corresponds to a function, and parsing involves calling these functions recursively.
+
+Recursive descent is considered a top-down parser because it starts from the top or outermost grammar rule (here expression) and works its way down into the nested subexpressions before finally reaching the leaves of the syntax tree.
+
+Top-down grammar rules in order of increasing precedence. It’s called “recursive descent” because it walks down the grammar. Confusingly, we also use direction metaphorically when talking about “high” and “low” precedence, but the orientation is reversed. In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
+
+
+| Grammar notation | Code representation                                      |
+|-------------------|----------------------------------------------------------|
+| Terminal          | Code to match and consume a token                        |
+| Nonterminal       | Call to that rule’s function                             |
+| \|                | if or switch statement                                   |
+| * or +            | while or for loop                                       |
+| ?                 | if statement                                            |
+
+The descent is described as “recursive” because when a grammar rule refers to itself—directly or indirectly—that translates to a recursive function call.
+
+
 
 #### Binding or Resulotion
 - identify what each identifier in the source code refers to.
