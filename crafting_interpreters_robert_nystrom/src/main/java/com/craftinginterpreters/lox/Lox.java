@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static com.craftinginterpreters.lox.TokenType.EOF;
+
 // TODO: how to compile, build and execute program
 // place instructions in readme
 
@@ -47,9 +49,13 @@ public class Lox {
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        for (Token token : tokens) {
-            System.out.printf("token: " + token);
-        }
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.parse();
+
+        // Stop her if there was a syntax error
+        if (hadError) return;
+        System.out.println(new AstPrinter().print(expression));
+
     }
 
     static void error(int line, String message) {
@@ -59,5 +65,13 @@ public class Lox {
     private static void report(int line, String where, String message) {
         System.err.println("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
+    }
+
+    static void error(Token token, String message) {
+        if (token.getType() == EOF) {
+            report(token.getLine(), "at end", message);
+        } else {
+            report(token.getLine(), " at," + token.getLexeme() + "'", message);
+        }
     }
 }
