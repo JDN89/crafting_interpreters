@@ -76,7 +76,7 @@ To avoid this we have rules of precedence and Associativity. Precedence determin
 | equality        | → comparison ( ( "!=" \| "==" ) comparison )* ;         |
 | comparison      | → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;        |
 | term            | → factor ( ( "-" \| "+" ) factor )* ;                    |
-| factor          | → unary ( ( "/" \| "*" ) unary )* ;                      |
+| factor          | → unary ( ( "/" \| "\*" ) unary )* ;                      |
 | unary           | → ( "!" \| "-" ) unary \| primary ;                     |
 | primary         | → NUMBER \| STRING \| "true" \| "false" \| "nil"         |
 |                 | \| "(" expression ")" ;                                   |
