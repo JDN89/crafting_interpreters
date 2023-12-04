@@ -4,13 +4,10 @@ use std::{fs, io, process};
 pub use lox_error::*;
 use scanner::Scanner;
 
-use crate::token::Token;
-use crate::token_type::TokenType;
-use crate::{expr::*, LoxError};
-
 mod ast_printer;
 mod expr;
 mod lox_error;
+mod parser;
 mod scanner;
 mod token;
 mod token_type;
