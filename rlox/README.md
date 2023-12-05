@@ -14,9 +14,8 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
-- place breakpoints and go in detail through the code
-- make Literal in Token an option;
-- place ast printer in a unit test?
+- remove #[allow(dead_code, unused_variables)]
+- Add Result <_, LoxError> in parser.rs
 
     pub literal: Literal,
 

@@ -3,6 +3,7 @@ use std::fmt::Display;
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
 
+#[allow(dead_code, unused_variables)]
 #[derive(Debug)]
 pub enum Expr {
     Binary(BinaryExpr),

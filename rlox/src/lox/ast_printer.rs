@@ -5,6 +5,7 @@ pub struct AstPrinter {}
 // method uses the visitor pattern to traverse the expression tree in a depth-first manner.
 // The Expr enum has different variants, such as BinaryExpr, UnaryExpr, LiteralExpr, and GroupingExpr.
 // The accept method of each variant calls the corresponding visit_* method defined in the ExprVisitor trait.
+#[allow(dead_code, unused_variables)]
 impl AstPrinter {
     // pas the whole compolete expression to the print function
     pub fn print(&self, expression: &Expr) -> Result<String, LoxError> {
