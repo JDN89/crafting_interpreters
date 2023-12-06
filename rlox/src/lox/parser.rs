@@ -1,4 +1,5 @@
-use crate::expr::BinaryExpr;
+use crate::expr::{BinaryExpr, LiteralExpr, UnaryExpr};
+use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
 
@@ -31,7 +32,6 @@ impl Parser {
         while self.match_token_types(&[BangEqual, EqualEqual]) {
             let operator = self.previous().unwrap().clone();
             let right = self.comparison();
-            // todo! () : create build function for BinaryExpr
             expr = Expr::Binary(BinaryExpr {
                 left: Box::new(expr),
                 operator,
@@ -43,15 +43,86 @@ impl Parser {
     }
 
     // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-    fn comparison(&self) -> Expr {
+    fn comparison(&mut self) -> Expr {
+        let mut expr = self.term();
+
+        while self.match_token_types(&[Greater, GreaterEqual, Less, LessEqual]) {
+            let operator = self.previous().unwrap().clone();
+            let right = self.term();
+            expr = Expr::Binary(BinaryExpr {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            })
+        }
+        expr
+    }
+
+    // term           → factor ( ( "-" | "+" ) factor )* ;
+    fn term(&mut self) -> Expr {
+        let mut expr = self.factor();
+        while self.match_token_types(&[Minus, Plus]) {
+            let operator = self.previous().unwrap().clone();
+            let right = self.factor();
+
+            expr = Expr::Binary(BinaryExpr {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            })
+        }
+        expr
+    }
+
+    // factor         → unary ( ( "/" | "*" ) unary )* ;
+    fn factor(&mut self) -> Expr {
+        let mut expr = self.unary();
+
+        while self.match_token_types(&[Slash, Star]) {
+            let operator = self.previous().unwrap().clone();
+            let right = self.unary();
+
+            expr = Expr::Binary(BinaryExpr {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            })
+        }
+        expr
+    }
+
+    // unary          → ( "!" | "-" ) unary | primary ;
+    fn unary(&mut self) -> Expr {
+        if self.match_token_types(&[Bang, Minus]) {
+            let operator = self.previous().unwrap().clone();
+            let right = self.unary();
+            return Expr::Unary(UnaryExpr {
+                operator,
+                right: Box::new(right),
+            });
+        }
+
+        return self.primary();
+    }
+
+    // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+    fn primary(&mut self) -> Expr {
+        if self.match_token_types(&[False]) {
+            return Expr::Literal(LiteralExpr {
+                // TODO transform literal to also contain booleans!
+                value: Literal::String("false".to_string()),
+            });
+        }
+
         todo!()
     }
 
+    // returning the just consumed token makes it easier to use match_token_types
     fn previous(&self) -> Option<&Token> {
         self.tokens.get(self.current - 1)
     }
 
-    fn match_token_types(&mut self, token_types: &[crate::token_type::TokenType; 2]) -> bool {
+    fn match_token_types(&mut self, token_types: &[crate::token_type::TokenType]) -> bool {
         let mut found_match = false;
 
         for ttype in token_types {

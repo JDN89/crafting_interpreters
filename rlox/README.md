@@ -14,8 +14,10 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
+- TODO transform literal to also contain booleans!
 - remove #[allow(dead_code, unused_variables)]
 - Add Result <_, LoxError> in parser.rs
+
 
     pub literal: Literal,
 
