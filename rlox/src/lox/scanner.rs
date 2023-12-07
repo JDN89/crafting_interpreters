@@ -116,7 +116,6 @@ impl Scanner {
                 }
             }
 
-            // fix comments
             '/' => {
                 if self.is_match('/') {
                     // A comment goes until the end of the line
@@ -196,6 +195,16 @@ impl Scanner {
                 Some(Literal::Integer(value)),
                 self.line,
             ),
+            Some(Literal::True) => {
+                Token::new(ttype, lexeme.to_owned(), Some(Literal::True), self.line)
+            }
+
+            Some(Literal::False) => {
+                Token::new(ttype, lexeme.to_owned(), Some(Literal::False), self.line)
+            }
+            Some(Literal::Nil) => {
+                Token::new(ttype, lexeme.to_owned(), Some(Literal::Nil), self.line)
+            }
         };
         let tokens = self.tokens.push(token);
         tokens
@@ -292,8 +301,13 @@ impl Scanner {
         match ttype {
             None => self.add_token(Identifier),
 
-            // TODO: get rid of clone
-            Some(value) => self.add_token(value.clone()),
+            // TODO match the value and create Literal::True,false and nil from it
+            Some(value) => match value {
+                False => self.add_token_object(False, Some(Literal::False)),
+                True => self.add_token_object(True, Some(Literal::True)),
+                Nil => self.add_token_object(Nil, Some(Literal::Nil)),
+                _ => self.add_token(value.clone()),
+            },
         }
         Ok(())
     }

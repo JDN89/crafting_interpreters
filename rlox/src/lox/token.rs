@@ -20,6 +20,9 @@ pub struct Token {
 pub enum Literal {
     String(String),
     Integer(f64),
+    True,
+    False,
+    Nil,
 }
 
 #[allow(unused, dead_code)]

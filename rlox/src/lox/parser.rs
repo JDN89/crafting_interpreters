@@ -12,11 +12,8 @@ struct Parser {
 
 #[allow(dead_code, unused_variables)]
 impl Parser {
-    fn build_parser() -> Self {
-        Parser {
-            tokens: Vec::new(),
-            current: 0,
-        }
+    fn build_parser(tokens: Vec<Token>) -> Parser {
+        Parser { tokens, current: 0 }
     }
 
     // expression     → equality ;
@@ -109,12 +106,26 @@ impl Parser {
     fn primary(&mut self) -> Expr {
         if self.match_token_types(&[False]) {
             return Expr::Literal(LiteralExpr {
-                // TODO transform literal to also contain booleans!
-                value: Literal::String("false".to_string()),
+                value: Literal::False,
             });
         }
-
-        todo!()
+        if self.match_token_types(&[True]) {
+            return Expr::Literal(LiteralExpr {
+                value: Literal::True,
+            });
+        }
+        if self.match_token_types(&[Nil]) {
+            return Expr::Literal(LiteralExpr {
+                value: Literal::Nil,
+            });
+        }
+        if self.match_token_types(&[Number, String]) {
+            return Expr::Literal(LiteralExpr {
+                value: self.previous().unwrap().literal.clone().unwrap(),
+            });
+        } else {
+            todo!()
+        }
     }
 
     // returning the just consumed token makes it easier to use match_token_types

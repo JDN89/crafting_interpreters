@@ -42,8 +42,11 @@ pub struct LiteralExpr {
 impl Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::String(s) => write!(f, "{}", s),
-            Self::Integer(i) => write!(f, "{}", i),
+            Literal::String(s) => write!(f, "{}", s),
+            Literal::Integer(i) => write!(f, "{}", i),
+            Literal::True => write!(f, "true"),
+            Literal::False => write!(f, "false"),
+            Literal::Nil => write!(f, "nill"),
         }
     }
 }
