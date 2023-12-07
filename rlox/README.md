@@ -14,7 +14,7 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
-- TODO transform literal to also contain booleans!
+- after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
 - remove #[allow(dead_code, unused_variables)]
 - Add Result <_, LoxError> in parser.rs
 
