@@ -14,12 +14,11 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
-- why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression.
+- why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression. Should I create report parse_error_fn and report the parse error on the place where we call it in case of an error? Create seperate ParseErro Struct? or place SourceCodeError and ParseError in LoxError enum? *look into*
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
 - better error reporting, add character in source code that failed : [line 0, position 5] Error: Unexpected character
 - after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
 - remove #[allow(dead_code, unused_variables)]
-
 
 # Learned java
 - post increment is first using the variable and then adding to it charAt(i++), gets the char at index i and then increments the index
