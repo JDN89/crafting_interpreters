@@ -1,4 +1,4 @@
-use crate::LoxError;
+use crate::{LoxError, Loc};
 use crate::expr::{BinaryExpr, LiteralExpr, UnaryExpr, GroupingExpr};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
@@ -182,7 +182,7 @@ impl Parser {
         }
 
         let curr_token = self.peek().unwrap(); 
-      Err(LoxError::new(curr_token.line,self.current , arg))
+      Err(LoxError::new(curr_token.line, Loc::Lexeme(curr_token.lexeme.to_owned()), arg))
 
     }
 }

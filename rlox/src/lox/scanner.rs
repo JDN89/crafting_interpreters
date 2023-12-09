@@ -1,3 +1,4 @@
+use crate::lox_error::Loc;
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
 use crate::token_type::TokenType::{self, *};
@@ -144,7 +145,7 @@ impl Scanner {
                 } else {
                     return Err(LoxError::new(
                         self.line,
-                        self.current,
+                        Loc::Pos(self.current),
                         "Unexpected character",
                     ));
                 }
@@ -159,7 +160,7 @@ impl Scanner {
         let current_character = self.source.chars().nth(self.current).ok_or_else(|| {
             LoxError::new(
                 self.line,
-                self.current,
+                Loc::Pos(self.current),
                 "Couldn't consume character at this position",
             )
         })?;
@@ -237,7 +238,11 @@ impl Scanner {
             self.advance()?;
         }
         if self.is_at_end() {
-            return Err(LoxError::new(self.line, self.current, "Unterminated tring"));
+            return Err(LoxError::new(
+                self.line,
+                Loc::Pos(self.current),
+                "Unterminated tring",
+            ));
         }
         self.advance()?; // consume the closing ".
 
@@ -277,7 +282,7 @@ impl Scanner {
             Err(_) => {
                 return Err(LoxError::new(
                     self.line,
-                    self.current,
+                    Loc::Pos(self.current),
                     "Couldn't parse integer",
                 ))
             }
@@ -346,7 +351,7 @@ impl Scanner {
                 None => {
                     return Err(LoxError::new(
                         self.line,
-                        self.current,
+                        Loc::Pos(self.current),
                         "Unterminated comment",
                     ));
                 }
