@@ -19,8 +19,6 @@ Project contains executable for Lox and AST struct generator
 - Add Result <_, LoxError> in parser.rs
 
 
-    pub literal: Literal,
-
 # Learned java
 - post increment is first using the variable and then adding to it charAt(i++), gets the char at index i and then increments the index
 - pre increment means incrementing the variable before using it
