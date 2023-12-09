@@ -17,6 +17,9 @@ Project contains executable for Lox and AST struct generator
 - after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
 - remove #[allow(dead_code, unused_variables)]
 - better error reporting, add character in source code that failed : [line 0, position 5] Error: Unexpected character
+- why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression.
+- check equality, behaviour is weird? >5=6=7 >Ok("5")
+
 
 # Learned java
 - post increment is first using the variable and then adding to it charAt(i++), gets the char at index i and then increments the index

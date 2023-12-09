@@ -1,20 +1,24 @@
-use crate::{LoxError, Loc};
-use crate::expr::{BinaryExpr, LiteralExpr, UnaryExpr, GroupingExpr};
+use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
+use crate::{ Loc, LoxError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
-struct Parser {
+pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
 }
 
 #[allow(dead_code, unused_variables)]
 impl Parser {
-    fn build_parser(tokens: Vec<Token>) -> Parser {
-        Parser { tokens, current: 0 }
+    pub fn build_parser(tokens: Vec<Token>) -> Parser {
+        Parser { tokens , current: 0 }
+    }
+
+    pub fn parse (&mut self) -> Result<Expr,LoxError> {
+        Ok(self.expression())?
     }
 
     // expression     → equality ;
@@ -41,7 +45,7 @@ impl Parser {
     }
 
     // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-    fn comparison(&mut self) -> Result<Expr,LoxError> {
+    fn comparison(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.term()?;
 
         while self.match_token_types(&[Greater, GreaterEqual, Less, LessEqual]) {
@@ -57,7 +61,7 @@ impl Parser {
     }
 
     // term           → factor ( ( "-" | "+" ) factor )* ;
-    fn term(&mut self) -> Result<  Expr,LoxError> {
+    fn term(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.factor()?;
         while self.match_token_types(&[Minus, Plus]) {
             let operator = self.previous().unwrap().clone();
@@ -73,7 +77,7 @@ impl Parser {
     }
 
     // factor         → unary ( ( "/" | "*" ) unary )* ;
-    fn factor(&mut self) -> Result< Expr, LoxError> {
+    fn factor(&mut self) -> Result<Expr, LoxError> {
         let mut expr = self.unary()?;
 
         while self.match_token_types(&[Slash, Star]) {
@@ -90,7 +94,7 @@ impl Parser {
     }
 
     // unary          → ( "!" | "-" ) unary | primary ;
-    fn unary(&mut self) -> Result< Expr, LoxError> {
+    fn unary(&mut self) -> Result<Expr, LoxError> {
         if self.match_token_types(&[Bang, Minus]) {
             let operator = self.previous().unwrap().clone();
             let right = self.unary()?;
@@ -104,7 +108,7 @@ impl Parser {
     }
 
     // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
-    fn primary(&mut self) -> Result<Expr,LoxError> {
+    fn primary(&mut self) -> Result<Expr, LoxError> {
         if self.match_token_types(&[False]) {
             return Ok(Expr::Literal(LiteralExpr {
                 value: Literal::False,
@@ -124,16 +128,22 @@ impl Parser {
             return Ok(Expr::Literal(LiteralExpr {
                 value: self.previous().unwrap().literal.clone().unwrap(),
             }));
-
         }
 
         if self.match_token_types(&[LeftParen]) {
-                let expr = self.expression()?;
-                self.consume(RightParen, "expect ')' after expression")?;
-                return Ok( Expr::Grouping(GroupingExpr{expression: Box::new(expr)}));
-            } 
+            let expr = self.expression()?;
+            self.consume(RightParen, "expect ')' after expression")?;
+            return Ok(Expr::Grouping(GroupingExpr {
+                expression: Box::new(expr),
+            }));
+        }
+        // If none of the cases in there match, it means we are sitting on a token that can’t start an expression. We need to handle that error too.
         else {
-            todo!()
+            Err(LoxError::new(
+                self.peek().unwrap().line,
+                Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
+                "Expcted expression.",
+            ))
         }
     }
 
@@ -178,52 +188,52 @@ impl Parser {
 
     fn consume(&mut self, right_paren: TokenType, arg: &str) -> Result<&Token, LoxError> {
         if self.check(&right_paren) {
-         return Ok(self.advance())  ;
+            return Ok(self.advance());
         }
 
-        let curr_token = self.peek().unwrap(); 
-      Err(LoxError::new(curr_token.line, Loc::Lexeme(curr_token.lexeme.to_owned()), arg))
-
+        let curr_token = self.peek().unwrap();
+        Err(LoxError::new(
+            curr_token.line,
+            Loc::Lexeme(curr_token.lexeme.to_owned()),
+            arg,
+        ))
     }
 
-    fn synchronize(&mut self) -> Result<(),LoxError> {
+    fn synchronize(&mut self) -> Result<(), LoxError> {
         self.advance();
         while !self.is_at_end() {
             if self.previous().unwrap().token_type == Semicolon {
                 return Ok(());
-                
             }
-         match self.peek().unwrap().token_type {
-            TokenType::Class => {
-                // Implement the logic for handling 'Class'
+            match self.peek().unwrap().token_type {
+                TokenType::Class => {
+                    // Implement the logic for handling 'Class'
+                }
+                TokenType::Fun => {
+                    // Implement the logic for handling 'Fun'
+                }
+                TokenType::Var => {
+                    // Implement the logic for handling 'Var'
+                }
+                TokenType::For => {
+                    // Implement the logic for handling 'For'
+                }
+                TokenType::If => {
+                    // Implement the logic for handling 'If'
+                }
+                TokenType::While => {
+                    // Implement the logic for handling 'While'
+                }
+                TokenType::Print => {
+                    // Implement the logic for handling 'Print'
+                }
+                TokenType::Return => {
+                    // Implement the logic for handling 'Return'
+                }
+                _ => unreachable!(), // Marking other cases as unreachable
             }
-            TokenType::Fun => {
-                // Implement the logic for handling 'Fun'
-            }
-            TokenType::Var => {
-                // Implement the logic for handling 'Var'
-            }
-            TokenType::For => {
-                // Implement the logic for handling 'For'
-            }
-            TokenType::If => {
-                // Implement the logic for handling 'If'
-            }
-            TokenType::While => {
-                // Implement the logic for handling 'While'
-            }
-            TokenType::Print => {
-                // Implement the logic for handling 'Print'
-            }
-            TokenType::Return => {
-                // Implement the logic for handling 'Return'
-            }
-            _ => unreachable!(), // Marking other cases as unreachable
-        }
             self.advance();
-            
         }
         Ok(())
     }
-
 }

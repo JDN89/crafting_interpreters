@@ -1,8 +1,10 @@
 use std::io::{BufRead, Write};
 use std::{fs, io, process};
 
+use ast_printer::AstPrinter;
 pub use lox_error::*;
 use scanner::Scanner;
+use parser::Parser;
 
 mod ast_printer;
 mod expr;
@@ -50,6 +52,12 @@ pub fn run_prompt() -> Result<(), io::Error> {
 fn run(source: &String) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;
+    let mut  parser = Parser::build_parser(tokens.clone());
+    let ast = parser.parse()?;
+    let ast_printer = AstPrinter{};
+    let expr =ast_printer.print(&ast);
+    println!("{:?}",expr);
+
     for token in tokens {
         println!("{:?}", token); // Use {:?} to format the token
     }
