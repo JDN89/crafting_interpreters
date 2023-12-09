@@ -181,8 +181,8 @@ impl Parser {
          return Ok(self.advance())  ;
         }
 
-        let curr_token = self.tokens.get(self.current).unwrap();
-      Err(  LoxError::new(curr_token.line,self.current , arg))
+        let curr_token = self.peek().unwrap(); 
+      Err(LoxError::new(curr_token.line,self.current , arg))
 
     }
 }
