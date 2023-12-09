@@ -185,4 +185,45 @@ impl Parser {
       Err(LoxError::new(curr_token.line, Loc::Lexeme(curr_token.lexeme.to_owned()), arg))
 
     }
+
+    fn synchronize(&mut self) -> Result<(),LoxError> {
+        self.advance();
+        while !self.is_at_end() {
+            if self.previous().unwrap().token_type == Semicolon {
+                return Ok(());
+                
+            }
+         match self.peek().unwrap().token_type {
+            TokenType::Class => {
+                // Implement the logic for handling 'Class'
+            }
+            TokenType::Fun => {
+                // Implement the logic for handling 'Fun'
+            }
+            TokenType::Var => {
+                // Implement the logic for handling 'Var'
+            }
+            TokenType::For => {
+                // Implement the logic for handling 'For'
+            }
+            TokenType::If => {
+                // Implement the logic for handling 'If'
+            }
+            TokenType::While => {
+                // Implement the logic for handling 'While'
+            }
+            TokenType::Print => {
+                // Implement the logic for handling 'Print'
+            }
+            TokenType::Return => {
+                // Implement the logic for handling 'Return'
+            }
+            _ => unreachable!(), // Marking other cases as unreachable
+        }
+            self.advance();
+            
+        }
+        Ok(())
+    }
+
 }
