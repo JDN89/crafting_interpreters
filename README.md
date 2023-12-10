@@ -100,17 +100,23 @@ Top-down grammar rules in order of increasing precedence. It’s called “recur
 
 The descent is described as “recursive” because when a grammar rule refers to itself—directly or indirectly—that translates to a recursive function call.
 
+### Panic mode error handling:
+We need to report as many seperate errors whilst avoiding reporting errors that are the consequence of an earlier reported error - cascading errors. We do this through discarding the tokens until we find a production rule that matches the token stream - *synchronization*. Synchronization involves discarding input tokens until a recognizable point in the input stream is reached, allowing the parser to reestablish a valid state for parsing. This helps avoid the propagation of errors throughout the parsing process.
 
+## Evaluating Expressions
+evaluate an expression and prodcure a value. Values are created by literals, computed by expressions and stored in a variable.
+We need to be able to discern which type of value we're dealing with at runtime. + operator can add to numbers or concatenate two strings.
+*Literal* is a fixed value in the source code, this produces a value. A *value* is a representation of data during the excution of a program __runtime__. Values are dynamic and can change during the runtime of a program
 
-#### Binding or Resulotion
+## Binding or Resulotion
 - identify what each identifier in the source code refers to.
   - local variable, function,...
   - `Scope` also ~ an important role in this stage
   - match `identifier` with the corresponding `declariation`
-#### Type checking 
+## Type checking 
 - if the language is statically typed.
 
-#### Semantic information storage: 
+## Semantic information storage: 
 - The AST is analyzed and all the info (variables, functions, scope,...) is stored into an `Intermediate Representation`
   - This is a lower level representation of the code (with still a higher level structure)
     - maintains control flow, data flow and relationships between different parts of the code.
@@ -118,7 +124,7 @@ The descent is described as “recursive” because when a grammar rule refers t
   - allows various `Optimizations`
   - THE BACKEND THAT FOCUSES ON TRANSFORMING THE IR INTO MACHINE CODE FOR THE TARGET ARCHITECTURE
 
-#### Code Generation
+## Code Generation
 - `Native machine code` binary code that a specific machine can execute
 - `Bytecode for a VM`: 
   - VM interpreters the bytecode a runtime
