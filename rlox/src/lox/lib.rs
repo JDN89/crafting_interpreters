@@ -13,6 +13,7 @@ mod parser;
 mod scanner;
 mod token;
 mod token_type;
+mod interpreter;
 
 // possible need of converson to Box<dyn Error>
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {

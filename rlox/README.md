@@ -14,6 +14,7 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
+- return literal value and create a Literal::Bool(boolean)
 - why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression. Should I create report parse_error_fn and report the parse error on the place where we call it in case of an error? Create seperate ParseErro Struct? or place SourceCodeError and ParseError in LoxError enum? *look into*
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
 - better error reporting, add character in source code that failed : [line 0, position 5] Error: Unexpected character
