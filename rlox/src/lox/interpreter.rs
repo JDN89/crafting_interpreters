@@ -1,12 +1,13 @@
 use crate::lox_error::LoxError;
 use crate::{expr::*, token::Literal};
-use crate::{token_type::*, Loc};
+use crate::token_type::*;
 
 #[derive(Debug)]
 struct Interpreter {}
 
 #[allow(dead_code, unused_variables)]
 impl ExprVisitor<Literal> for Interpreter {
+
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
         todo!()
     }
@@ -27,8 +28,6 @@ impl ExprVisitor<Literal> for Interpreter {
 
         if expr.operator.token_type == TokenType::Minus {
             // in case of minus the subExpression must be a number
-            //TODO: if it's not a number should we throw an error?
-
             let result = match right {
                 Literal::Integer(number) => Ok(Literal::Integer(-number)),
                 _ => Ok(Literal::Nil),
@@ -37,15 +36,11 @@ impl ExprVisitor<Literal> for Interpreter {
         }
 
         if expr.operator.token_type == TokenType::Bang {
-            // TODO: return literal value and craete a Literal::Bool(boolean)
             let bool = self.is_truthy(right);
             return Ok(Literal::Boolean(bool));
         }
-        //unreachable!()
-        else {
-            //TODO: Convert to a LoxError::Interpreter error later
-            Err(LoxError::new(0, Loc::Pos(0), "unreachable code"))
-        }
+        // unreachable
+        return Ok(Literal::Nil);
     }
 }
 
