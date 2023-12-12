@@ -30,6 +30,7 @@ Project contains executable for Lox and AST struct generator
 - I put a field of a struct in an enum, because it could be of type String or u32. Maybe I'll turn it into a generic later.
 - tubo fish ::<u32>(), it looks like a fish, moves like a fish and parse like a parser.
 -  dyn: Short for "dynamic," this keyword is used to indicate that we're working with trait objects, where the concrete type implementing the trait is known only at runtime.
+- In rust modules are not mapped to the FS like f.e. Java. You can declare a module with the mod keyword and have multiple mods in the same file. In rust Sub modules must be declared within the parent module -> in our case inside the lib.rs
 
 ## Error handling
 - ? propagates the error to the caller of the function, so unwrap OR return ERR(From::from(err)). In our case the cli is the caller of main
