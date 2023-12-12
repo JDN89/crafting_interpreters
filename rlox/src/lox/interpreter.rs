@@ -1,17 +1,12 @@
-use crate::{expr::*, token::Literal};
 use crate::lox_error::LoxError;
-use crate::{token_type::*, Loc, expr};
-
-
+use crate::{expr::*, token::Literal};
+use crate::{token_type::*, Loc};
 
 #[derive(Debug)]
-struct Interpreter {
-}
+struct Interpreter {}
 
-
-#[allow(dead_code,unused_variables)]
-impl ExprVisitor<Literal> for Interpreter{
-
+#[allow(dead_code, unused_variables)]
+impl ExprVisitor<Literal> for Interpreter {
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
         todo!()
     }
@@ -26,53 +21,45 @@ impl ExprVisitor<Literal> for Interpreter{
     }
 
     fn visit_unary(&self, expr: &UnaryExpr) -> Result<Literal, LoxError> {
-        
         // first evauluate the operand subexpression before we evaluate the unary operator
         // recursevly walk the AST
-       let right = self.evaluate(&expr.right)?;
+        let right = self.evaluate(&expr.right)?;
 
         if expr.operator.token_type == TokenType::Minus {
-            // in case of minus the subExpression must be a number 
+            // in case of minus the subExpression must be a number
             //TODO: if it's not a number should we throw an error?
-            
-            match right {
+
+            let result = match right {
                 Literal::Integer(number) => Ok(Literal::Integer(-number)),
                 _ => Ok(Literal::Nil),
-                
             };
+            return result;
         }
 
         if expr.operator.token_type == TokenType::Bang {
             // TODO: return literal value and craete a Literal::Bool(boolean)
-            return !self.is_truthy(right)?;
-
-
+            let bool = self.is_truthy(right);
+            return Ok(Literal::Boolean(bool));
         }
-
         //unreachable!()
         else {
             //TODO: Convert to a LoxError::Interpreter error later
-            Err(LoxError::new(0, Loc::Pos(0),"unreachable code"))
+            Err(LoxError::new(0, Loc::Pos(0), "unreachable code"))
         }
-        
-
     }
-
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
 // pattern
 impl Interpreter {
     fn evaluate(&self, expression: &Box<Expr>) -> Result<Literal, LoxError> {
-        return expression.accept(self)
+        return expression.accept(self);
     }
-    fn is_truthy(&self, right: Literal) -> Result<bool, LoxError> {
+    fn is_truthy(&self, right: Literal) -> bool {
         match right {
-            Literal::Nil => Ok(false),
-            Literal::False => Ok(false),
-            _ => Ok(true)
-
+            Literal::Nil => false,
+            Literal::Boolean(false) => false,
+            _ => true,
         }
-
     }
 }

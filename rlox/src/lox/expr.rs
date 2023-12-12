@@ -44,8 +44,7 @@ impl Display for Literal {
         match self {
             Literal::String(s) => write!(f, "{}", s),
             Literal::Integer(i) => write!(f, "{}", i),
-            Literal::True => write!(f, "true"),
-            Literal::False => write!(f, "false"),
+            Literal::Boolean(b) => write!(f, "{}",b),
             Literal::Nil => write!(f, "nill"),
         }
     }

@@ -111,12 +111,12 @@ impl Parser {
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if self.match_token_types(&[False]) {
             return Ok(Expr::Literal(LiteralExpr {
-                value: Literal::False,
+                value: Literal::Boolean(false),
             }));
         }
         if self.match_token_types(&[True]) {
             return Ok(Expr::Literal(LiteralExpr {
-                value: Literal::True,
+                value: Literal::Boolean(true),
             }));
         }
         if self.match_token_types(&[Nil]) {

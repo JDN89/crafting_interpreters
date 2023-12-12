@@ -196,13 +196,10 @@ impl Scanner {
                 Some(Literal::Integer(value)),
                 self.line,
             ),
-            Some(Literal::True) => {
-                Token::new(ttype, lexeme.to_owned(), Some(Literal::True), self.line)
+            Some(Literal::Boolean(value)) => {
+                Token::new(ttype, lexeme.to_owned(), Some(Literal::Boolean(value)), self.line)
             }
 
-            Some(Literal::False) => {
-                Token::new(ttype, lexeme.to_owned(), Some(Literal::False), self.line)
-            }
             Some(Literal::Nil) => {
                 Token::new(ttype, lexeme.to_owned(), Some(Literal::Nil), self.line)
             }
@@ -305,11 +302,9 @@ impl Scanner {
         let ttype = KEYWORDS.get(&txt);
         match ttype {
             None => self.add_token(Identifier),
-
-            // TODO match the value and create Literal::True,false and nil from it
             Some(value) => match value {
-                False => self.add_token_object(False, Some(Literal::False)),
-                True => self.add_token_object(True, Some(Literal::True)),
+                False => self.add_token_object(False, Some(Literal::Boolean(false))),
+                True => self.add_token_object(True, Some(Literal::Boolean(true))),
                 Nil => self.add_token_object(Nil, Some(Literal::Nil)),
                 _ => self.add_token(value.clone()),
             },
