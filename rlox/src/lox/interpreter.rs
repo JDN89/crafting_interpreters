@@ -24,8 +24,7 @@ impl ExprVisitor<Literal> for Interpreter {
                 // Handle other BinaryExpr operators later
                 _ => todo!(),
             }
-        } 
-        else if let (Literal::String(mut left_value), Literal::String(right_value)) =
+        } else if let (Literal::String(mut left_value), Literal::String(right_value)) =
             (left, right)
         {
             match expr.operator.token_type {
