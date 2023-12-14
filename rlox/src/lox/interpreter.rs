@@ -14,39 +14,16 @@ impl ExprVisitor<Literal> for Interpreter {
         let left = self.evaluate(&expr.left)?;
         let right = self.evaluate(&expr.right)?;
 
-        match expr.operator.token_type {
-            TokenType::Minus => {
-                if let (Literal::Integer(left_value), Literal::Integer(right_value)) = (left, right)
-                {
-                    let result = left_value - right_value;
-                    return Ok(Literal::Integer(result));
-                }
-                else {
-                    // return interpreter error
-                    todo!()
-                }
+        if let (Literal::Integer(left_value), Literal::Integer(right_value)) = (left, right) {
+            match expr.operator.token_type {
+                TokenType::Minus => Ok(Literal::Integer(left_value - right_value)),
+                TokenType::Slash => Ok(Literal::Integer(left_value / right_value)),
+                TokenType::Star => Ok(Literal::Integer(left_value * right_value)),
+                // Handle other BinaryExpr operators later
+                _ => todo!(),
             }
-            TokenType::Slash => {
-                if let (Literal::Integer(left), Literal::Integer(right)) = (left,right) {
-                    let devision = left / right;
-                    return Ok(Literal::Integer(devision));
-                }
-                else {
-                    todo!()
-                }
-            }
-            TokenType::Star => {
-
-                if let (Literal::Integer(left), Literal::Integer(right)) = (left,right) {
-                    let result = left * right;
-                    return Ok(Literal::Integer(result));
-                }
-                else {
-                    todo!()
-                }
-            }
-            // handle the other BinaryExpr operators later
-            _ => todo!()
+        } else {
+            return Ok(Literal::Nil);
         }
     }
 
@@ -66,14 +43,10 @@ impl ExprVisitor<Literal> for Interpreter {
 
         if expr.operator.token_type == TokenType::Minus {
             // in case of minus the subExpression must be a number
-            let result = match right {
-                Literal::Integer(number) => Ok(Literal::Integer(-number)),
-                _ => Ok(Literal::Nil),
-            };
-            return result;
-        }
-
-        if expr.operator.token_type == TokenType::Bang {
+            if let Literal::Integer(number) = right {
+                return Ok(Literal::Integer(-number));
+            }
+        } else if expr.operator.token_type == TokenType::Bang {
             let bool = self.is_truthy(right);
             return Ok(Literal::Boolean(bool));
         }
@@ -90,8 +63,7 @@ impl Interpreter {
     }
     fn is_truthy(&self, right: Literal) -> bool {
         match right {
-            Literal::Nil => false,
-            Literal::Boolean(false) => false,
+            Literal::Nil  | Literal::Boolean(false) => false,
             _ => true,
         }
     }
