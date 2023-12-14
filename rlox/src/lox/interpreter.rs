@@ -11,15 +11,29 @@ impl ExprVisitor<Literal> for Interpreter {
     // chapter
 
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
+        // evaluate the opareands before executing the Bin operator
         let left = self.evaluate(&expr.left)?;
         let right = self.evaluate(&expr.right)?;
 
-        if let (Literal::Integer(left_value), Literal::Integer(right_value)) = (left, right) {
+        if let (Literal::Integer(left_value), Literal::Integer(right_value)) = (&left, &right) {
             match expr.operator.token_type {
                 TokenType::Minus => Ok(Literal::Integer(left_value - right_value)),
                 TokenType::Slash => Ok(Literal::Integer(left_value / right_value)),
                 TokenType::Star => Ok(Literal::Integer(left_value * right_value)),
+                TokenType::Plus => Ok(Literal::Integer(left_value + right_value)),
                 // Handle other BinaryExpr operators later
+                _ => todo!(),
+            }
+        } 
+        else if let (Literal::String(mut left_value), Literal::String(right_value)) =
+            (left, right)
+        {
+            match expr.operator.token_type {
+                TokenType::Plus => {
+                    left_value.push_str(&right_value);
+
+                    return Ok(Literal::String(left_value));
+                }
                 _ => todo!(),
             }
         } else {
@@ -42,7 +56,6 @@ impl ExprVisitor<Literal> for Interpreter {
         let right = self.evaluate(&expr.right)?;
 
         if expr.operator.token_type == TokenType::Minus {
-            // in case of minus the subExpression must be a number
             if let Literal::Integer(number) = right {
                 return Ok(Literal::Integer(-number));
             }
@@ -63,7 +76,7 @@ impl Interpreter {
     }
     fn is_truthy(&self, right: Literal) -> bool {
         match right {
-            Literal::Nil  | Literal::Boolean(false) => false,
+            Literal::Nil | Literal::Boolean(false) => false,
             _ => true,
         }
     }
