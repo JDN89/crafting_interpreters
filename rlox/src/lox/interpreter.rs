@@ -1,15 +1,53 @@
 use crate::lox_error::LoxError;
-use crate::{expr::*, token::Literal};
 use crate::token_type::*;
+use crate::{expr::*, token::Literal};
 
 #[derive(Debug)]
 struct Interpreter {}
 
 #[allow(dead_code, unused_variables)]
 impl ExprVisitor<Literal> for Interpreter {
+    // we start with the arithimic operators and cover the other binary operators in a later
+    // chapter
 
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
-        todo!()
+        let left = self.evaluate(&expr.left)?;
+        let right = self.evaluate(&expr.right)?;
+
+        match expr.operator.token_type {
+            TokenType::Minus => {
+                if let (Literal::Integer(left_value), Literal::Integer(right_value)) = (left, right)
+                {
+                    let result = left_value - right_value;
+                    return Ok(Literal::Integer(result));
+                }
+                else {
+                    // return interpreter error
+                    todo!()
+                }
+            }
+            TokenType::Slash => {
+                if let (Literal::Integer(left), Literal::Integer(right)) = (left,right) {
+                    let devision = left / right;
+                    return Ok(Literal::Integer(devision));
+                }
+                else {
+                    todo!()
+                }
+            }
+            TokenType::Star => {
+
+                if let (Literal::Integer(left), Literal::Integer(right)) = (left,right) {
+                    let result = left * right;
+                    return Ok(Literal::Integer(result));
+                }
+                else {
+                    todo!()
+                }
+            }
+            // handle the other BinaryExpr operators later
+            _ => todo!()
+        }
     }
 
     // To evaluate the grouping expression itself, we recursively evaluate that subexpression and return it.

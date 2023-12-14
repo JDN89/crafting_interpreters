@@ -196,9 +196,12 @@ impl Scanner {
                 Some(Literal::Integer(value)),
                 self.line,
             ),
-            Some(Literal::Boolean(value)) => {
-                Token::new(ttype, lexeme.to_owned(), Some(Literal::Boolean(value)), self.line)
-            }
+            Some(Literal::Boolean(value)) => Token::new(
+                ttype,
+                lexeme.to_owned(),
+                Some(Literal::Boolean(value)),
+                self.line,
+            ),
 
             Some(Literal::Nil) => {
                 Token::new(ttype, lexeme.to_owned(), Some(Literal::Nil), self.line)

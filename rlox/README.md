@@ -14,7 +14,7 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
-- return literal value and create a Literal::Bool(boolean)
+- see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
 - why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression. Should I create report parse_error_fn and report the parse error on the place where we call it in case of an error? Create seperate ParseErro Struct? or place SourceCodeError and ParseError in LoxError enum? *look into*
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
 - better error reporting, add character in source code that failed : [line 0, position 5] Error: Unexpected character
@@ -31,6 +31,10 @@ Project contains executable for Lox and AST struct generator
 - tubo fish ::<u32>(), it looks like a fish, moves like a fish and parse like a parser.
 -  dyn: Short for "dynamic," this keyword is used to indicate that we're working with trait objects, where the concrete type implementing the trait is known only at runtime.
 - In rust modules are not mapped to the FS like f.e. Java. You can declare a module with the mod keyword and have multiple mods in the same file. In rust Sub modules must be declared within the parent module -> in our case inside the lib.rs
+- For some use cases, when matching enums, match is awkward. in this case it's easier to use if let {} else {}. In _match_ you have to go over all the arms and in if let you're interested in matching only one specific case. [if let] (https://doc.rust-lang.org/book/ch06-03-if-let.html) 
+
+
+
 
 ## Error handling
 - ? propagates the error to the caller of the function, so unwrap OR return ERR(From::from(err)). In our case the cli is the caller of main
