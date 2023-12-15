@@ -17,6 +17,23 @@ pub enum Literal {
     Nil,
 }
 
+// Implement custom equality impl because equality for lox is laxer than equality for rust and we
+// can have nill types
+impl PartialEq for Literal {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::String(l0), Self::String(r0)) => l0 == r0,
+            (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+            (Self::Boolean(l0), Self::Boolean(r0)) => l0 == r0,
+            (Self::Nil,Self::Nil) => true,
+            (Self::Nil,_) => false,
+            (_,Self::Nil) => false,
+
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
+    }
+}
+
 #[allow(unused, dead_code)]
 impl Token {
     pub fn new(

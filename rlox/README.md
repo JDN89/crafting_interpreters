@@ -14,6 +14,7 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
+- impl PartialOrd -> look at exmaple advent of code day 2 for an example and write unit tests
 - see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
 - why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression. Should I create report parse_error_fn and report the parse error on the place where we call it in case of an error? Create seperate ParseErro Struct? or place SourceCodeError and ParseError in LoxError enum? *look into*
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
@@ -26,6 +27,7 @@ Project contains executable for Lox and AST struct generator
 - pre increment means incrementing the variable before using it
 
 # learned rust
+- impl PartialEq for struct or enum to implement your custom equality rules. Equality comparison in Lox is different then the equality rules in rust
 - Do you want your struct to own the String of reference it? In most cases you want your string to own it. Otherwise you have to start adding lifetimes in order to prevent the sturct outliving the &str ref. 
 - I put a field of a struct in an enum, because it could be of type String or u32. Maybe I'll turn it into a generic later.
 - tubo fish ::<u32>(), it looks like a fish, moves like a fish and parse like a parser.
