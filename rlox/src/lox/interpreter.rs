@@ -44,6 +44,9 @@ impl ExprVisitor<Literal> for Interpreter {
                 TokenType::EqualEqual => {
                     return Ok(Literal::Boolean(left == right))
                 }
+                TokenType::BangEqual => {
+                    return Ok(Literal::Boolean(left != right))
+                }
                 _ => todo!(),
             }
         } else {
@@ -111,7 +114,7 @@ fn test_bang_equals() {
 
 
 #[test]
-fn test_equals_equals() {
+fn test_equals_equals_integers() {
     let interpreter = Interpreter{};
     let bin_exp = BinaryExpr{
        left: Box::new(Expr::Literal(LiteralExpr {value: Literal::Integer(123.00)  })),
@@ -142,4 +145,34 @@ fn test_equals_equals_strings() {
     let result = interpreter.visit_binary(&bin_exp) ;
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
+}
+
+#[test]
+fn test_bang_equals_strings() {
+    let interpreter = Interpreter{};
+    let bin_exp = BinaryExpr{
+       left: Box::new(Expr::Literal(LiteralExpr {value: Literal::String("yolo".to_string())  })),
+        operator: Token { token_type: TokenType::BangEqual,
+            lexeme: "!=".to_string(),
+            literal: None, line: 123 },
+
+       right: Box::new(Expr::Literal(LiteralExpr {value: Literal::String("tralala".to_string())  })),
+
+    };
+    let result = interpreter.visit_binary(&bin_exp) ;
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), Literal::Boolean(true));
+
+    let bin_exp_equal_operands = BinaryExpr{
+       left: Box::new(Expr::Literal(LiteralExpr {value: Literal::String("yolo".to_string())  })),
+        operator: Token { token_type: TokenType::BangEqual,
+            lexeme: "!=".to_string(),
+            literal: None, line: 123 },
+
+       right: Box::new(Expr::Literal(LiteralExpr {value: Literal::String("yolo".to_string())  })),
+
+    };
+    let result = interpreter.visit_binary(&bin_exp_equal_operands) ;
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), Literal::Boolean(false));
 }
