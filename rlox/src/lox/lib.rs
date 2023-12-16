@@ -59,8 +59,7 @@ pub fn run_prompt() -> Result<(), io::Error> {
     Ok(())
 }
 
-// TODO: place error in enum and 
-
+// TODO: test al scenarios: does the interpreter work 
 fn run(source: &String) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;
@@ -68,14 +67,5 @@ fn run(source: &String) -> Result<(), LoxError> {
     let expression = parser.parse()?;
     let interpreter = Interpreter{};
     interpreter.interpret(&Box::new(expression))?;
-
-
-    // let ast_printer = AstPrinter{};
-    // let expr =ast_printer.print(&expression);
-    // println!("{:?}",expr);
-
-    // for token in tokens {
-    //     println!("{:?}", token); // Use {:?} to format the token
-    // }
     Ok(())
 }

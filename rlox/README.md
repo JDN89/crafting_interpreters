@@ -14,6 +14,7 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin generate_ast
 
 ## TODO
+- test al scenarios: does the interpreter work 
 - impl PartialOrd -> look at exmaple advent of code day 2 for an example and write unit tests
 - see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
 - why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression. Should I create report parse_error_fn and report the parse error on the place where we call it in case of an error? Create seperate ParseErro Struct? or place SourceCodeError and ParseError in LoxError enum? *look into*
