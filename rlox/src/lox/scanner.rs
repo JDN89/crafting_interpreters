@@ -2,6 +2,7 @@ use crate::lox_error::Loc;
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
 use crate::token_type::TokenType::{self, *};
+use crate::RandomError;
 use std::string::String;
 
 use lazy_static::lazy_static;
@@ -143,11 +144,11 @@ impl Scanner {
                 } else if self.is_alpha(c) {
                     self.identifier()?;
                 } else {
-                    return Err(LoxError::new(
+                    return Err(LoxError::ScannerError(RandomError::new(
                         self.line,
                         Loc::Pos(self.current),
                         "Unexpected character",
-                    ));
+                    )));
                 }
             }
         }
@@ -158,11 +159,11 @@ impl Scanner {
     // increase current with one
     fn advance(&mut self) -> Result<char, LoxError> {
         let current_character = self.source.chars().nth(self.current).ok_or_else(|| {
-            LoxError::new(
+            LoxError::ScannerError(RandomError::new(
                 self.line,
                 Loc::Pos(self.current),
                 "Couldn't consume character at this position",
-            )
+            ))
         })?;
         self.current += 1;
         Ok(current_character)
@@ -238,11 +239,11 @@ impl Scanner {
             self.advance()?;
         }
         if self.is_at_end() {
-            return Err(LoxError::new(
+            return Err(LoxError::ScannerError(RandomError::new(
                 self.line,
                 Loc::Pos(self.current),
                 "Unterminated tring",
-            ));
+            )));
         }
         self.advance()?; // consume the closing ".
 
@@ -280,11 +281,11 @@ impl Scanner {
         match num {
             Ok(num) => self.add_token_object(Number, Some(Literal::Integer(num))),
             Err(_) => {
-                return Err(LoxError::new(
+                return Err(LoxError::ScannerError(RandomError::new(
                     self.line,
                     Loc::Pos(self.current),
                     "Couldn't parse integer",
-                ))
+                )))
             }
         }
         Ok(())
@@ -347,11 +348,11 @@ impl Scanner {
                     self.line += 1;
                 }
                 None => {
-                    return Err(LoxError::new(
+                    return Err(LoxError::ScannerError(RandomError::new(
                         self.line,
                         Loc::Pos(self.current),
                         "Unterminated comment",
-                    ));
+                    )));
                 }
                 _ => {
                     self.advance()?;

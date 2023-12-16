@@ -3,6 +3,14 @@
 use crate::{token::Literal, token_type::TokenType};
 
 #[derive(Debug)]
+pub enum LoxError {
+   Interpreter(RuntimeError),
+    ParserError(RandomError),
+    ScannerError(RandomError),
+
+}
+
+#[derive(Debug)]
 pub struct RuntimeError {
     literal: Option<Vec<Literal>> ,
     operator:Option<TokenType>,
@@ -13,11 +21,16 @@ impl RuntimeError {
         RuntimeError { literal,operator,
             message: message.to_string() }
     }
+
+    //Todo get access to token so we can get the line where the error originated
+    pub fn report (&self) {
+        eprintln!("literal: {:?}, operator: {:?}, message: {}", self.literal,self.operator,self.message);
+    }
     
 }
 
 #[derive(Debug)]
-pub struct LoxError {
+pub struct RandomError {
     line: usize,
     location: Loc,
     message: String,
@@ -31,7 +44,7 @@ pub enum Loc {
 }
 
 #[allow(dead_code)]
-impl LoxError {
+impl RandomError {
     pub fn new(line: usize, location: Loc,message: &str) -> Self {
         Self {
             line,

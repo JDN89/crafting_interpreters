@@ -1,4 +1,4 @@
-use crate::{expr::*, RuntimeError};
+use crate::{expr::*, RuntimeError, LoxError};
 
 pub struct AstPrinter {}
 
@@ -8,7 +8,7 @@ pub struct AstPrinter {}
 #[allow(dead_code, unused_variables)]
 impl AstPrinter {
     // pas the whole compolete expression to the print function
-    pub fn print(&self, expression: &Expr) -> Result<String, RuntimeError> {
+    pub fn print(&self, expression: &Expr) -> Result<String, LoxError> {
         expression.accept(self)
     }
 
@@ -26,22 +26,22 @@ impl AstPrinter {
 }
 
 impl ExprVisitor<String> for AstPrinter {
-    fn visit_binary(&self, expr: &BinaryExpr) -> Result<String, RuntimeError> {
+    fn visit_binary(&self, expr: &BinaryExpr) -> Result<String, LoxError> {
         // we first get the operator lexeme
         // then we pass left and right that can be a literal/ unary/ binary or grouping
         Ok(self.parenthesize(&expr.operator.lexeme, &[&expr.left, &expr.right]))
     }
 
-    fn visit_grouping(&self, expr: &GroupingExpr) -> Result<String, crate::RuntimeError> {
+    fn visit_grouping(&self, expr: &GroupingExpr) -> Result<String, crate::LoxError> {
         // we pass expr in our example grouping had a literal value that we passed to parenthesize
         Ok(self.parenthesize("group", &[&expr.expression]))
     }
 
-    fn visit_literal(&self, expr: &LiteralExpr) -> Result<String, crate::RuntimeError> {
+    fn visit_literal(&self, expr: &LiteralExpr) -> Result<String, crate::LoxError> {
         Ok(expr.value.to_string())
     }
 
-    fn visit_unary(&self, expr: &UnaryExpr) -> Result<String, crate::RuntimeError> {
+    fn visit_unary(&self, expr: &UnaryExpr) -> Result<String, crate::LoxError> {
         Ok(self.parenthesize(&expr.operator.lexeme, &[&expr.right]))
     }
 }

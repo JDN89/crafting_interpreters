@@ -5,6 +5,7 @@ use ast_printer::AstPrinter;
 pub use lox_error::*;
 use scanner::Scanner;
 use parser::Parser;
+use interpreter::Interpreter;
 
 mod ast_printer;
 mod expr;
@@ -19,7 +20,11 @@ mod interpreter;
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {
     let contents = fs::read_to_string(file_path)?;
     if let Err(e) = run(&contents) {
-        e.report();
+        match e {
+            LoxError::Interpreter(e) => e.report(),
+            LoxError::ParserError(e) => e.report(),
+            LoxError::ScannerError(e) => e.report(),
+        }
         process::exit(65);
     }
     Ok(())
@@ -43,24 +48,34 @@ pub fn run_prompt() -> Result<(), io::Error> {
         }
 
         if let Err(e) = run(&buf) {
-            e.report()
+        match e {
+            LoxError::Interpreter(e) => e.report(),
+            LoxError::ParserError(e) => e.report(),
+            LoxError::ScannerError(e) => e.report(),
+        }
         }
     }
 
     Ok(())
 }
 
+// TODO: place error in enum and 
+
 fn run(source: &String) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;
     let mut  parser = Parser::build_parser(tokens.clone());
-    let ast = parser.parse()?;
-    let ast_printer = AstPrinter{};
-    let expr =ast_printer.print(&ast);
-    println!("{:?}",expr);
+    let expression = parser.parse()?;
+    let interpreter = Interpreter{};
+    interpreter.interpret(&Box::new(expression))?;
 
-    for token in tokens {
-        println!("{:?}", token); // Use {:?} to format the token
-    }
+
+    // let ast_printer = AstPrinter{};
+    // let expr =ast_printer.print(&expression);
+    // println!("{:?}",expr);
+
+    // for token in tokens {
+    //     println!("{:?}", token); // Use {:?} to format the token
+    // }
     Ok(())
 }

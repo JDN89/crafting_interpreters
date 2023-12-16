@@ -2,7 +2,7 @@ use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
-use crate::{ Loc, LoxError};
+use crate::{Loc, LoxError, RandomError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -14,10 +14,10 @@ pub struct Parser {
 #[allow(dead_code, unused_variables)]
 impl Parser {
     pub fn build_parser(tokens: Vec<Token>) -> Parser {
-        Parser { tokens , current: 0 }
+        Parser { tokens, current: 0 }
     }
 
-    pub fn parse (&mut self) -> Result<Expr,LoxError> {
+    pub fn parse(&mut self) -> Result<Expr, LoxError> {
         Ok(self.expression())?
     }
 
@@ -139,11 +139,11 @@ impl Parser {
         }
         // If none of the cases in there match, it means we are sitting on a token that can’t start an expression. We need to handle that error too.
         else {
-            Err(LoxError::new(
+            Err(LoxError::ParserError(RandomError::new(
                 self.peek().unwrap().line,
                 Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
                 "Expcted expression.",
-            ))
+            )))
         }
     }
 
@@ -192,11 +192,11 @@ impl Parser {
         }
 
         let curr_token = self.peek().unwrap();
-        Err(LoxError::new(
+        Err(LoxError::ParserError(RandomError::new(
             curr_token.line,
             Loc::Lexeme(curr_token.lexeme.to_owned()),
             arg,
-        ))
+        )))
     }
 
     fn synchronize(&mut self) -> Result<(), LoxError> {
