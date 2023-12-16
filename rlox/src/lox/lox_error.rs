@@ -1,5 +1,20 @@
 // todo: look up how to create custom errors
 
+use crate::{token::Literal, token_type::TokenType};
+
+#[derive(Debug)]
+pub struct RuntimeError {
+    literal: Option<Vec<Literal>> ,
+    operator:Option<TokenType>,
+    message:String
+}
+impl RuntimeError {
+    pub fn throw(literal: Option< Vec<Literal>>,operator:Option<TokenType>, message:&str) -> Self{
+        RuntimeError { literal,operator,
+            message: message.to_string() }
+    }
+    
+}
 
 #[derive(Debug)]
 pub struct LoxError {

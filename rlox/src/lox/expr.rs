@@ -1,7 +1,6 @@
 use std::fmt::Display;
-
-use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
+use crate::RuntimeError;
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -13,7 +12,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
+    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, RuntimeError> {
         match self {
             Expr::Binary(expr) => visitor.visit_binary(&expr),
             Expr::Grouping(expr) => visitor.visit_grouping(&expr),
@@ -44,7 +43,7 @@ impl Display for Literal {
         match self {
             Literal::String(s) => write!(f, "{}", s),
             Literal::Integer(i) => write!(f, "{}", i),
-            Literal::Boolean(b) => write!(f, "{}",b),
+            Literal::Boolean(b) => write!(f, "{}", b),
             Literal::Nil => write!(f, "nill"),
         }
     }
@@ -57,8 +56,8 @@ pub struct UnaryExpr {
 }
 
 pub trait ExprVisitor<R> {
-    fn visit_binary(&self, expr: &BinaryExpr) -> Result<R, LoxError>;
-    fn visit_grouping(&self, expr: &GroupingExpr) -> Result<R, LoxError>;
-    fn visit_literal(&self, expr: &LiteralExpr) -> Result<R, LoxError>;
-    fn visit_unary(&self, expr: &UnaryExpr) -> Result<R, LoxError>;
+    fn visit_binary(&self, expr: &BinaryExpr) -> Result<R, RuntimeError>;
+    fn visit_grouping(&self, expr: &GroupingExpr) -> Result<R, RuntimeError>;
+    fn visit_literal(&self, expr: &LiteralExpr) -> Result<R, RuntimeError>;
+    fn visit_unary(&self, expr: &UnaryExpr) -> Result<R, RuntimeError>;
 }
