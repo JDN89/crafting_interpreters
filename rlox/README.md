@@ -15,13 +15,8 @@ Project contains executable for Lox and AST struct generator
 
 ## TODO
 - test al scenarios: does the interpreter work 
-- rename  error enum types
-- fix error reporting of the InterpreterError: THE OPERATOR IS THE TOKEN, include always the operator in the error reporting! We beed location. How do I access the token that contains the location of where the error occured.
-- impl PartialOrd -> look at exmaple advent of code day 2 for an example and write unit tests
 - see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
-- why does the  Parse error get priority to the token error? >~  [line 0, lexeme '~'] Error: Expcted expression. Should I create report parse_error_fn and report the parse error on the place where we call it in case of an error? Create seperate ParseErro Struct? or place SourceCodeError and ParseError in LoxError enum? *look into*
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
-- better error reporting, add character in source code that failed : [line 0, position 5] Error: Unexpected character
 - after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
 - remove #[allow(dead_code, unused_variables)]
 
