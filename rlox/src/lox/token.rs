@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::token_type::TokenType;
 
 #[allow(dead_code)]
@@ -15,6 +17,16 @@ pub enum Literal {
     Integer(f64),
     Boolean(bool),
     Nil,
+}
+impl fmt::Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Literal::String(s) => write!(f, "String: {}", s),
+            Literal::Integer(num) => write!(f, "Integer: {}", num),
+            Literal::Boolean(b) => write!(f, "Boolean: {}", b),
+            Literal::Nil => write!(f, "nil"),
+        }
+    }
 }
 
 // Implement custom equality impl because equality for lox is laxer than equality for rust and we

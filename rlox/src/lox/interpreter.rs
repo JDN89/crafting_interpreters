@@ -13,7 +13,7 @@ impl Interpreter {
         match self.evaluate(expression) {
             Ok(value) => {
                 // TODO: implement fmt for Literal so we can print the Literal values!!
-                println!("{:?}", value);
+                println!("{}", value);
                 return Ok(());
             }
             Err(e) => return Err(e),
@@ -31,7 +31,7 @@ impl Interpreter {
     }
 
     fn create_interpreter_error(&self, location: usize, token_type: &TokenType, left: Literal, right: Literal ) -> LoxError {
-        return LoxError::Interpreter(InterpreterError::throw(location, format!("operator: {:?} is not supporterd for values: {},{}",token_type, left, right)));
+        return LoxError::Interpreter(InterpreterError::throw(location, format!("Execution of {:?} operator, is not supporterd for values: {}, {}",token_type, left, right)));
     }
 }
 

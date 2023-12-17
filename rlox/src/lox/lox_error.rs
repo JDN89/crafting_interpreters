@@ -1,7 +1,5 @@
 use std::usize;
 
-use crate::token::{Literal, Token};
-
 #[derive(Debug)]
 pub enum LoxError {
    Interpreter(InterpreterError),

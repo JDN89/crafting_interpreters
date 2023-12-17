@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use crate::{token::{Literal, Token}, LoxError};
 
 #[allow(dead_code, unused_variables)]
@@ -36,16 +35,6 @@ pub struct GroupingExpr {
 #[derive(Debug, Clone)]
 pub struct LiteralExpr {
     pub value: Literal,
-}
-impl Display for Literal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Literal::String(s) => write!(f, "{}", s),
-            Literal::Integer(i) => write!(f, "{}", i),
-            Literal::Boolean(b) => write!(f, "{}", b),
-            Literal::Nil => write!(f, "nill"),
-        }
-    }
 }
 
 #[derive(Debug)]
