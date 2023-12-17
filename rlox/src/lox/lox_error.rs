@@ -1,3 +1,5 @@
+use std::usize;
+
 use crate::token::{Literal, Token};
 
 #[derive(Debug)]
@@ -10,22 +12,19 @@ pub enum LoxError {
 
 #[derive(Debug)]
 pub struct InterpreterError {
-    literal: Option<Vec<Literal>> ,
-    operator_token:Option<Token>,
+    line:usize,
     message:String
 }
 impl InterpreterError {
-    pub fn throw(literal: Option< Vec<Literal>>,token:Option<Token>, message:&str) -> Self{
-        InterpreterError { literal,operator_token: token,
+    pub fn throw(line:usize ,message:String) -> Self{
+        InterpreterError { line, 
             message: message.to_string() }
     }
 
     //Todo get access to token so we can get the line where the error originated
     pub fn report (&self) {
-        if let Some(value) = &self.operator_token {
 
-        eprintln!("Location: {:?} literal: {:?}, operator: {:?}, message: {}",value.line, self.literal,value.token_type,self.message);
-        }
+        eprintln!("Location: {:?} error: {:?}",self.line, self.message);
     }
     
 }
