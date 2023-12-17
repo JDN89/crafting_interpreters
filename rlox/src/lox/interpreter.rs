@@ -1,6 +1,6 @@
 use crate::token_type::TokenType;
-use crate::{InterpreterError, LoxError, token};
 use crate::{expr::*, token::Literal};
+use crate::{token, InterpreterError, LoxError};
 
 #[derive(Debug)]
 pub struct Interpreter {}
@@ -52,13 +52,28 @@ impl ExprVisitor<Literal> for Interpreter {
                     TokenType::LessEqual => Ok(Literal::Boolean(left_value <= right_value)),
                     TokenType::EqualEqual => Ok(Literal::Boolean(left_value == right_value)),
                     TokenType::BangEqual => Ok(Literal::Boolean(left_value != right_value)),
-                    _ => Err(LoxError::Interpreter( InterpreterError::throw(
+                    _ => Err(LoxError::Interpreter(InterpreterError::throw(
                         None,
                         Some(expr.operator.clone()),
                         "operator is not supported for Number values",
                     ))),
                 }
             }
+            (Literal::String(left_value), Literal::Integer(right_value)) => {
+                return Err(LoxError::Interpreter(InterpreterError::throw(
+                    Some(vec![Literal::String(left_value.to_string()), Literal::Integer(*right_value)]),
+                    Some(expr.operator.clone()),
+                    "operator is not supported for the combination of Integer and String values",
+                )))
+            }
+            (Literal::Integer(left_value), Literal::String(right_value)) => {
+                return Err(LoxError::Interpreter(InterpreterError::throw(
+                    Some(vec![Literal::String(right_value.to_string()), Literal::Integer(*left_value)]),
+                    Some(expr.operator.clone()),
+                    "operator is not supported for the combination of Integer and String values",
+                )))
+            }
+
             (Literal::String(left_value), Literal::String(right_value)) => {
                 let mut left_value = left_value.clone();
                 match expr.operator.token_type {
@@ -68,7 +83,7 @@ impl ExprVisitor<Literal> for Interpreter {
                     }
                     TokenType::EqualEqual => Ok(Literal::Boolean(left == right)),
                     TokenType::BangEqual => Ok(Literal::Boolean(left != right)),
-                    _ => Err( LoxError::Interpreter(  InterpreterError::throw(
+                    _ => Err(LoxError::Interpreter(InterpreterError::throw(
                         None,
                         Some(expr.operator.clone()),
                         "operator is not supported for String values",
@@ -77,7 +92,7 @@ impl ExprVisitor<Literal> for Interpreter {
             }
             (Literal::Nil, Literal::Nil) => match expr.operator.token_type {
                 TokenType::EqualEqual => Ok(Literal::Boolean(true)),
-                _ => Err( LoxError::Interpreter( InterpreterError::throw(
+                _ => Err(LoxError::Interpreter(InterpreterError::throw(
                     None,
                     Some(expr.operator.clone()),
                     "operator is not supported for Nil values",
@@ -85,13 +100,13 @@ impl ExprVisitor<Literal> for Interpreter {
             },
             (Literal::Nil, _) | (_, Literal::Nil) => match expr.operator.token_type {
                 TokenType::EqualEqual => Ok(Literal::Boolean(false)),
-                _ => Err( LoxError::Interpreter( InterpreterError::throw(
+                _ => Err(LoxError::Interpreter(InterpreterError::throw(
                     None,
                     Some(expr.operator.clone()),
                     "operator is not supported for combination Nil and other operand",
                 ))),
             },
-            _ => Err(LoxError::Interpreter (InterpreterError::throw(
+            _ => Err(LoxError::Interpreter(InterpreterError::throw(
                 Some(vec![left, right]),
                 None,
                 "combination of operands is not supported in Lox",

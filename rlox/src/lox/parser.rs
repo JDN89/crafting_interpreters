@@ -142,7 +142,7 @@ impl Parser {
             Err(LoxError::ParserError(ParserError::new(
                 self.peek().unwrap().line,
                 Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
-                "Expcted expression.",
+                "Expected expression.",
             )))
         }
     }
