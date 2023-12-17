@@ -1,4 +1,4 @@
-use crate::{expr::*, RuntimeError, LoxError};
+use crate::{expr::*, LoxError};
 
 pub struct AstPrinter {}
 

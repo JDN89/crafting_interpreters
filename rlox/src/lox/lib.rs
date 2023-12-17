@@ -1,7 +1,6 @@
 use std::io::{BufRead, Write};
 use std::{fs, io, process};
 
-use ast_printer::AstPrinter;
 use interpreter::Interpreter;
 pub use lox_error::*;
 use parser::Parser;
@@ -67,7 +66,6 @@ pub fn run_prompt() -> Result<(), io::Error> {
     Ok(())
 }
 
-// TODO: test al scenarios: does the interpreter work
 fn run(source: &String) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;

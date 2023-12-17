@@ -2,7 +2,7 @@ use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
-use crate::{Loc, LoxError, RandomError};
+use crate::{Loc, LoxError, ParserError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -139,7 +139,7 @@ impl Parser {
         }
         // If none of the cases in there match, it means we are sitting on a token that can’t start an expression. We need to handle that error too.
         else {
-            Err(LoxError::ParserError(RandomError::new(
+            Err(LoxError::ParserError(ParserError::new(
                 self.peek().unwrap().line,
                 Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
                 "Expcted expression.",
@@ -192,7 +192,7 @@ impl Parser {
         }
 
         let curr_token = self.peek().unwrap();
-        Err(LoxError::ParserError(RandomError::new(
+        Err(LoxError::ParserError(ParserError::new(
             curr_token.line,
             Loc::Lexeme(curr_token.lexeme.to_owned()),
             arg,

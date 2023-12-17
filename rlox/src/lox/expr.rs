@@ -1,6 +1,5 @@
 use std::fmt::Display;
-use crate::token::{Literal, Token};
-use crate::{RuntimeError, LoxError};
+use crate::{token::{Literal, Token}, LoxError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -12,7 +11,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
+    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, crate::LoxError> {
         match self {
             Expr::Binary(expr) => visitor.visit_binary(&expr),
             Expr::Grouping(expr) => visitor.visit_grouping(&expr),

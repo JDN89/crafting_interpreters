@@ -1,36 +1,37 @@
-// todo: look up how to create custom errors
-
-use crate::{token::Literal, token_type::TokenType};
+use crate::token::{Literal, Token};
 
 #[derive(Debug)]
 pub enum LoxError {
-   Interpreter(RuntimeError),
-    ParserError(RandomError),
-    ScannerError(RandomError),
+   Interpreter(InterpreterError),
+    ParserError(ParserError),
+    ScannerError(ParserError),
 
 }
 
 #[derive(Debug)]
-pub struct RuntimeError {
+pub struct InterpreterError {
     literal: Option<Vec<Literal>> ,
-    operator:Option<TokenType>,
+    operator_token:Option<Token>,
     message:String
 }
-impl RuntimeError {
-    pub fn throw(literal: Option< Vec<Literal>>,operator:Option<TokenType>, message:&str) -> Self{
-        RuntimeError { literal,operator,
+impl InterpreterError {
+    pub fn throw(literal: Option< Vec<Literal>>,token:Option<Token>, message:&str) -> Self{
+        InterpreterError { literal,operator_token: token,
             message: message.to_string() }
     }
 
     //Todo get access to token so we can get the line where the error originated
     pub fn report (&self) {
-        eprintln!("literal: {:?}, operator: {:?}, message: {}", self.literal,self.operator,self.message);
+        if let Some(value) = &self.operator_token {
+
+        eprintln!("Location: {:?} literal: {:?}, operator: {:?}, message: {}",value.line, self.literal,value.token_type,self.message);
+        }
     }
     
 }
 
 #[derive(Debug)]
-pub struct RandomError {
+pub struct ParserError {
     line: usize,
     location: Loc,
     message: String,
@@ -44,7 +45,7 @@ pub enum Loc {
 }
 
 #[allow(dead_code)]
-impl RandomError {
+impl ParserError {
     pub fn new(line: usize, location: Loc,message: &str) -> Self {
         Self {
             line,

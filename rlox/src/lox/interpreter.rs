@@ -1,6 +1,5 @@
-use crate::token::Token;
 use crate::token_type::TokenType;
-use crate::{RuntimeError, LoxError};
+use crate::{InterpreterError, LoxError, token};
 use crate::{expr::*, token::Literal};
 
 #[derive(Debug)]
@@ -53,9 +52,9 @@ impl ExprVisitor<Literal> for Interpreter {
                     TokenType::LessEqual => Ok(Literal::Boolean(left_value <= right_value)),
                     TokenType::EqualEqual => Ok(Literal::Boolean(left_value == right_value)),
                     TokenType::BangEqual => Ok(Literal::Boolean(left_value != right_value)),
-                    _ => Err(LoxError::Interpreter( RuntimeError::throw(
+                    _ => Err(LoxError::Interpreter( InterpreterError::throw(
                         None,
-                        Some(expr.operator.token_type.clone()),
+                        Some(expr.operator.clone()),
                         "operator is not supported for Number values",
                     ))),
                 }
@@ -69,30 +68,30 @@ impl ExprVisitor<Literal> for Interpreter {
                     }
                     TokenType::EqualEqual => Ok(Literal::Boolean(left == right)),
                     TokenType::BangEqual => Ok(Literal::Boolean(left != right)),
-                    _ => Err( LoxError::Interpreter(  RuntimeError::throw(
+                    _ => Err( LoxError::Interpreter(  InterpreterError::throw(
                         None,
-                        Some(expr.operator.token_type.clone()),
+                        Some(expr.operator.clone()),
                         "operator is not supported for String values",
                     ))),
                 }
             }
             (Literal::Nil, Literal::Nil) => match expr.operator.token_type {
                 TokenType::EqualEqual => Ok(Literal::Boolean(true)),
-                _ => Err( LoxError::Interpreter( RuntimeError::throw(
+                _ => Err( LoxError::Interpreter( InterpreterError::throw(
                     None,
-                    Some(expr.operator.token_type.clone()),
+                    Some(expr.operator.clone()),
                     "operator is not supported for Nil values",
                 ))),
             },
             (Literal::Nil, _) | (_, Literal::Nil) => match expr.operator.token_type {
                 TokenType::EqualEqual => Ok(Literal::Boolean(false)),
-                _ => Err( LoxError::Interpreter( RuntimeError::throw(
+                _ => Err( LoxError::Interpreter( InterpreterError::throw(
                     None,
-                    Some(expr.operator.token_type.clone()),
+                    Some(expr.operator.clone()),
                     "operator is not supported for combination Nil and other operand",
                 ))),
             },
-            _ => Err(LoxError::Interpreter (RuntimeError::throw(
+            _ => Err(LoxError::Interpreter (InterpreterError::throw(
                 Some(vec![left, right]),
                 None,
                 "combination of operands is not supported in Lox",
@@ -118,7 +117,7 @@ impl ExprVisitor<Literal> for Interpreter {
             if let Literal::Integer(number) = right {
                 return Ok(Literal::Integer(-number));
             } else {
-                RuntimeError::throw(Some(vec![right]), None, "Operand must be a number.");
+                InterpreterError::throw(Some(vec![right]), None, "Operand must be a number.");
             }
         } else if expr.operator.token_type == TokenType::Bang {
             let bool = self.is_truthy(right);
@@ -136,7 +135,7 @@ fn test_bang_equals() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Integer(123.00),
         })),
-        operator: Token {
+        operator: crate::token::Token {
             token_type: TokenType::BangEqual,
             lexeme: "!=".to_string(),
             literal: None,
@@ -159,7 +158,7 @@ fn test_equals_equals_integers() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Integer(123.00),
         })),
-        operator: Token {
+        operator: crate::token::Token {
             token_type: TokenType::EqualEqual,
             lexeme: "==".to_string(),
             literal: None,
@@ -182,7 +181,7 @@ fn test_equals_equals_strings() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
         })),
-        operator: Token {
+        operator: crate::token::Token {
             token_type: TokenType::EqualEqual,
             lexeme: "==".to_string(),
             literal: None,
@@ -205,7 +204,7 @@ fn test_bang_equals_strings() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
         })),
-        operator: Token {
+        operator: crate::token::Token {
             token_type: TokenType::BangEqual,
             lexeme: "!=".to_string(),
             literal: None,
@@ -224,7 +223,7 @@ fn test_bang_equals_strings() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
         })),
-        operator: Token {
+        operator: crate::token::Token {
             token_type: TokenType::BangEqual,
             lexeme: "!=".to_string(),
             literal: None,
@@ -248,7 +247,7 @@ fn test_equals_equals_literal_nill() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Nil,
         })),
-        operator: Token {
+        operator: token::Token {
             token_type: TokenType::EqualEqual,
             lexeme: "==".to_string(),
             literal: None,
@@ -271,7 +270,7 @@ fn test_equals_equals_nil_and_operand() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Nil,
         })),
-        operator: Token {
+        operator: token::Token {
             token_type: TokenType::EqualEqual,
             lexeme: "==".to_string(),
             literal: None,
@@ -290,7 +289,7 @@ fn test_equals_equals_nil_and_operand() {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
         })),
-        operator: Token {
+        operator: token::Token {
             token_type: TokenType::EqualEqual,
             lexeme: "==".to_string(),
             literal: None,
