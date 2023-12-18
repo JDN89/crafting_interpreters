@@ -1,4 +1,5 @@
 
+# EXPRESSION GRAMMAR RULES
 | Production Rule | Syntax                                             | Description                                           |
 |------------------|----------------------------------------------------|-------------------------------------------------------|
 | expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
@@ -7,6 +8,20 @@
 | unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
 | binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
 | operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
+
+__Expression__ produce values
+__Statements__ produce side effects. Preform actions or control the flow of a program
+
+# STATEMENT GRAMAR RULES
+
+| Production     | Expansion                                      |
+|----------------|------------------------------------------------|
+| program        | statement* EOF ;                               |
+| statement      | exprStmt                                       |
+|                | printStmt                                      |
+| exprStmt       | expression ";"                                 |
+| printStmt      | "print" expression ";"                         |
+
 
 # RLOX - ruts implementation of Lox
 Project contains executable for Lox and AST struct generator
