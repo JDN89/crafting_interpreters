@@ -73,6 +73,9 @@ fn run(source: &String) -> Result<(), LoxError> {
     let mut parser = Parser::build_parser(tokens.clone());
     let statements: Vec<stmt::Stmt> = parser.parse()?;
     let interpreter = Interpreter {};
+    for statement in &statements {
+        println!("{:?}",statement);
+    }
     interpreter.interpret(statements)?;
     Ok(())
 }

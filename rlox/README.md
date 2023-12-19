@@ -1,4 +1,44 @@
+## TODO
+- format BinExpr,... so you can print a nice AST and paste it in the readme
+- test al scenarios: does the interpreter work 
+- see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
+- check equality, behaviour is weird? >5=6=7 >Ok("5")
+- after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
+- remove #[allow(dead_code, unused_variables)]
 
+# Precedence rules
+| Rule            | Production                                                |
+|-----------------|-----------------------------------------------------------|
+| expression      | → equality ;                                             |
+| equality        | → comparison ( ( "!=" \| "==" ) comparison )* ;         |
+| comparison      | → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;        |
+| term            | → factor ( ( "-" \| "+" ) factor )* ;                    |
+| factor          | → unary ( ( "/" \| "\*" ) unary )* ;                      |
+| unary           | → ( "!" \| "-" ) unary \| primary ;                     |
+| primary         | → NUMBER \| STRING \| "true" \| "false" \| "nil"         |
+|                 | \| "(" expression ")" ;                                   |
+
+in parser.rs you'll see that we'll keep passing the tokens until primary which are the leaves of the AST, we'll go deeper whilst respecting the rulst of precedence and association.
+
+### Example
+
+3 * (1 + 2) - 1
+
+__AST__
+       -
+      / \
+     *   1
+    / \
+   3   +
+      / \
+     1   2
+
+__AST code representation__
+Expression(ExpressionStmt { expression: Binary(BinaryExpr { left: Binary(BinaryExpr { left: Literal(LiteralExpr { value: Integer(3.0) }), operator: Token { token_type: Star, lexeme: "*", literal: Some(String("")), line: 0 }, right: Grouping(GroupingExpr { expression: Binary(BinaryExpr { left: Literal(LiteralExpr { value: Integer(1.0) }), operator: Token { token_type: Plus, lexeme: "+", literal: Some(String("")), line: 0 }, right: Literal(LiteralExpr { value: Integer(2.0) }) }) }) }), operator: Token { token_type: Minus, lexeme: "-", literal: Some(String("")), line: 0 }, right: Literal(LiteralExpr { value: Integer(1.0) }) }) })
+
+
+
+ 
 # EXPRESSION GRAMMAR RULES
 | Production Rule | Syntax                                             | Description                                           |
 |------------------|----------------------------------------------------|-------------------------------------------------------|
@@ -8,6 +48,9 @@
 | unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
 | binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
 | operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
+
+
+
 
 __Expression__ produce values
 __Statements__ produce side effects. Preform actions or control the flow of a program
@@ -28,12 +71,6 @@ Project contains executable for Lox and AST struct generator
 - cargo run --bin lox
 - cargo run --bin generate_ast
 
-## TODO
-- test al scenarios: does the interpreter work 
-- see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
-- check equality, behaviour is weird? >5=6=7 >Ok("5")
-- after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
-- remove #[allow(dead_code, unused_variables)]
 
 # Learned java
 - post increment is first using the variable and then adding to it charAt(i++), gets the char at index i and then increments the index
