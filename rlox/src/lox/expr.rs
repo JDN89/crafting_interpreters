@@ -1,6 +1,6 @@
-use crate::{token::{Literal, Token}, LoxError};
+use crate::lox_error::LoxError;
+use crate::token::{Literal, Token};
 
-#[allow(dead_code, unused_variables)]
 #[derive(Debug)]
 pub enum Expr {
     Binary(BinaryExpr),
@@ -10,7 +10,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, crate::LoxError> {
+    pub fn accept<R>(&self, visitor: &dyn ExprVisitor<R>) -> Result<R, LoxError> {
         match self {
             Expr::Binary(expr) => visitor.visit_binary(&expr),
             Expr::Grouping(expr) => visitor.visit_grouping(&expr),
@@ -22,7 +22,7 @@ impl Expr {
 
 #[derive(Debug)]
 pub struct BinaryExpr {
-    pub left: Box<Expr>, // left can be: literal/ unary/ grouping/ binary
+    pub left: Box<Expr>,
     pub operator: Token,
     pub right: Box<Expr>,
 }
@@ -32,7 +32,7 @@ pub struct GroupingExpr {
     pub expression: Box<Expr>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug,Clone)]
 pub struct LiteralExpr {
     pub value: Literal,
 }

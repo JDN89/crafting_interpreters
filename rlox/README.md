@@ -40,6 +40,10 @@ Project contains executable for Lox and AST struct generator
 - pre increment means incrementing the variable before using it
 
 # learned rust
+- When you encounter the error messages like "self is a & reference, so the data it refers to cannot be borrowed as mutable," it means that the method is attempting to modify the state of the object, but the method signature does not allow it because it's working with an immutable reference.
+  - use &T if you need to read the data
+  - use &mut T if you need to modify the data
+  - use T if you need to move/drop the data
 - impl PartialEq for struct or enum to implement your custom equality rules. Equality comparison in Lox is different then the equality rules in rust
 - Do you want your struct to own the String of reference it? In most cases you want your string to own it. Otherwise you have to start adding lifetimes in order to prevent the sturct outliving the &str ref. 
 - I put a field of a struct in an enum, because it could be of type String or u32. Maybe I'll turn it into a generic later.

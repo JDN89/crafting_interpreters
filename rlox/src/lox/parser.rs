@@ -1,4 +1,6 @@
 use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr};
+use crate::stmt::PrintStmt;
+use crate::stmt::{ExpressionStmt, Stmt};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
@@ -17,8 +19,41 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
-    pub fn parse(&mut self) -> Result<Expr, LoxError> {
-        Ok(self.expression())?
+    // pub fn parse(&mut self) -> Result<Expr, LoxError> {
+    //     Ok(self.expression())?
+    // }
+
+    // program        → statement* EOF ;
+    pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
+        let mut statements: Vec<Stmt> = Vec::new();
+
+        while !self.is_at_end() {
+            statements.push(self.statement()?);
+        }
+
+        return Ok(statements);
+    }
+
+    // statement      → exprStmt | printStmt ;
+    fn statement(&mut self) -> Result<Stmt, LoxError> {
+        if self.match_token_types(&[Print]) {
+            return Ok(self.print_statement()?);
+        }
+        return Ok(self.expression_statement()?);
+    }
+
+    // printStmt      → "print" expression ";" ;
+    fn print_statement(&mut self) -> Result<Stmt, LoxError> {
+        let value = self.expression()?;
+        self.consume(Semicolon, "Expect ';' after value.")?;
+        return Ok(Stmt::Print(PrintStmt { expression: value }));
+    }
+
+    // exprStmt       → expression ";" ;
+    fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
+        let value = self.expression()?;
+        self.consume(Semicolon, "Expect ';' expression.")?;
+        return Ok(Stmt::Expression(ExpressionStmt { expression: value }));
     }
 
     // expression     → equality ;
@@ -186,7 +221,7 @@ impl Parser {
         self.peek().unwrap().token_type == Eof
     }
 
-    fn consume(&mut self, right_paren: TokenType, arg: &str) -> Result<&Token, LoxError> {
+    fn consume(&mut self, right_paren: TokenType, error_message: &str) -> Result<&Token, LoxError> {
         if self.check(&right_paren) {
             return Ok(self.advance());
         }
@@ -195,7 +230,7 @@ impl Parser {
         Err(LoxError::ParserError(ParserError::new(
             curr_token.line,
             Loc::Lexeme(curr_token.lexeme.to_owned()),
-            arg,
+            error_message,
         )))
     }
 

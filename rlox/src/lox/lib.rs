@@ -12,6 +12,7 @@ mod interpreter;
 mod lox_error;
 mod parser;
 mod scanner;
+mod stmt;
 mod token;
 mod token_type;
 
@@ -72,6 +73,7 @@ fn run(source: &String) -> Result<(), LoxError> {
     let mut parser = Parser::build_parser(tokens.clone());
     let expression = parser.parse()?;
     let interpreter = Interpreter {};
-    interpreter.interpret(&Box::new(expression))?;
+    //TODO turn back on
+    // interpreter.interpret(&Box::new(expression))?;
     Ok(())
 }

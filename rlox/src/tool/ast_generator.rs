@@ -4,17 +4,28 @@ use std::io::Write;
 fn main() {
     if let Err(e) = generate_ast(
         "src/lox",
-        "Expr",
+        "Stmt",
         &[
-            "Binary: Box<Expr> left, Token operator, Box<Expr> right",
-            "Grouping: Box<Expr> expression",
-            "Literal: Literal value",
-            "Unary: Token operator, Box<Expr> right",
+            "Expression: Expr expression",
+            "Print: Expr expression",
         ],
     ) {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     }
+    // if let Err(e) = generate_ast(
+    //     "src/lox",
+    //     "Expr",
+    //     &[
+    //         "Binary: Box<Expr> left, Token operator, Box<Expr> right",
+    //         "Grouping: Box<Expr> expression",
+    //         "Literal: Literal value",
+    //         "Unary: Token operator, Box<Expr> right",
+    //     ],
+    // ) {
+    //     eprintln!("Error: {}", e);
+    //     std::process::exit(1);
+    // }
     fn generate_ast(output_dir: &str, base_name: &str, types: &[&str]) -> std::io::Result<()> {
         let path = format!("{}/{}.rs", output_dir, base_name.to_lowercase());
         let mut file = File::create(&path)?;
