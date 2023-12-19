@@ -40,6 +40,7 @@ Project contains executable for Lox and AST struct generator
 - pre increment means incrementing the variable before using it
 
 # learned rust
+- when you impl std::Display for a Struct or enum you can use {} for printing with cusotm formatting instead of {:?} 
 - When you encounter the error messages like "self is a & reference, so the data it refers to cannot be borrowed as mutable," it means that the method is attempting to modify the state of the object, but the method signature does not allow it because it's working with an immutable reference.
   - use &T if you need to read the data
   - use &mut T if you need to modify the data

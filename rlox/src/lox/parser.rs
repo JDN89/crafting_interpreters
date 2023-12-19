@@ -23,6 +23,7 @@ impl Parser {
     //     Ok(self.expression())?
     // }
 
+
     // program        → statement* EOF ;
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements: Vec<Stmt> = Vec::new();
@@ -34,6 +35,7 @@ impl Parser {
         return Ok(statements);
     }
 
+    //parse statement syntax trees
     // statement      → exprStmt | printStmt ;
     fn statement(&mut self) -> Result<Stmt, LoxError> {
         if self.match_token_types(&[Print]) {
