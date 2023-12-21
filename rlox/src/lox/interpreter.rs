@@ -60,6 +60,10 @@ impl StmtVisitor<()> for Interpreter {
         println!("{}", value);
         Ok(())
     }
+
+    fn visit_var(&self, stmt: &crate::stmt::VarStmt) -> Result<(), LoxError> {
+        todo!()
+    }
 }
 
 #[allow(dead_code, unused_variables)]
@@ -167,6 +171,10 @@ impl ExprVisitor<Literal> for Interpreter {
         }
         // unreachable
         return Ok(Literal::Nil);
+    }
+
+    fn visit_variable(&self, expr: &VariableExpr) -> Result<Literal, LoxError> {
+        todo!()
     }
 }
 

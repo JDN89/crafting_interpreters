@@ -1,6 +1,5 @@
-use crate::expr::Expr;
+use crate::token::{Token, Literal};
 use crate::lox_error::LoxError;
-use crate::token::{Literal, Token};
 
 #[derive(Debug)]
 pub enum Stmt {
@@ -11,29 +10,34 @@ pub enum Stmt {
 
 impl Stmt {
     pub fn accept<R>(&self, visitor: &dyn StmtVisitor<R>) -> Result<R, LoxError> {
-        match self {
-            Stmt::Expression(stmt) => visitor.visit_expression(&stmt),
-            Stmt::Print(stmt) => visitor.visit_print(&stmt),
-            Stmt::Var(stmt) => visitor.visit_var(&stmt),
-        }
+match self {
+    Stmt::Expression (stmt) => visitor.visit_expression(&stmt),
+    Stmt::Print (stmt) => visitor.visit_print(&stmt),
+    Stmt::Var (stmt) => visitor.visit_var(&stmt),
     }
-}
+
+    }
+
+    }
+
 
 #[derive(Debug)]
 pub struct ExpressionStmt {
-    pub expression: Expr,
-}
+pub expression: Expr,
+    }
+
 
 #[derive(Debug)]
 pub struct PrintStmt {
-    pub expression: Expr,
-}
+pub expression: Expr,
+    }
+
 
 #[derive(Debug)]
 pub struct VarStmt {
-    pub name: Token,
-    pub initializer: Expr,
-}
+pub name: Token,
+pub initializer: Expr,
+    }
 
 pub trait StmtVisitor<R> {
     fn visit_expression(&self, stmt: &ExpressionStmt) -> Result<R, LoxError>;

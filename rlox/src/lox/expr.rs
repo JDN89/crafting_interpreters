@@ -7,6 +7,7 @@ pub enum Expr {
     Grouping(GroupingExpr),
     Literal(LiteralExpr),
     Unary(UnaryExpr),
+    Variable(VariableExpr),
 }
 
 impl Expr {
@@ -16,6 +17,7 @@ impl Expr {
             Expr::Grouping(expr) => visitor.visit_grouping(&expr),
             Expr::Literal(expr) => visitor.visit_literal(&expr),
             Expr::Unary(expr) => visitor.visit_unary(&expr),
+            Expr::Variable(expr) => visitor.visit_variable(&expr),
         }
     }
 }
@@ -32,7 +34,7 @@ pub struct GroupingExpr {
     pub expression: Box<Expr>,
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug)]
 pub struct LiteralExpr {
     pub value: Literal,
 }
@@ -43,9 +45,15 @@ pub struct UnaryExpr {
     pub right: Box<Expr>,
 }
 
+#[derive(Debug)]
+pub struct VariableExpr {
+    pub name: Token,
+}
+
 pub trait ExprVisitor<R> {
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<R, LoxError>;
     fn visit_grouping(&self, expr: &GroupingExpr) -> Result<R, LoxError>;
     fn visit_literal(&self, expr: &LiteralExpr) -> Result<R, LoxError>;
     fn visit_unary(&self, expr: &UnaryExpr) -> Result<R, LoxError>;
+    fn visit_variable(&self, expr: &VariableExpr) -> Result<R, LoxError>;
 }

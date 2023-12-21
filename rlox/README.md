@@ -9,6 +9,10 @@
 # Precedence rules
 | Rule            | Production                                                |
 |-----------------|-----------------------------------------------------------|
+
+| varDecl         |  → "var" IDENTIFIER  ("=" expression )? ";";  
+| exprStmt        |  → expression ";" ;         |
+| printStmt       |  → "print" expression ";" ;|
 | expression      | → equality ;                                             |
 | equality        | → comparison ( ( "!=" \| "==" ) comparison )* ;         |
 | comparison      | → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;        |
@@ -16,7 +20,7 @@
 | factor          | → unary ( ( "/" \| "\*" ) unary )* ;                      |
 | unary           | → ( "!" \| "-" ) unary \| primary ;                     |
 | primary         | → NUMBER \| STRING \| "true" \| "false" \| "nil"         |
-|                 | \| "(" expression ")" ;                                   |
+|                 | \| "(" expression ")" | IDENTIFIER ;                     |
 
 in parser.rs you'll see that we'll keep passing the tokens until primary which are the leaves of the AST, we'll go deeper whilst respecting the rulst of precedence and association.
 
@@ -59,7 +63,8 @@ __Statements__ produce side effects. Preform actions or control the flow of a pr
 
 | Production     | Expansion                                      |
 |----------------|------------------------------------------------|
-| program        | statement* EOF ;                               |
+| program        | declaration* EOF ;                             |
+| declaration    | varDecel | statement;                          |
 | statement      | exprStmt                                       |
 |                | printStmt                                      |
 | exprStmt       | expression ";"                                 |

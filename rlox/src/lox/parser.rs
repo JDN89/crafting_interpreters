@@ -28,6 +28,7 @@ impl Parser {
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements: Vec<Stmt> = Vec::new();
 
+        // TODO with if let we can call synchronize() in case of an error
         while !self.is_at_end() {
             statements.push(self.statement()?);
         }
