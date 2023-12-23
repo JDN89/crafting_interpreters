@@ -1,6 +1,6 @@
 use crate::expr::Expr;
 use crate::lox_error::LoxError;
-use crate::token::{Literal, Token};
+use crate::token:: Token;
 
 #[derive(Debug)]
 pub enum Stmt {
@@ -32,7 +32,7 @@ pub struct PrintStmt {
 #[derive(Debug)]
 pub struct VarStmt {
     pub name: Token,
-    pub initializer: Expr,
+    pub initializer: Option<Expr>,
 }
 
 pub trait StmtVisitor<R> {

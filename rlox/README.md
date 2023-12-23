@@ -6,6 +6,32 @@
 - after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
 - remove #[allow(dead_code, unused_variables)]
 
+# EXPRESSION GRAMMAR RULES
+| Production Rule | Syntax                                             | Description                                           |
+|------------------|----------------------------------------------------|-------------------------------------------------------|
+| expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
+| literal          | `NUMBER \| STRING \| "true" \| "false" \| "nil"` | A literal can be a number, string, true, false, or nil. |
+| grouping         | `("(" expression ")")`                             | A grouping is an expression enclosed in parentheses.   |
+| unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
+| binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
+| operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
+
+
+
+
+__Expression__ produce values
+__Statements__ produce side effects. Preform actions or control the flow of a program
+
+# STATEMENT GRAMAR RULES
+
+| Production     | Expansion                                      |
+|----------------|------------------------------------------------|
+| program        | declaration* EOF ;                             |
+| declaration    | varDecel | statement;                          |
+| statement      | exprStmt                                       |
+|                | printStmt                                      |
+| exprStmt       | expression ";"                                 |
+| printStmt      | "print" expression ";"                         |
 # Precedence rules
 | Rule            | Production                                                |
 |-----------------|-----------------------------------------------------------|
@@ -39,36 +65,6 @@ __AST__
 
 __AST code representation__
 Expression(ExpressionStmt { expression: Binary(BinaryExpr { left: Binary(BinaryExpr { left: Literal(LiteralExpr { value: Integer(3.0) }), operator: Token { token_type: Star, lexeme: "*", literal: Some(String("")), line: 0 }, right: Grouping(GroupingExpr { expression: Binary(BinaryExpr { left: Literal(LiteralExpr { value: Integer(1.0) }), operator: Token { token_type: Plus, lexeme: "+", literal: Some(String("")), line: 0 }, right: Literal(LiteralExpr { value: Integer(2.0) }) }) }) }), operator: Token { token_type: Minus, lexeme: "-", literal: Some(String("")), line: 0 }, right: Literal(LiteralExpr { value: Integer(1.0) }) }) })
-
-
-
- 
-# EXPRESSION GRAMMAR RULES
-| Production Rule | Syntax                                             | Description                                           |
-|------------------|----------------------------------------------------|-------------------------------------------------------|
-| expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
-| literal          | `NUMBER \| STRING \| "true" \| "false" \| "nil"` | A literal can be a number, string, true, false, or nil. |
-| grouping         | `("(" expression ")")`                             | A grouping is an expression enclosed in parentheses.   |
-| unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
-| binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
-| operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
-
-
-
-
-__Expression__ produce values
-__Statements__ produce side effects. Preform actions or control the flow of a program
-
-# STATEMENT GRAMAR RULES
-
-| Production     | Expansion                                      |
-|----------------|------------------------------------------------|
-| program        | declaration* EOF ;                             |
-| declaration    | varDecel | statement;                          |
-| statement      | exprStmt                                       |
-|                | printStmt                                      |
-| exprStmt       | expression ";"                                 |
-| printStmt      | "print" expression ";"                         |
 
 
 # RLOX - ruts implementation of Lox

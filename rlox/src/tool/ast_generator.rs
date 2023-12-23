@@ -8,7 +8,7 @@ fn main() {
         &[
             "Expression: Expr expression",
             "Print: Expr expression",
-            "Var : Token name, Expr initializer"
+            "Var : Token name, Option<Expr> initializer"
         ],
     ) {
         eprintln!("Error: {}", e);

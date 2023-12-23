@@ -1,6 +1,6 @@
-use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr};
-use crate::stmt::PrintStmt;
+use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{ExpressionStmt, Stmt};
+use crate::stmt::{PrintStmt, VarStmt};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
@@ -23,17 +23,53 @@ impl Parser {
     //     Ok(self.expression())?
     // }
 
-
     // program        → statement* EOF ;
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements: Vec<Stmt> = Vec::new();
 
         // TODO with if let we can call synchronize() in case of an error
         while !self.is_at_end() {
-            statements.push(self.statement()?);
+            match self.declaration() {
+                Ok(stmt) => statements.push(stmt),
+                Err(error) => {
+                    let _ = self.synchronize();
+                    return Err(error);
+                }
+            }
         }
 
         return Ok(statements);
+    }
+
+    fn declaration(&mut self) -> Result<Stmt, LoxError> {
+        if self.match_token_types(&[Var]) {
+            return Ok(self.var_declaration()?);
+        } else {
+            return Ok(self.statement()?);
+        };
+    }
+
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
+        // Separate scope for the mutable borrow of `self` for `name`
+        //consume token and store in name
+        let name = {
+            // Inner scope starts here
+            let name_token = self.consume(&Identifier, "expect variable name.")?;
+            // Rust doesn't allow moving out of borrowed content within the same scope
+            // Creating a new scope allows the borrow of `name_token` to end before
+            // attempting to move or clone it
+            name_token.clone()
+            // Inner scope ends here
+        };
+
+        let mut initializer: Option<Expr> = None;
+        if self.match_token_types(&[Equal]) {
+            initializer = Some(self.expression()?);
+        }
+
+        let _consumed_semicolon =
+            self.consume(&Semicolon, "Expect ';' after variable declaration.");
+        return Ok(Stmt::Var(VarStmt { name, initializer }));
     }
 
     //parse statement syntax trees
@@ -48,14 +84,14 @@ impl Parser {
     // printStmt      → "print" expression ";" ;
     fn print_statement(&mut self) -> Result<Stmt, LoxError> {
         let value = self.expression()?;
-        self.consume(Semicolon, "Expect ';' after value.")?;
+        self.consume(&Semicolon, "Expect ';' after value.")?;
         return Ok(Stmt::Print(PrintStmt { expression: value }));
     }
 
     // exprStmt       → expression ";" ;
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
         let value = self.expression()?;
-        self.consume(Semicolon, "Expect ';' expression.")?;
+        self.consume(&Semicolon, "Expect ';' expression.")?;
         return Ok(Stmt::Expression(ExpressionStmt { expression: value }));
     }
 
@@ -170,10 +206,13 @@ impl Parser {
 
         if self.match_token_types(&[LeftParen]) {
             let expr = self.expression()?;
-            self.consume(RightParen, "expect ')' after expression")?;
+            self.consume(&RightParen, "expect ')' after expression")?;
             return Ok(Expr::Grouping(GroupingExpr {
                 expression: Box::new(expr),
             }));
+        }
+        if self.match_token_types(&[Identifier]) {
+            return Ok(Expr::Variable(VariableExpr { name: self.previous().unwrap().clone() }));
         }
         // If none of the cases in there match, it means we are sitting on a token that can’t start an expression. We need to handle that error too.
         else {
@@ -217,15 +256,15 @@ impl Parser {
         if !self.is_at_end() {
             self.current += 1
         }
-        self.previous().unwrap()
+        return self.previous().unwrap();
     }
 
     fn is_at_end(&self) -> bool {
         self.peek().unwrap().token_type == Eof
     }
 
-    fn consume(&mut self, right_paren: TokenType, error_message: &str) -> Result<&Token, LoxError> {
-        if self.check(&right_paren) {
+    fn consume(&mut self, ttype: &TokenType, error_message: &str) -> Result<&Token, LoxError> {
+        if self.check(&ttype) {
             return Ok(self.advance());
         }
 

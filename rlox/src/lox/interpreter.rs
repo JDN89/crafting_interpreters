@@ -62,6 +62,12 @@ impl StmtVisitor<()> for Interpreter {
     }
 
     fn visit_var(&self, stmt: &crate::stmt::VarStmt) -> Result<(), LoxError> {
+        // let value = 
+        //
+        // match stmt.initializer {
+        //
+        //     
+        // }
         todo!()
     }
 }
