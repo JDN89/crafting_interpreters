@@ -19,8 +19,12 @@ mod token_type;
 
 // possible need of converson to Box<dyn Error>
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {
+    // initialize the interpreter, which contains the environment field, so that we can hold on to the state of the program one we run it
+    let interpreter = Interpreter::new();
+
     let contents = fs::read_to_string(file_path)?;
-    if let Err(e) = run(&contents) {
+
+    if let Err(e) = run(&contents, &interpreter) {
         match e {
             LoxError::ScannerError(e) => {
                 e.report();
@@ -45,6 +49,9 @@ pub fn run_file(file_path: &str) -> Result<(), io::Error> {
 
 // REPL: print eval read -> interactive prompt
 pub fn run_prompt() -> Result<(), io::Error> {
+    // initialize the interpreter, which contains the environment field, so that we can hold on to the state of the program one we run it
+    let interpreter = Interpreter::new();
+
     let stdin = io::stdin();
     let mut reader = io::BufReader::new(stdin.lock());
 
@@ -60,7 +67,7 @@ pub fn run_prompt() -> Result<(), io::Error> {
             break;
         }
 
-        if let Err(e) = run(&buf) {
+        if let Err(e) = run(&buf, &interpreter) {
             match e {
                 LoxError::Interpreter(e) => e.report(),
                 LoxError::ParserError(e) => e.report(),
@@ -73,15 +80,11 @@ pub fn run_prompt() -> Result<(), io::Error> {
     Ok(())
 }
 
-fn run(source: &String) -> Result<(), LoxError> {
+fn run(source: &String, interpreter: &Interpreter) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;
     let mut parser = Parser::build_parser(tokens.clone());
     let statements: Vec<stmt::Stmt> = parser.parse()?;
-    let interpreter = Interpreter::new();
-    // for statement in &statements {
-    //     // println!("{:?}", statement);
-    // }
     interpreter.interpret(statements)?;
     Ok(())
 }
