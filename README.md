@@ -2,7 +2,6 @@
 
 # RESOURCES:
 
-[Discussion Jonathan Blow](https://www.youtube.com/watch?v=MnctEW1oL-E&t=3153s)
 [Crafting Interpreters - Robert Nystrom](https://craftinginterpreters.com/) 
 
 
