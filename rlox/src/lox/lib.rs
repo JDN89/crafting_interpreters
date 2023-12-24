@@ -7,6 +7,7 @@ use parser::Parser;
 use scanner::Scanner;
 
 mod ast_printer;
+mod environment;
 mod expr;
 mod interpreter;
 mod lox_error;
@@ -27,11 +28,15 @@ pub fn run_file(file_path: &str) -> Result<(), io::Error> {
             }
             LoxError::ParserError(e) => {
                 e.report();
-                process::exit(65)
+                process::exit(66)
             }
             LoxError::Interpreter(e) => {
                 e.report();
                 process::exit(70)
+            }
+            LoxError::Runtime(e) => {
+                e.report();
+                process::exit(1)
             }
         }
     }
@@ -60,6 +65,7 @@ pub fn run_prompt() -> Result<(), io::Error> {
                 LoxError::Interpreter(e) => e.report(),
                 LoxError::ParserError(e) => e.report(),
                 LoxError::ScannerError(e) => e.report(),
+                LoxError::Runtime(e) => e.report(),
             }
         }
     }
@@ -72,10 +78,10 @@ fn run(source: &String) -> Result<(), LoxError> {
     let tokens = scanner.scan_tokens()?;
     let mut parser = Parser::build_parser(tokens.clone());
     let statements: Vec<stmt::Stmt> = parser.parse()?;
-    let interpreter = Interpreter {};
-    for statement in &statements {
-        println!("{:?}",statement);
-    }
+    let interpreter = Interpreter::new();
+    // for statement in &statements {
+    //     // println!("{:?}", statement);
+    // }
     interpreter.interpret(statements)?;
     Ok(())
 }

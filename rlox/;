@@ -1,0 +1,38 @@
+use std::collections::HashMap;
+
+use crate::token::Token;
+use crate::RuntimeError;
+use crate::{token::Literal, LoxError};
+
+#[derive(Debug)]
+
+pub struct Environment {
+    pub values: HashMap<&str, Literal>,
+}
+
+impl Environment {
+    fn new() -> Self {
+        Environment {
+            values: HashMap::new(),
+        }
+    }
+
+    fn define(&mut self, name: &str, value: Literal) {
+        self.values.insert(name, value);
+    }
+
+    fn get(&self, name: &Token) -> Result<&Literal, LoxError> {
+        if self.values.contains_key(&name.lexeme) {
+            return match self.values.get(&name.lexeme.to_string()) {
+                Some(value) => Ok(value),
+                None => Err(LoxError::Runtime(RuntimeError::throw(format!("couldn't retrieve value for: {}", name.lexeme))))
+            }
+
+        } else {
+            Err(LoxError::Runtime(RuntimeError::throw(format!(
+                "Undefined variable: {}",
+                name.lexeme
+            ))))
+        }
+    }
+}

@@ -1,15 +1,26 @@
+use crate::environment::Environment;
 use crate::stmt::Stmt;
 use crate::stmt::StmtVisitor;
 use crate::token_type::TokenType;
 use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
+use std::cell::RefCell;
 
 #[derive(Debug)]
-pub struct Interpreter {}
+pub struct Interpreter {
+    // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
+    environment: RefCell<Environment>,
+}
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
 // pattern
 impl Interpreter {
+    pub fn new() -> Self {
+        Interpreter {
+            environment: Environment::new().into(),
+        }
+    }
+
     pub fn interpret(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
             self.execute(&statement)?;
@@ -62,13 +73,15 @@ impl StmtVisitor<()> for Interpreter {
     }
 
     fn visit_var(&self, stmt: &crate::stmt::VarStmt) -> Result<(), LoxError> {
-        // let value = 
-        //
-        // match stmt.initializer {
-        //
-        //     
-        // }
-        todo!()
+        let value: Literal;
+        match &stmt.initializer {
+            Some(expression) => value = self.evaluate(&expression)?,
+            None => value = Literal::Nil,
+        }
+        self.environment
+            .borrow_mut()
+            .define(&stmt.name.lexeme, value);
+        Ok(())
     }
 }
 
@@ -180,13 +193,13 @@ impl ExprVisitor<Literal> for Interpreter {
     }
 
     fn visit_variable(&self, expr: &VariableExpr) -> Result<Literal, LoxError> {
-        todo!()
+        return Ok( self.environment.borrow_mut().get_literal(&expr.name)?.clone());
     }
 }
 
 #[test]
 fn test_bang_equals() {
-    let interpreter = Interpreter {};
+    let interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Integer(123.00),
@@ -209,7 +222,7 @@ fn test_bang_equals() {
 
 #[test]
 fn test_equals_equals_integers() {
-    let interpreter = Interpreter {};
+    let interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Integer(123.00),
@@ -232,7 +245,7 @@ fn test_equals_equals_integers() {
 
 #[test]
 fn test_equals_equals_strings() {
-    let interpreter = Interpreter {};
+    let interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
@@ -255,7 +268,7 @@ fn test_equals_equals_strings() {
 
 #[test]
 fn test_bang_equals_strings() {
-    let interpreter = Interpreter {};
+    let interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
@@ -298,7 +311,7 @@ fn test_bang_equals_strings() {
 // I think object in the java code can be null but we create a token Literal nil in case of a null value in the source code.
 #[test]
 fn test_equals_equals_literal_nill() {
-    let interpreter = Interpreter {};
+    let interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Nil,
@@ -321,7 +334,7 @@ fn test_equals_equals_literal_nill() {
 
 #[test]
 fn test_equals_equals_nil_and_operand() {
-    let interpreter = Interpreter {};
+    let interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Nil,
