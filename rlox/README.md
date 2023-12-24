@@ -1,4 +1,5 @@
 ## TODO
+- Read chapter 15 and 16 of rust book: RefCell and Arc,...
 - format BinExpr,... so you can print a nice AST and paste it in the readme
 - test al scenarios: does the interpreter work 
 - see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
