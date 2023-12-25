@@ -82,7 +82,11 @@ pub fn run_prompt() -> Result<(), io::Error> {
 
 fn run(source: &String, interpreter: &Interpreter) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
+    println!("{:?}",source);
     let tokens = scanner.scan_tokens()?;
+    for token in &tokens {
+        println!("{}",token);
+    }
     let mut parser = Parser::build_parser(tokens.clone());
     let statements: Vec<stmt::Stmt> = parser.parse()?;
     interpreter.interpret(statements)?;

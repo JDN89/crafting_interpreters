@@ -1,5 +1,6 @@
 use crate::lox_error::LoxError;
 use crate::token::{Literal, Token};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum Expr {
@@ -9,6 +10,19 @@ pub enum Expr {
     Literal(LiteralExpr),
     Unary(UnaryExpr),
     Variable(VariableExpr),
+}
+
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Expr::Assign(expr) => write!(f, "{}", expr),
+            Expr::Binary(expr) => write!(f, "{}", expr),
+            Expr::Grouping(expr) => write!(f, "{}", expr),
+            Expr::Literal(expr) => write!(f, "{}", expr),
+            Expr::Unary(expr) => write!(f, "{}", expr),
+            Expr::Variable(expr) => write!(f, "{}", expr),
+        }
+    }
 }
 
 impl Expr {
@@ -29,6 +43,13 @@ pub struct AssignExpr {
     pub value: Box<Expr>,
 }
 
+impl fmt::Display for AssignExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Implement the formatting logic for AssignExpr
+        write!(f, "Assign({} = {})", self.name.lexeme, self.value)
+    }
+}
+
 #[derive(Debug)]
 pub struct BinaryExpr {
     pub left: Box<Expr>,
@@ -36,14 +57,35 @@ pub struct BinaryExpr {
     pub right: Box<Expr>,
 }
 
+impl fmt::Display for BinaryExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Implement the formatting logic for BinaryExpr
+        write!(f, "Binary({} {} {})", self.left, self.operator.lexeme, self.right)
+    }
+}
+
 #[derive(Debug)]
 pub struct GroupingExpr {
     pub expression: Box<Expr>,
 }
 
+impl fmt::Display for GroupingExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Implement the formatting logic for GroupingExpr
+        write!(f, "Grouping({})", self.expression)
+    }
+}
+
 #[derive(Debug)]
 pub struct LiteralExpr {
     pub value: Literal,
+}
+
+impl fmt::Display for LiteralExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Implement the formatting logic for LiteralExpr
+        write!(f, "Literal({})", self.value)
+    }
 }
 
 #[derive(Debug)]
@@ -52,9 +94,23 @@ pub struct UnaryExpr {
     pub right: Box<Expr>,
 }
 
+impl fmt::Display for UnaryExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Implement the formatting logic for UnaryExpr
+        write!(f, "Unary({} {})", self.operator.lexeme, self.right)
+    }
+}
+
 #[derive(Debug)]
 pub struct VariableExpr {
     pub name: Token,
+}
+
+impl fmt::Display for VariableExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Implement the formatting logic for VariableExpr
+        write!(f, "Variable({})", self.name.lexeme)
+    }
 }
 
 pub trait ExprVisitor<R> {

@@ -10,12 +10,14 @@ pub struct Token {
     pub literal: Option<Literal>,
     pub line: usize,
 }
+
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.literal {
-            Some(value) =>   write!(f, "Lexeme: {} - Literal {}", self.lexeme,value),
-            None => write!(f, "Lexeme: {}", self.lexeme )
-            }
+        match (&self.literal, &self.literal) {
+            (Some(_value), Some(Literal::String(s))) if s.is_empty() => write!(f, "Lexeme: {}", self.lexeme),
+            (Some(value), _) => write!(f, "Lexeme: {} - Literal: {}", self.lexeme, value),
+            (None, _) => write!(f, "Lexeme: {}", self.lexeme),
+        }
     }
 }
 
@@ -29,6 +31,7 @@ pub enum Literal {
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Literal::String(s) if s.is_empty() => Ok(()),
             Literal::String(s) => write!(f, "String: {}", s),
             Literal::Integer(num) => write!(f, "Integer: {}", num),
             Literal::Boolean(b) => write!(f, "Boolean: {}", b),
@@ -45,9 +48,9 @@ impl PartialEq for Literal {
             (Self::String(l0), Self::String(r0)) => l0 == r0,
             (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
             (Self::Boolean(l0), Self::Boolean(r0)) => l0 == r0,
-            (Self::Nil,Self::Nil) => true,
-            (Self::Nil,_) => false,
-            (_,Self::Nil) => false,
+            (Self::Nil, Self::Nil) => true,
+            (Self::Nil, _) => false,
+            (_, Self::Nil) => false,
 
             _ => core::mem::discriminant(self) == core::mem::discriminant(other),
         }
