@@ -13,6 +13,18 @@
 
 3 * (1 + 2) - 1
 
+__TOKENS__
+Lexeme: 3 - Literal: Integer: 3
+Lexeme: *
+Lexeme: (
+Lexeme: 1 - Literal: Integer: 1
+Lexeme: +
+Lexeme: 2 - Literal: Integer: 2
+Lexeme: )
+Lexeme: -
+Lexeme: 1 - Literal: Integer: 1
+Lexeme: ;
+
 __AST__
        -
       / \
@@ -21,6 +33,23 @@ __AST__
    3   +
       / \
      1   2
+
+Expression:
+  Binary : ( left:
+    Binary : ( left:
+      Literal:  (Integer: 3)
+      operator:  *
+      right :  Grouping:  (
+        Binary : ( left:
+          Literal:  (Integer: 1)
+          operator:  +
+          right :   Literal:  (Integer: 2)
+        )
+      )
+    )
+    operator:  -
+    right :   Literal:  (Integer: 1)
+  )
 
 # Language titbits
 

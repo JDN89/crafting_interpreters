@@ -60,7 +60,7 @@ pub struct BinaryExpr {
 impl fmt::Display for BinaryExpr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Implement the formatting logic for BinaryExpr
-        write!(f, "Binary({} {} {})", self.left, self.operator.lexeme, self.right)
+        write!(f, "   \n Binary : ( left: {} \n operator:  {}  \n right : {})", self.left, self.operator.lexeme, self.right)
     }
 }
 
@@ -72,7 +72,7 @@ pub struct GroupingExpr {
 impl fmt::Display for GroupingExpr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Implement the formatting logic for GroupingExpr
-        write!(f, "Grouping({})", self.expression)
+        write!(f, " Grouping:  ({})", self.expression)
     }
 }
 
@@ -84,7 +84,7 @@ pub struct LiteralExpr {
 impl fmt::Display for LiteralExpr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Implement the formatting logic for LiteralExpr
-        write!(f, "Literal({})", self.value)
+        write!(f, "  Literal:  ({})", self.value)
     }
 }
 
@@ -97,7 +97,7 @@ pub struct UnaryExpr {
 impl fmt::Display for UnaryExpr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Implement the formatting logic for UnaryExpr
-        write!(f, "Unary({} {})", self.operator.lexeme, self.right)
+        write!(f, "  Unary: ({} {})", self.operator.lexeme, self.right)
     }
 }
 
@@ -109,7 +109,7 @@ pub struct VariableExpr {
 impl fmt::Display for VariableExpr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Implement the formatting logic for VariableExpr
-        write!(f, "Variable({})", self.name.lexeme)
+        write!(f, "  \n  Variable:  ({})", self.name.lexeme)
     }
 }
 
