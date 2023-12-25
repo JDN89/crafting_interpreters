@@ -1,10 +1,12 @@
+use std::env::var;
+
 use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{ExpressionStmt, Stmt};
 use crate::stmt::{PrintStmt, VarStmt};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
-use crate::{Loc, LoxError, ParserError};
+use crate::{Loc, LoxError, ParserError, RuntimeError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -91,11 +93,30 @@ impl Parser {
         return Ok(Stmt::Expression(ExpressionStmt { expression: value }));
     }
 
-    // expression     → equality ;
-    // todo() : convert to Result<Expr, LoxError> and fix along the chain
+    // expression     → assingment ;
     fn expression(&mut self) -> Result<Expr, LoxError> {
-        Ok(self.equality()?)
+        Ok(self.assignment()?)
     }
+
+    // assignment     → IDENTIFIER "=" assignment | equality ;
+    // recursion cause assignment is right associative. For the other binary operators we loop as
+    // long as we match the same operator type because the are left associative
+    fn assignment(&mut self) -> Result<Expr, LoxError> {
+        let expr = self.equality()?;
+         if self.match_token_types(& [Equal]) {
+            let equals = self.previous();
+            // we call assginement again because we can have var a = 1 = 2 = 3
+            let value = self.assignment()?;
+
+         if let Expr::Variable(var) = &expr {
+                let name = &var.name;
+                return Ok( Expr::Assign(crate::expr::AssignExpr { name: name.clone(), value: Box::new(value) }) )
+            }
+
+        }
+        Ok(expr)
+    }
+
 
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     fn equality(&mut self) -> Result<Expr, LoxError> {
@@ -237,6 +258,7 @@ impl Parser {
         found_match
     }
 
+    // todo instead of unwrap return error -> unwrap_or_else
     fn check(&self, ttype: &TokenType) -> bool {
         if self.is_at_end() {
             return false;
@@ -309,4 +331,5 @@ impl Parser {
         }
         Ok(())
     }
+
 }

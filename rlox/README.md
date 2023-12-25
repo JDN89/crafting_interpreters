@@ -8,51 +8,6 @@
 - remove #[allow(dead_code, unused_variables)]
 -   sfd
 
-# EXPRESSION GRAMMAR RULES
-| Production Rule | Syntax                                             | Description                                           |
-|------------------|----------------------------------------------------|-------------------------------------------------------|
-| expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
-| literal          | `NUMBER \| STRING \| "true" \| "false" \| "nil"` | A literal can be a number, string, true, false, or nil. |
-| grouping         | `("(" expression ")")`                             | A grouping is an expression enclosed in parentheses.   |
-| unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
-| binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
-| operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
-
-
-
-
-__Expression__ produce values
-__Statements__ produce side effects. Preform actions or control the flow of a program
-
-# STATEMENT GRAMAR RULES
-
-| Production     | Expansion                                      |
-|----------------|------------------------------------------------|
-| program        | declaration* EOF ;                             |
-| declaration    | varDecel | statement;                          |
-| statement      | exprStmt                                       |
-|                | printStmt                                      |
-| exprStmt       | expression ";"                                 |
-| printStmt      | "print" expression ";"                         |
-
-
-# Precedence and association rules
-| Rule            | Production                                                |
-|-----------------|-----------------------------------------------------------|
-
-| varDecl         |  → "var" IDENTIFIER  ("=" expression )? ";";  
-| exprStmt        |  → expression ";" ;         |
-| printStmt       |  → "print" expression ";" ;|
-| expression      | → equality ;                                             |
-| equality        | → comparison ( ( "!=" \| "==" ) comparison )* ;         |
-| comparison      | → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;        |
-| term            | → factor ( ( "-" \| "+" ) factor )* ;                    |
-| factor          | → unary ( ( "/" \| "\*" ) unary )* ;                      |
-| unary           | → ( "!" \| "-" ) unary \| primary ;                     |
-| primary         | → NUMBER \| STRING \| "true" \| "false" \| "nil"         |
-|                 | \| "(" expression ")" | IDENTIFIER ;                     |
-
-in parser.rs you'll see that we'll keep passing the tokens until primary which are the leaves of the AST, we'll go deeper whilst respecting the rulst of precedence and association.
 
 ### Example
 
@@ -67,8 +22,50 @@ __AST__
       / \
      1   2
 
-__AST code representation__
-Expression(ExpressionStmt { expression: Binary(BinaryExpr { left: Binary(BinaryExpr { left: Literal(LiteralExpr { value: Integer(3.0) }), operator: Token { token_type: Star, lexeme: "*", literal: Some(String("")), line: 0 }, right: Grouping(GroupingExpr { expression: Binary(BinaryExpr { left: Literal(LiteralExpr { value: Integer(1.0) }), operator: Token { token_type: Plus, lexeme: "+", literal: Some(String("")), line: 0 }, right: Literal(LiteralExpr { value: Integer(2.0) }) }) }) }), operator: Token { token_type: Minus, lexeme: "-", literal: Some(String("")), line: 0 }, right: Literal(LiteralExpr { value: Integer(1.0) }) }) })
+# Language titbits
+
+#### Imperative vs Declarative:
+- It’s possible to create a language that has variables but does not let you reassign—or mutate—them. Haskell is one example. SML supports only mutable references and arrays—variables cannot be reassigned. Rust steers you away from mutation by requiring a mut modifier to enable assignment. Lox is not so austere. Lox is an __imperative__ language, and mutation comes with the territory. 
+
+#### Assignment: expression vs statement
+
+- That little __=__ syntax is more complex than it might seem. Like most C-derived languages, __assignment is an expression__ and not a statement. You can embed assignments withing larger expressions. Whereas with an expression you can't embed the assignment withing a larger expression because it doesn't hold a value, but causes a side effect.
+
+JAVA
+```
+int x = 5;
+int y = (x = 10) + 2;
+```
+PYTHON
+```
+result = (x = 10) + 5  # This line will result in a syntax error
+print(result)
+```
+
+Implications:
+__Precedence and Association__: In C-derived languages, the assignment operator has lower precedence than most other operators, which means it is often the "weakest link" in an expression, evaluating last.
+
+
+The distinction between __l-values__ and __r-values__ is fundamental to understanding how values are assigned in programming languages. Let's break down the concepts:
+
+l-value: An l-value represents a storage location in memory. It refers to the left-hand side of an assignment operation, where a value can be stored. An l-value is something that can appear on the left side of an assignment statement. In your example, a is an l-value because it represents a storage location where a value can be assigned.
+
+r-value: An r-value represents the content stored in a memory location. It refers to the right-hand side of an assignment operation, where a value is retrieved. An r-value is something that produces a value. In your example, the string "value" is an r-value because it produces a value.
+
+In the code you provided:
+
+javascript
+```
+var a = "before";
+a = "value";
+```
+In the first line, a is an l-value because it's on the left side of the = sign, indicating that we are storing the value "before" in the memory location represented by a.
+
+In the second line, a is also an l-value, but "value" is an r-value because it produces the value that we want to store in the memory location represented by a.
+
+Now, regarding the syntax tree and parsing:
+
+When parsing an assignment expression, the parser encounters the left-hand side (l-value) and doesn't know it's an l-value until it sees the = sign. This is because the same identifier (a in this case) could be an l-value or an r-value in different contexts. To handle this, the parser usually creates an abstract syntax tree (AST) node for the assignment expression (Expr.Assign in your example), and the details of whether a particular expression is an l-value or r-value are determined during later stages of the compilation process.
 
 
 # RLOX - ruts implementation of Lox

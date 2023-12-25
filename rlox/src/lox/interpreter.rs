@@ -90,6 +90,11 @@ impl ExprVisitor<Literal> for Interpreter {
     // we start with the arithimic operators and cover the other binary operators in a later
     // chapter
 
+   
+    fn visit_assign(&self, expr: &AssignExpr) -> Result<Literal, LoxError> {
+        todo!()
+    }
+
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
         let left = self.evaluate(&expr.left)?;
         let right = self.evaluate(&expr.right)?;
@@ -195,6 +200,7 @@ impl ExprVisitor<Literal> for Interpreter {
     fn visit_variable(&self, expr: &VariableExpr) -> Result<Literal, LoxError> {
         return Ok( self.environment.borrow_mut().get_literal(&expr.name)?.clone());
     }
+
 }
 
 #[test]
