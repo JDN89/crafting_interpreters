@@ -34,7 +34,9 @@ __Statements__ produce side effects. Preform actions or control the flow of a pr
 |                | printStmt                                      |
 | exprStmt       | expression ";"                                 |
 | printStmt      | "print" expression ";"                         |
-# Precedence rules
+
+
+# Precedence and association rules
 | Rule            | Production                                                |
 |-----------------|-----------------------------------------------------------|
 

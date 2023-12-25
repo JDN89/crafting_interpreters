@@ -19,10 +19,6 @@ impl Parser {
         Parser { tokens, current: 0 }
     }
 
-    // pub fn parse(&mut self) -> Result<Expr, LoxError> {
-    //     Ok(self.expression())?
-    // }
-
     // program        → statement* EOF ;
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements: Vec<Stmt> = Vec::new();
