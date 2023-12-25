@@ -1,10 +1,13 @@
 package com.craftinginterpreters.lox;
 
-public class Interpreter implements Expr.Visitor<Object> {
-    void interpret(Expr expression) {
+import java.util.List;
+
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -108,6 +111,9 @@ public class Interpreter implements Expr.Visitor<Object> {
 //        evaluate the expr and accept the visitor pattern
         return expr.accept(this);
     }
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
 
     //Lox follows Ruby’s simple rule: false and nil are falsey, and everything else is truthy.
     private boolean isTruthy(Object object) {
@@ -126,5 +132,18 @@ public class Interpreter implements Expr.Visitor<Object> {
         if (left instanceof Double && right instanceof Double) return;
 
         throw new RuntimeError(operator, "Operands must be numbers.");
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 }

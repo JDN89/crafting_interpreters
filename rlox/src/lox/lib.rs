@@ -84,9 +84,9 @@ fn run(source: &String, interpreter: &Interpreter) -> Result<(), LoxError> {
     let mut scanner = Scanner::build_scanner(source);
     println!("{:?}",source);
     let tokens = scanner.scan_tokens()?;
-    for token in &tokens {
-        println!("{}",token);
-    }
+    // for token in &tokens {
+    //     println!("{}",token);
+    // }
     let mut parser = Parser::build_parser(tokens.clone());
     let statements: Vec<stmt::Stmt> = parser.parse()?;
     for ast in &statements {

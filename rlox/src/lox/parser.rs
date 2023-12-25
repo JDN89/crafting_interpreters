@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{ExpressionStmt, Stmt};
 use crate::stmt::{PrintStmt, VarStmt};
@@ -106,7 +107,7 @@ impl Parser {
             // we call assginement again because we can have var a = 1 = 2 = 3
             let value = self.assignment()?;
 
-            if let Expr::Variable(var) = &expr {
+            if let Expr::Variable(var) = &value {
                 let name = &var.name;
                 return Ok(Expr::Assign(crate::expr::AssignExpr {
                     name: name.clone(),

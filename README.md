@@ -11,6 +11,39 @@ source code -> scanning -> tokens -> parsing -> AST -> traverse and interpret AS
 
 
 # Compilation Flow
+
+## examples
+#### right versus left association
+
+
+__var a = 1 = 2 = 3__
+right associative
+
+  var
+   |
+   =
+  / \
+ a   =
+    / \
+   1   =
+      / \
+     2   3
+
+__var a = 1 + 2 + 3__
+left associative
+
+  var
+   |
+   =
+  / \
+ a   +
+    / \
+   +   3
+  / \
+ 1   2
+
+
+
 ## Source Code:
 
 The original code created by a programmer.
@@ -96,11 +129,24 @@ __Associativity__ determines which operator is evaluated first in a series of th
 
 | Name       | Operators      | Associates |
 |------------|-----------------|------------|
-| Equality   | ==, !=          | Left       |
+| Assignment | =               | right      |    =>   a = 1 = (2 = 3)
+| Equality   | ==, !=          | Left       |    
 | Comparison | >, >=, <, <=    | Left       |
-| Term       | -, +            | Left       |
+| Term       | -, +            | Left       |    =>  (1 + 4) + 5 + 9
 | Factor     | /, *            | Left       |
 | Unary      | !, -            | Right      |
+
+   =
+  / \
+ 1   =
+    / \
+   2   3
+
+    +
+   / \
+  +   3
+ / \
+1   2
 
 #### Precedence rules
 
