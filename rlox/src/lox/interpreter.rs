@@ -87,12 +87,11 @@ impl StmtVisitor<()> for Interpreter {
 
 #[allow(dead_code, unused_variables)]
 impl ExprVisitor<Literal> for Interpreter {
-    // we start with the arithimic operators and cover the other binary operators in a later
-    // chapter
 
-   
     fn visit_assign(&self, expr: &AssignExpr) -> Result<Literal, LoxError> {
-        todo!()
+        let value = self.evaluate(&expr.value)?;
+        self.environment.borrow_mut().assign(&expr.name, &value)?;
+        return Ok(value);
     }
 
     fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
@@ -198,9 +197,12 @@ impl ExprVisitor<Literal> for Interpreter {
     }
 
     fn visit_variable(&self, expr: &VariableExpr) -> Result<Literal, LoxError> {
-        return Ok( self.environment.borrow_mut().get_literal(&expr.name)?.clone());
+        return Ok(self
+            .environment
+            .borrow_mut()
+            .get_literal(&expr.name)?
+            .clone());
     }
-
 }
 
 #[test]

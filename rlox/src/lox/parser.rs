@@ -1,12 +1,10 @@
-use std::env::var;
-
 use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr};
 use crate::stmt::{ExpressionStmt, Stmt};
 use crate::stmt::{PrintStmt, VarStmt};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
-use crate::{Loc, LoxError, ParserError, RuntimeError};
+use crate::{Loc, LoxError, ParserError };
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -103,20 +101,21 @@ impl Parser {
     // long as we match the same operator type because the are left associative
     fn assignment(&mut self) -> Result<Expr, LoxError> {
         let expr = self.equality()?;
-         if self.match_token_types(& [Equal]) {
+        if self.match_token_types(&[Equal]) {
             let equals = self.previous();
             // we call assginement again because we can have var a = 1 = 2 = 3
             let value = self.assignment()?;
 
-         if let Expr::Variable(var) = &expr {
+            if let Expr::Variable(var) = &expr {
                 let name = &var.name;
-                return Ok( Expr::Assign(crate::expr::AssignExpr { name: name.clone(), value: Box::new(value) }) )
+                return Ok(Expr::Assign(crate::expr::AssignExpr {
+                    name: name.clone(),
+                    value: Box::new(value),
+                }));
             }
-
         }
         Ok(expr)
     }
-
 
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     fn equality(&mut self) -> Result<Expr, LoxError> {
@@ -229,7 +228,9 @@ impl Parser {
             }));
         }
         if self.match_token_types(&[Identifier]) {
-            return Ok(Expr::Variable(VariableExpr { name: self.previous().unwrap().clone() }));
+            return Ok(Expr::Variable(VariableExpr {
+                name: self.previous().unwrap().clone(),
+            }));
         }
         // If none of the cases in there match, it means we are sitting on a token that can’t start an expression. We need to handle that error too.
         else {
@@ -331,5 +332,4 @@ impl Parser {
         }
         Ok(())
     }
-
 }
