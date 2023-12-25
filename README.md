@@ -21,15 +21,13 @@ A __lexeme__ is the smallest substring of source code conveying meaning. A __tok
 
 ## Parsing into AST - Context-Free Grammar:
 
-|-----------------------------------------------------------------------------|
 |   Level of Grammar   |        Alphabet (Lexemes)   |        Strings         |
-|------------------------------------------------------------------------------
+|----------------------|-----------------------------|------------------------|
 | Lexical Analysis     | Individual characters       | Valid lexemes (tokens) |
 |                      | (e.g., 'a', '1', '+', etc.) | (e.g., "if", "123", "+")|
-|-----------------------------------------------------------------------------|
+|----------------------|-----------------------------|------------------------|
 | Syntactic Analysis   | Entire tokens               | Sequences of tokens    |
 | (Parser's Grammar)    | (e.g., 'if', '123', '+')    | (e.g., "if (x > 0)")   |
--------------------------------------------------------------------------------
 
 The scanner breaks down the source code into lexemes during the lexical phase. The parser analyzes sequences of tokens during the syntactic analysis phase, creating an __Abstract Syntax Tree (AST)__ based on token relationships.
 
