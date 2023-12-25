@@ -7,15 +7,19 @@
 
 # Crafting Interpresters: Robert Nystrom
 
-## Scanning or Lexing - regular language
-The __scanner__ processes a linear stream of characters, grouping them into __tokens__ based on predefined rules. A __lexeme__ is the smallest substring of source code, representing the most basic sequence of characters that conveys meaning. A __token__ comprises a lexeme along with additional useful data.
-  - Identifier: min
-  - Keyword: if
-  - Literal: 123
-  - Operator: + 
-  - Separator: ,
+source code -> scanning -> tokens -> parsing -> AST -> traverse and interpret AST
 
-## Parsing into AST - context free grammar
+
+# Compilation Flow
+## Source Code:
+
+The original code created by a programmer.
+## Scanning (Lexical Analysis):
+
+The scanner processes a linear stream of characters, grouping them into __tokens__ based on predefined rules.
+A __lexeme__ is the smallest substring of source code conveying meaning. A __token__ consists of a lexeme along with additional useful data.
+
+## Parsing into AST - Context-Free Grammar:
 
 +----------------------+-----------------------------+------------------------+
 |   Level of Grammar   |        Alphabet (Lexemes)   |        Strings         |
@@ -27,16 +31,26 @@ The __scanner__ processes a linear stream of characters, grouping them into __to
 | (Parser's Grammar)    | (e.g., 'if', '123', '+')    | (e.g., "if (x > 0)")   |
 +----------------------+-----------------------------+------------------------+
 
-The lexical phase the scanner broked down the source code and transformed them into lexemes. In the syntactic analysis phase the parser analyzes sequence of tokens and puts them into an AST based on the relationship between the tokens.
+The scanner breaks down the source code into lexemes during the lexical phase. The parser analyzes sequences of tokens during the syntactic analysis phase, creating an __Abstract Syntax Tree (AST)__ based on token relationships.
 
-The AST is constructed based on Grammar rules called productions and represents the hierarchical structure of the language. The grammar rules define how valid sequences of tokens (lexemes) can be assembled into meaningful expressions and statements
+## AST Construction and Grammar Rules:
 
-- Terminal: lexeme.
-- Non Terminal: reference to another production rule.
+The AST is built based on grammar rules (productions), representing the hierarchical structure of the language. Grammar rules define how valid sequences of tokens can be assembled into meaningful expressions and statements.
+Terminal: lexeme.
+Non-Terminal: reference to another production rule.
+The AST serves as an intermediate representation of the source code for further analysis.
 
-The AST is an intermediate representation of the source code and is used for further analysis.
+#### STATEMENT GRAMAR RULES
+| Production     | Expansion                                      |
+|----------------|------------------------------------------------|
+| program        | declaration* EOF ;                             |
+| declaration    | varDecel | statement;                          |
+| statement      | exprStmt                                       |
+|                | printStmt                                      |
+| exprStmt       | expression ";"                                 |
+| printStmt      | "print" expression ";"                         |
 
-
+#### EXPRESSION PRODUCTION RULES
 | Production Rule | Syntax                                             | Description                                           |
 |------------------|----------------------------------------------------|-------------------------------------------------------|
 | expression       | `literal \| unary \| binary \| grouping`          | An expression can be a literal, unary, binary, or grouped expression. |
@@ -45,48 +59,6 @@ The AST is an intermediate representation of the source code and is used for fur
 | unary            | `("-" \| "!") expression`                          | A unary operation is negation or logical NOT applied to an expression. |
 | binary           | `expression operator expression`                   | A binary operation is an expression with an operator and another expression. |
 | operator         | `"==" \| "!=" \| "<" \| "<=" \| ">" \| ">=" \| "+" \| "-" \| "*" \| "/"` | An operator can be equal, not equal, less than, less than or equal to, greater than, greater than or equal to, addition, subtraction, multiplication, or division. |
-
-## Parsing Expressions
-Given a valid sequence of tokens, produce a corresponding syntax tree.
-Given an invalid sequence of tokens, detact any errors and tell the user about their mistakes.
-
-Given a series of tokens we map the tokens to a terminal to figure out which rule could have generated this token.
-We have one issues, right now there is som ambiguity as to how the series of tokens were produced.
-- 6/3-1
-Starting at expression, pick binary.
-For the left-hand expression, pick NUMBER, and use 6.
-For the operator, pick "/".
-For the right-hand expression, pick binary again.
-In that nested binary expression, pick 3 - 1.
-
-Another is:
-
-Starting at expression, pick binary.
-For the left-hand expression, pick binary again.
-In that nested binary expression, pick 6 / 3.
-Back at the outer binary, for the operator, pick "-".
-For the right-hand expression, pick NUMBER, and use 1.
-
-To avoid this we have rules of precedence and Associativity. Precedence determines which operator is evaluated first in an expression containing a mixture of different operators. Associativity determines which operator is evaluated first in a series of the same operator.
-
-| Rule            | Production                                                |
-|-----------------|-----------------------------------------------------------|
-| expression      | → equality ;                                             |
-| equality        | → comparison ( ( "!=" \| "==" ) comparison )* ;         |
-| comparison      | → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;        |
-| term            | → factor ( ( "-" \| "+" ) factor )* ;                    |
-| factor          | → unary ( ( "/" \| "\*" ) unary )* ;                      |
-| unary           | → ( "!" \| "-" ) unary \| primary ;                     |
-| primary         | → NUMBER \| STRING \| "true" \| "false" \| "nil"         |
-|                 | \| "(" expression ")" ;                                   |
-
-#### Recursive Descent Parsing
-
-Top-down parser where each nonterminal in the grammar corresponds to a function, and parsing involves calling these functions recursively.
-
-Recursive descent is considered a top-down parser because it starts from the top or outermost grammar rule (here expression) and works its way down into the nested subexpressions before finally reaching the leaves of the syntax tree.
-
-Top-down grammar rules in order of increasing precedence. It’s called “recursive descent” because it walks down the grammar. Confusingly, we also use direction metaphorically when talking about “high” and “low” precedence, but the orientation is reversed. In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
 
 
 | Grammar notation | Code representation                                      |
@@ -97,21 +69,81 @@ Top-down grammar rules in order of increasing precedence. It’s called “recur
 | * or +            | while or for loop                                       |
 | ?                 | if statement                                            |
 
+# Parsing
+
+## Recursive Descent Parsing
+
+Top-down parser where each nonterminal in the grammar corresponds to a function, and parsing involves calling these functions recursively.
+
+Recursive descent is considered a top-down parser because it starts from the top or outermost grammar rule (here expression) and works its way down into the nested subexpressions before finally reaching the leaves of the syntax tree.
 The descent is described as “recursive” because when a grammar rule refers to itself—directly or indirectly—that translates to a recursive function call.
+
+Top-down grammar rules in order of increasing precedence. It’s called “recursive descent” because it walks down the grammar. Confusingly, we also use direction metaphorically when talking about “high” and “low” precedence, but the orientation is reversed. In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
+
+__Expression__ produce values
+__Statements__ produce side effects. Preform actions or control the flow of a program
+
+In parser.rs you'll see that we'll keep passing the tokens until primary which are the leaves of the AST, we'll go deeper whilst respecting the rulst of precedence and association.
+
+## Precedence and Associativity:
+
+Rules determine the order of operator evaluation.
+Ambiguity resolution for expressions like 6/3-1 involves rules of precedence and associativity.
+
+__Precedence__ determines which operator is evaluated first in an expression containing a mixture of different operators. Precedence rules tell us that we evaluate the / before the - in the above example. Operators with higher precedence are evaluated before operators with lower precedence. Equivalently, higher precedence operators are said to “bind tighter”.
+
+__Associativity__ determines which operator is evaluated first in a series of the same operator. When an operator is __left-associative__ (think “left-to-right”), operators on the left evaluate before those on the right. Since - is left-associative, this expression:
+
+#### Association rules 
+
+| Name       | Operators      | Associates |
+|------------|-----------------|------------|
+| Equality   | ==, !=          | Left       |
+| Comparison | >, >=, <, <=    | Left       |
+| Term       | -, +            | Left       |
+| Factor     | /, *            | Left       |
+| Unary      | !, -            | Right      |
+
+#### Precedence rules
+
+STATEMENT
+
+| Rule            | Production                                                |
+|-----------------|-----------------------------------------------------------|
+| varDecl         |  → "var" IDENTIFIER  ("=" expression )? ";";  
+| exprStmt        |  → expression ";" ;         |
+| printStmt       |  → "print" expression ";" ;|
+
+EXPRESSION:
+
+| Rule      | Production                                            |
+|-----------|-------------------------------------------------------|
+| expression| → equality ;                                         |
+| equality  | → comparison ( ( "!=" \| "==" ) comparison )* ;     |
+| comparison| → term ( ( ">" \| ">=" \| "<" \| "<=" ) term )* ;    |
+| term      | → factor ( ( "-" \| "+" ) factor )* ;                |
+| factor    | → unary ( ( "/" \| "\*" ) unary )* ;                 |
+| unary     | → ( "!" \| "-" ) unary \| primary ;                 |
+| primary   | → NUMBER \| STRING \| "true" \| "false" \| "nil"    |
+|           | \| "(" expression ")" ;                               |
+
 
 ### Panic mode error handling:
 We need to report as many seperate errors whilst avoiding reporting errors that are the consequence of an earlier reported error - cascading errors. We do this through discarding the tokens until we find a production rule that matches the token stream - *synchronization*. Synchronization involves discarding input tokens until a recognizable point in the input stream is reached, allowing the parser to reestablish a valid state for parsing. This helps avoid the propagation of errors throughout the parsing process.
 
+# INTERPRETER
+
 ## Evaluating Expressions
 evaluate an expression and prodcure a value. Values are created by literals, computed by expressions and stored in a variable.
 We need to be able to discern which type of value we're dealing with at runtime. + operator can add to numbers or concatenate two strings.
-*Literal* is a fixed value in the source code, this produces a value. A *value* is a representation of data during the excution of a program __runtime__. Values are dynamic and can change during the runtime of a program
+__Literal__ is a fixed value in the source code, this produces a value. A __value__ is a representation of data during the excution of a program - __runtime__. Values are dynamic and can change during the runtime of a program
 
 ## Binding or Resulotion
 - identify what each identifier in the source code refers to.
   - local variable, function,...
   - `Scope` also ~ an important role in this stage
   - match `identifier` with the corresponding `declariation`
+
 ## Type checking 
 - if the language is statically typed.
 
@@ -130,6 +162,9 @@ We need to be able to discern which type of value we're dealing with at runtime.
     - `Ahead of time compilation`
     - `just in time interpretation`
     - Java's JVM includes a Just-in-Time compiler that compiles frequently-executed bytecode into native code for improved performance, while less frequently executed code is interpreted. 
+
+
+# RANDOM - cleanup later
   
 ### Compiler vs Interpreter
 - A compiler takes an entire program and converts it into object code, which is a low-level, machine language version of the source code. The object code is stored on the disk and can be executed independently of the source code. Since the entire code is analyzed before execution, error detection and optimization can be more thorough, leading to efficient code execution.
