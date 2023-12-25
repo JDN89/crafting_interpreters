@@ -10,6 +10,14 @@ pub struct Token {
     pub literal: Option<Literal>,
     pub line: usize,
 }
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.literal {
+            Some(value) =>   write!(f, "Lexeme: {} - Literal {}", self.lexeme,value),
+            None => write!(f, "Lexeme: {}", self.lexeme )
+            }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum Literal {
