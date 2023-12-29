@@ -5,12 +5,14 @@ use crate::token_type::TokenType;
 use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
 use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
-    // //TODO find a way to replace RefCell Environment. I hate it
-    environment: RefCell<Environment>,
+    // Having Multiple Owners of Mutable Data by Combining Rc<T> and RefCell<T> to fix
+    // BorrowMutError
+    environment: Rc< RefCell<Environment> >,
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
@@ -18,15 +20,10 @@ pub struct Interpreter {
 impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
-            environment: Environment::new().into(),
+            environment: Rc::new(RefCell::new( Environment::new())),
         }
     }
    
-    // Method to replace the current environment and return the old environment
-    pub fn replace_environment(&self, new_env: Environment) -> Environment {
-        let mut current_env = self.environment.borrow_mut();
-        std::mem::replace(&mut *current_env, new_env)
-    }
 
     pub fn interpret(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
@@ -42,14 +39,14 @@ impl Interpreter {
     // we create a new env for blocks scope and pass it to this funciton
     fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         //outer environment
-    let previous = self.replace_environment(env);
+    let previous = self.environment.replace(env);
             //set inner environment
             for stmt in statements {
                 self.execute(stmt)?;
             }
 
         //reset outer environment
-        let _  = self.replace_environment(previous);
+        let _  = self.environment.replace(previous);
         Ok(())
     }
 
@@ -108,7 +105,7 @@ impl StmtVisitor<()> for Interpreter {
     fn visit_block(&self, stmt: &crate::stmt::BlockStmt) -> Result<(), LoxError> {
         let _ = self.execute_block(
             &stmt.statements,
-            Environment::new_inner_environment(self.environment.borrow().clone()).into(),
+            Environment::new_inner_environment(Rc::clone(&self.environment)),
         );
         Ok(())
     }
