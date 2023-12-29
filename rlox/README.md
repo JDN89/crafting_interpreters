@@ -1,5 +1,6 @@
 ## TODO
-- fix possible assignment you can't do x = 1 =2 =3 =4; should throw error instead
+
+- fix assingment issues, can't reassing and can assign multiple times in same statement
 - Read chapter 15 and 16 of rust book: RefCell and Arc,...
 - format BinExpr,... so you can print a nice AST and paste it in the readme
 - test al scenarios: does the interpreter work 
@@ -109,6 +110,11 @@ Project contains executable for Lox and AST struct generator
 - pre increment means incrementing the variable before using it
 
 # learned rust
+  - RefCell -> Couldn't use __&mut self__ in visitor pattern -> to much code ahd to be rewritten, might rewrite it in a later version on a different branch. I had to use RefCell to mutate the values of data that was behind an immutable reference. I used RefCell in combination with Rc -> because we had multiple owners of mutable data and without Rc with got already borrowed: BorrowMutError.
+__Interior mutability__ in Rust refers to the ability to mutate data even when it is behind an immutable reference. In Rust, by default, you can't mutate data through an immutable reference (__&T__). However, there are situations where you might need to mutate data even when you only have an immutable reference to it. This is where interior mutability comes into play. The primary tool for achieving interior mutability is the __Cell__ (for types that implement Copy: Primitves) and __RefCell__ (for types that don't implement copy) types in the standard library. When you see __&mut self__ in Rust, it typically indicates a mutable borrow of self within a method. This is a __compile-time mechanism__ and is different from interior mutability.
+
+Interior mutability is more relevant when you need to mutate data through a shared reference (&T). For example, in situations where you have a shared reference to data that needs to be mutated, but you don't want to pass around mutable references or transfer ownership. This pattern is useful in scenarios like implementing smart pointers, caches, or other scenarios where shared mutable access is required. The use of RefCell enables you to bypass Rust's borrow checker rules for a specific scenario.
+
 - when you impl std::Display for a Struct or enum you can use {} for printing with cusotm formatting instead of {:?} 
 - When you encounter the error messages like "self is a & reference, so the data it refers to cannot be borrowed as mutable," it means that the method is attempting to modify the state of the object, but the method signature does not allow it because it's working with an immutable reference.
   - use &T if you need to read the data
