@@ -76,8 +76,8 @@ The AST serves as an intermediate representation of the source code for further 
 |----------------|------------------------------------------------|
 | program        | declaration* EOF ;                             |
 | declaration    | varDecel | statement;                          |
-| statement      | exprStmt                                       |
-|                | printStmt                                      |
+| statement      | exprStmt  | printStmt | block;                 |
+| block          | "{" declaration* "}";                          |
 | exprStmt       | expression ";"                                 |
 | printStmt      | "print" expression ";"                         |
 
