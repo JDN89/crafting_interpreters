@@ -1,5 +1,5 @@
 ## TODO
-- fix possible assignment bug doesn't reasing;
+- fix possible assignment you can't do x = 1 =2 =3 =4; should throw error instead
 - Read chapter 15 and 16 of rust book: RefCell and Arc,...
 - format BinExpr,... so you can print a nice AST and paste it in the readme
 - test al scenarios: does the interpreter work 
