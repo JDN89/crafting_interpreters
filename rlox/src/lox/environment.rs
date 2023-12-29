@@ -1,10 +1,11 @@
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
 use crate::token::Token;
 use crate::RuntimeError;
 use crate::{token::Literal, LoxError};
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 
 pub struct Environment {
     enclosing: Option<Box<Environment>>,
@@ -14,9 +15,18 @@ pub struct Environment {
 impl Environment {
     pub fn new() -> Self {
         Environment {
-            enclosing: None,
+            enclosing: None.into(),
             values: HashMap::new(),
         }
+    }
+}
+
+impl Environment {
+    pub fn new_inner_environment(env: Environment) -> Self {
+             Environment {
+                enclosing: Some(Box::new(env)),
+                values: HashMap::new(),
+            }
     }
 
     pub fn define(&mut self, name: &str, value: Literal) {
@@ -48,11 +58,10 @@ impl Environment {
 
     // We get the current key and reasign a new value to it
     pub fn assign(&mut self, name: &Token, value: &Literal) -> Result<(), LoxError> {
-
-        if  self.values.contains_key(&name.lexeme) {
+        if self.values.contains_key(&name.lexeme) {
             self.values.insert(name.lexeme.to_string(), value.clone());
             Ok(())
-        } else if let Some(enclosed) = &mut self.enclosing {
+        } else if let Some(enclosed) = self.enclosing.borrow_mut() {
             enclosed.assign(name, value)
         } else {
             Err(LoxError::Runtime(RuntimeError::throw(format!(

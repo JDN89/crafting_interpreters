@@ -1,10 +1,11 @@
 use crate::expr::Expr;
 use crate::lox_error::LoxError;
-use crate::token:: Token;
+use crate::token::Token;
 use std::fmt;
 
 #[derive(Debug)]
 pub enum Stmt {
+    Block(BlockStmt),
     Expression(ExpressionStmt),
     Print(PrintStmt),
     Var(VarStmt),
@@ -13,6 +14,7 @@ pub enum Stmt {
 impl Stmt {
     pub fn accept<R>(&self, visitor: &dyn StmtVisitor<R>) -> Result<R, LoxError> {
         match self {
+            Stmt::Block(stmt) => visitor.visit_block(&stmt),
             Stmt::Expression(stmt) => visitor.visit_expression(&stmt),
             Stmt::Print(stmt) => visitor.visit_print(&stmt),
             Stmt::Var(stmt) => visitor.visit_var(&stmt),
@@ -20,10 +22,10 @@ impl Stmt {
     }
 }
 
-
 impl fmt::Display for Stmt {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Stmt::Block(stmt) => write!(f, "{}", stmt),
             Stmt::Expression(stmt) => write!(f, "{}", stmt),
             Stmt::Print(stmt) => write!(f, "{}", stmt),
             Stmt::Var(stmt) => write!(f, "{}", stmt),
@@ -31,6 +33,16 @@ impl fmt::Display for Stmt {
     }
 }
 
+#[derive(Debug)]
+pub struct BlockStmt {
+    pub statements: Vec<Stmt>,
+}
+impl fmt::Display for BlockStmt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+
+        write!(f, "Statements: {:?}", self.statements)
+    }
+}
 
 #[derive(Debug)]
 pub struct ExpressionStmt {
@@ -65,6 +77,7 @@ impl fmt::Display for VarStmt {
     }
 }
 pub trait StmtVisitor<R> {
+    fn visit_block(&self, stmt: &BlockStmt) -> Result<R, LoxError>;
     fn visit_expression(&self, stmt: &ExpressionStmt) -> Result<R, LoxError>;
     fn visit_print(&self, stmt: &PrintStmt) -> Result<R, LoxError>;
     fn visit_var(&self, stmt: &VarStmt) -> Result<R, LoxError>;

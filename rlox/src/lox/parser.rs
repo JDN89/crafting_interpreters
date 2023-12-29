@@ -1,11 +1,10 @@
-use std::fmt::Display;
 use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr};
-use crate::stmt::{ExpressionStmt, Stmt};
+use crate::stmt::{BlockStmt, ExpressionStmt, Stmt};
 use crate::stmt::{PrintStmt, VarStmt};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
 use crate::{expr::Expr, token::Token};
-use crate::{Loc, LoxError, ParserError };
+use crate::{Loc, LoxError, ParserError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -75,6 +74,12 @@ impl Parser {
         if self.match_token_types(&[Print]) {
             return Ok(self.print_statement()?);
         }
+        if self.match_token_types(&[LeftBrace]) {
+            return Ok(Stmt::Block(BlockStmt {
+                statements: self.block()?,
+            }));
+        }
+
         return Ok(self.expression_statement()?);
     }
 
@@ -90,6 +95,15 @@ impl Parser {
         let value = self.expression()?;
         self.consume(&Semicolon, "Expect ';' expression.")?;
         return Ok(Stmt::Expression(ExpressionStmt { expression: value }));
+    }
+
+    fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
+        let mut statements: Vec<Stmt> = Vec::new();
+        while !self.check(&RightBrace) && !self.is_at_end() {
+            statements.push(self.declaration()?);
+        }
+        let _ = self.consume(&RightBrace, "Expect '}' after block");
+        return Ok(statements);
     }
 
     // expression     → assingment ;

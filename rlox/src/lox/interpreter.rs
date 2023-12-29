@@ -6,9 +6,10 @@ use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
 use std::cell::RefCell;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
+    // //TODO find a way to replace RefCell Environment. I hate it
     environment: RefCell<Environment>,
 }
 
@@ -20,6 +21,12 @@ impl Interpreter {
             environment: Environment::new().into(),
         }
     }
+   
+    // Method to replace the current environment and return the old environment
+    pub fn replace_environment(&self, new_env: Environment) -> Environment {
+        let mut current_env = self.environment.borrow_mut();
+        std::mem::replace(&mut *current_env, new_env)
+    }
 
     pub fn interpret(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
@@ -30,6 +37,20 @@ impl Interpreter {
 
     fn execute(&self, statement: &Stmt) -> Result<(), LoxError> {
         return statement.accept(self);
+    }
+
+    // we create a new env for blocks scope and pass it to this funciton
+    fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+        //outer environment
+    let previous = self.replace_environment(env);
+            //set inner environment
+            for stmt in statements {
+                self.execute(stmt)?;
+            }
+
+        //reset outer environment
+        let _  = self.replace_environment(previous);
+        Ok(())
     }
 
     fn evaluate(&self, expression: &Expr) -> Result<Literal, LoxError> {
@@ -83,11 +104,18 @@ impl StmtVisitor<()> for Interpreter {
             .define(&stmt.name.lexeme, value);
         Ok(())
     }
+
+    fn visit_block(&self, stmt: &crate::stmt::BlockStmt) -> Result<(), LoxError> {
+        let _ = self.execute_block(
+            &stmt.statements,
+            Environment::new_inner_environment(self.environment.borrow().clone()).into(),
+        );
+        Ok(())
+    }
 }
 
 #[allow(dead_code, unused_variables)]
 impl ExprVisitor<Literal> for Interpreter {
-
     fn visit_assign(&self, expr: &AssignExpr) -> Result<Literal, LoxError> {
         let value = self.evaluate(&expr.value)?;
         self.environment.borrow_mut().assign(&expr.name, &value)?;
