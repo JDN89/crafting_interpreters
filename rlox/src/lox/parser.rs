@@ -1,4 +1,4 @@
-use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr};
+use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, AssignExpr};
 use crate::stmt::{BlockStmt, ExpressionStmt, Stmt};
 use crate::stmt::{PrintStmt, VarStmt};
 use crate::token::Literal;
@@ -92,9 +92,9 @@ impl Parser {
 
     // exprStmt       → expression ";" ;
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
-        let value = self.expression()?;
+        let expression = self.expression()?;
         self.consume(&Semicolon, "Expect ';' expression.")?;
-        return Ok(Stmt::Expression(ExpressionStmt { expression: value }));
+        return Ok(Stmt::Expression(ExpressionStmt { expression }));
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
@@ -115,21 +115,24 @@ impl Parser {
     // recursion cause assignment is right associative. For the other binary operators we loop as
     // long as we match the same operator type because the are left associative
     fn assignment(&mut self) -> Result<Expr, LoxError> {
-        let expr = self.equality()?;
+        // store Assing Expr in expr
+        let assing_expr = self.equality()?;
+        println!("{}",assing_expr);
         if self.match_token_types(&[Equal]) {
+
             let equals = self.previous();
             // we call assginement again because we can have var a = 1 = 2 = 3
-            let value = self.assignment()?;
+            let literal_expr = self.assignment()?;
 
-            if let Expr::Variable(var) = &value {
+            if let Expr::Variable(var) = &assing_expr {
                 let name = &var.name;
-                return Ok(Expr::Assign(crate::expr::AssignExpr {
+                return Ok(Expr::Assign(AssignExpr {
                     name: name.clone(),
-                    value: Box::new(value),
+                    value: Box::new(literal_expr),
                 }));
             }
         }
-        Ok(expr)
+        Ok(assing_expr)
     }
 
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
