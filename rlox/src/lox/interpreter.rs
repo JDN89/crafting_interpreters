@@ -12,7 +12,7 @@ pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
     // Having Multiple Owners of Mutable Data by Combining Rc<T> and RefCell<T> to fix
     // BorrowMutError
-    environment: Rc< RefCell<Environment> >,
+    environment: Rc<RefCell<Environment>>,
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
@@ -20,10 +20,9 @@ pub struct Interpreter {
 impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
-            environment: Rc::new(RefCell::new( Environment::new())),
+            environment: Rc::new(RefCell::new(Environment::new())),
         }
     }
-   
 
     pub fn interpret(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
@@ -39,19 +38,135 @@ impl Interpreter {
     // we create a new env for blocks scope and pass it to this funciton
     fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         //outer environment
-    let previous = self.environment.replace(env);
-            //set inner environment
-            for stmt in statements {
-                self.execute(stmt)?;
-            }
+        let previous = self.environment.replace(env);
+        //set inner environment
+        for stmt in statements {
+            self.execute(stmt)?;
+        }
 
         //reset outer environment
-        let _  = self.environment.replace(previous);
+        let _ = self.environment.replace(previous);
         Ok(())
     }
 
-    fn evaluate(&self, expression: &Expr) -> Result<Literal, LoxError> {
-        return expression.accept(self);
+    fn evaluate_expression(&self, expression: &Expr) -> Result<Literal, LoxError> {
+        match expression {
+            Expr::Assign(expr) => {
+                let value = self.evaluate_expression(&expr.value)?;
+                self.environment.borrow_mut().assign(&expr.name, &value)?;
+                return Ok(value);
+            }
+            Expr::Binary(expr) => {
+                let left = self.evaluate_expression(&expr.left)?;
+                let right = self.evaluate_expression(&expr.right)?;
+
+                match (&left, &right) {
+                    (Literal::Integer(left_value), Literal::Integer(right_value)) => {
+                        match expr.operator.token_type {
+                            TokenType::Minus => Ok(Literal::Integer(left_value - right_value)),
+                            TokenType::Slash => Ok(Literal::Integer(left_value / right_value)),
+                            TokenType::Star => Ok(Literal::Integer(left_value * right_value)),
+                            TokenType::Plus => Ok(Literal::Integer(left_value + right_value)),
+                            TokenType::Greater => Ok(Literal::Boolean(left_value > right_value)),
+                            TokenType::GreaterEqual => {
+                                Ok(Literal::Boolean(left_value >= right_value))
+                            }
+                            TokenType::Less => Ok(Literal::Boolean(left_value < right_value)),
+                            TokenType::LessEqual => Ok(Literal::Boolean(left_value <= right_value)),
+                            TokenType::EqualEqual => {
+                                Ok(Literal::Boolean(left_value == right_value))
+                            }
+                            TokenType::BangEqual => Ok(Literal::Boolean(left_value != right_value)),
+                            _ => Err(self.create_interpreter_error(
+                                expr.operator.line,
+                                &expr.operator.token_type,
+                                left,
+                                right,
+                            )),
+                        }
+                    }
+
+                    (Literal::String(left_value), Literal::String(right_value)) => {
+                        let mut left_value = left_value.clone();
+                        match expr.operator.token_type {
+                            TokenType::Plus => {
+                                left_value.push_str(&right_value);
+                                Ok(Literal::String(left_value.to_string()))
+                            }
+                            TokenType::EqualEqual => Ok(Literal::Boolean(left == right)),
+                            TokenType::BangEqual => Ok(Literal::Boolean(left != right)),
+                            _ => Err(self.create_interpreter_error(
+                                expr.operator.line,
+                                &expr.operator.token_type,
+                                left,
+                                right,
+                            )),
+                        }
+                    }
+
+                    (Literal::Nil, Literal::Nil) => match expr.operator.token_type {
+                        TokenType::EqualEqual => Ok(Literal::Boolean(true)),
+                        _ => Err(self.create_interpreter_error(
+                            expr.operator.line,
+                            &expr.operator.token_type,
+                            left,
+                            right,
+                        )),
+                    },
+                    (Literal::Nil, _) | (_, Literal::Nil) => match expr.operator.token_type {
+                        TokenType::EqualEqual => Ok(Literal::Boolean(false)),
+                        _ => Err(self.create_interpreter_error(
+                            expr.operator.line,
+                            &expr.operator.token_type,
+                            left,
+                            right,
+                        )),
+                    },
+                    _ => Err(self.create_interpreter_error(
+                        expr.operator.line,
+                        &expr.operator.token_type,
+                        left,
+                        right,
+                    )),
+                }
+            }
+            Expr::Grouping(expr) => {
+                return self.evaluate_expression(&expr.expression);
+            }
+            Expr::Literal(expr) => {
+                return Ok(expr.value.clone());
+            }
+            Expr::Unary(expr) => {
+                // first evauluate the operand subexpression before we evaluate the unary operator
+                // recursevly walk the AST
+                let right = self.evaluate_expression(&expr.right)?;
+
+                if expr.operator.token_type == TokenType::Minus {
+                    if let Literal::Integer(number) = right {
+                        return Ok(Literal::Integer(-number));
+                    } else {
+                        return Err(LoxError::Interpreter(InterpreterError::throw(
+                            expr.operator.line,
+                            format!("Operand: {:?} must be a number", right),
+                        )));
+                    }
+                } else if expr.operator.token_type == TokenType::Bang {
+                    let bool = self.is_truthy(right);
+                    return Ok(Literal::Boolean(bool));
+                }
+                // unreachable
+                return Ok(Literal::Nil);
+            }
+            Expr::Variable(expr) => {
+                return Ok(self
+                    .environment
+                    .borrow_mut()
+                    .get_literal(&expr.name)?
+                    .clone());
+            }
+        }
+
+        // return expression.accept(self);
     }
     fn is_truthy(&self, right: Literal) -> bool {
         match right {
@@ -80,12 +195,12 @@ impl Interpreter {
 // Statements produce no values
 impl StmtVisitor<()> for Interpreter {
     fn visit_expression(&self, stmt: &crate::stmt::ExpressionStmt) -> Result<(), LoxError> {
-        self.evaluate(&stmt.expression)?;
+        self.evaluate_expression(&stmt.expression)?;
         return Ok(());
     }
 
     fn visit_print(&self, stmt: &crate::stmt::PrintStmt) -> Result<(), LoxError> {
-        let value = self.evaluate(&stmt.expression)?;
+        let value = self.evaluate_expression(&stmt.expression)?;
         println!("{}", value);
         Ok(())
     }
@@ -93,7 +208,7 @@ impl StmtVisitor<()> for Interpreter {
     fn visit_var(&self, stmt: &crate::stmt::VarStmt) -> Result<(), LoxError> {
         let value: Literal;
         match &stmt.initializer {
-            Some(expression) => value = self.evaluate(&expression)?,
+            Some(expression) => value = self.evaluate_expression(&expression)?,
             None => value = Literal::Nil,
         }
         self.environment
@@ -108,125 +223,6 @@ impl StmtVisitor<()> for Interpreter {
             Environment::new_inner_environment(Rc::clone(&self.environment)),
         );
         Ok(())
-    }
-}
-
-#[allow(dead_code, unused_variables)]
-impl ExprVisitor<Literal> for Interpreter {
-    fn visit_assign(&self, expr: &AssignExpr) -> Result<Literal, LoxError> {
-        let value = self.evaluate(&expr.value)?;
-        self.environment.borrow_mut().assign(&expr.name, &value)?;
-        return Ok(value);
-    }
-
-    fn visit_binary(&self, expr: &BinaryExpr) -> Result<Literal, LoxError> {
-        let left = self.evaluate(&expr.left)?;
-        let right = self.evaluate(&expr.right)?;
-
-        match (&left, &right) {
-            (Literal::Integer(left_value), Literal::Integer(right_value)) => {
-                match expr.operator.token_type {
-                    TokenType::Minus => Ok(Literal::Integer(left_value - right_value)),
-                    TokenType::Slash => Ok(Literal::Integer(left_value / right_value)),
-                    TokenType::Star => Ok(Literal::Integer(left_value * right_value)),
-                    TokenType::Plus => Ok(Literal::Integer(left_value + right_value)),
-                    TokenType::Greater => Ok(Literal::Boolean(left_value > right_value)),
-                    TokenType::GreaterEqual => Ok(Literal::Boolean(left_value >= right_value)),
-                    TokenType::Less => Ok(Literal::Boolean(left_value < right_value)),
-                    TokenType::LessEqual => Ok(Literal::Boolean(left_value <= right_value)),
-                    TokenType::EqualEqual => Ok(Literal::Boolean(left_value == right_value)),
-                    TokenType::BangEqual => Ok(Literal::Boolean(left_value != right_value)),
-                    _ => Err(self.create_interpreter_error(
-                        expr.operator.line,
-                        &expr.operator.token_type,
-                        left,
-                        right,
-                    )),
-                }
-            }
-
-            (Literal::String(left_value), Literal::String(right_value)) => {
-                let mut left_value = left_value.clone();
-                match expr.operator.token_type {
-                    TokenType::Plus => {
-                        left_value.push_str(&right_value);
-                        Ok(Literal::String(left_value.to_string()))
-                    }
-                    TokenType::EqualEqual => Ok(Literal::Boolean(left == right)),
-                    TokenType::BangEqual => Ok(Literal::Boolean(left != right)),
-                    _ => Err(self.create_interpreter_error(
-                        expr.operator.line,
-                        &expr.operator.token_type,
-                        left,
-                        right,
-                    )),
-                }
-            }
-
-            (Literal::Nil, Literal::Nil) => match expr.operator.token_type {
-                TokenType::EqualEqual => Ok(Literal::Boolean(true)),
-                _ => Err(self.create_interpreter_error(
-                    expr.operator.line,
-                    &expr.operator.token_type,
-                    left,
-                    right,
-                )),
-            },
-            (Literal::Nil, _) | (_, Literal::Nil) => match expr.operator.token_type {
-                TokenType::EqualEqual => Ok(Literal::Boolean(false)),
-                _ => Err(self.create_interpreter_error(
-                    expr.operator.line,
-                    &expr.operator.token_type,
-                    left,
-                    right,
-                )),
-            },
-            _ => Err(self.create_interpreter_error(
-                expr.operator.line,
-                &expr.operator.token_type,
-                left,
-                right,
-            )),
-        }
-    }
-
-    // To evaluate the grouping expression itself, we recursively evaluate that subexpression and return it.
-    fn visit_grouping(&self, expr: &GroupingExpr) -> Result<Literal, LoxError> {
-        return self.evaluate(&expr.expression);
-    }
-
-    fn visit_literal(&self, expr: &LiteralExpr) -> Result<Literal, LoxError> {
-        return Ok(expr.value.clone());
-    }
-
-    fn visit_unary(&self, expr: &UnaryExpr) -> Result<Literal, LoxError> {
-        // first evauluate the operand subexpression before we evaluate the unary operator
-        // recursevly walk the AST
-        let right = self.evaluate(&expr.right)?;
-
-        if expr.operator.token_type == TokenType::Minus {
-            if let Literal::Integer(number) = right {
-                return Ok(Literal::Integer(-number));
-            } else {
-                return Err(LoxError::Interpreter(InterpreterError::throw(
-                    expr.operator.line,
-                    format!("Operand: {:?} must be a number", right),
-                )));
-            }
-        } else if expr.operator.token_type == TokenType::Bang {
-            let bool = self.is_truthy(right);
-            return Ok(Literal::Boolean(bool));
-        }
-        // unreachable
-        return Ok(Literal::Nil);
-    }
-
-    fn visit_variable(&self, expr: &VariableExpr) -> Result<Literal, LoxError> {
-        return Ok(self
-            .environment
-            .borrow_mut()
-            .get_literal(&expr.name)?
-            .clone());
     }
 }
 
@@ -248,7 +244,7 @@ fn test_bang_equals() {
             value: Literal::Integer(124.00),
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -271,7 +267,7 @@ fn test_equals_equals_integers() {
             value: Literal::Integer(123.00),
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression( &Expr::Binary( bin_exp ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -294,7 +290,7 @@ fn test_equals_equals_strings() {
             value: Literal::String("yolo".to_string()),
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -317,7 +313,7 @@ fn test_bang_equals_strings() {
             value: Literal::String("tralala".to_string()),
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 
@@ -336,7 +332,7 @@ fn test_bang_equals_strings() {
             value: Literal::String("yolo".to_string()),
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp_equal_operands);
+    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp_equal_operands ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(false));
 }
@@ -360,7 +356,7 @@ fn test_equals_equals_literal_nill() {
             value: Literal::Nil,
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -383,7 +379,7 @@ fn test_equals_equals_nil_and_operand() {
             value: Literal::String("yolo".to_string()),
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(false));
 
@@ -402,7 +398,7 @@ fn test_equals_equals_nil_and_operand() {
             value: Literal::Nil,
         })),
     };
-    let result = interpreter.visit_binary(&bin_exp);
+    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(false));
 }
