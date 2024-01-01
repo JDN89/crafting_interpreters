@@ -1,6 +1,4 @@
-use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use crate::token::Token;
 use crate::RuntimeError;
@@ -9,8 +7,8 @@ use crate::{token::Literal, LoxError};
 #[derive(Debug,Clone)]
 
 pub struct Environment {
-    enclosing: Option<Rc<RefCell< Environment >>>,
-    pub values: HashMap<String, Literal>,
+    enclosing: Option<Box< Environment >>,
+    values: HashMap<String, Literal>,
 }
 
 impl Environment {
@@ -23,9 +21,9 @@ impl Environment {
 }
 
 impl Environment {
-    pub fn new_inner_environment(env: Rc<RefCell< Environment >>) -> Self {
+    pub fn new_inner_environment(env:&Environment) -> Self {
              Environment {
-                enclosing: Some(env),
+                enclosing: Some(Box::new(env.clone())),
                 values: HashMap::new(),
             }
     }
@@ -46,7 +44,7 @@ pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
                     "undefined variable: {}",
                     name.lexeme
                 )))),
-                |enclosed| enclosed.borrow().get_literal(name),
+                |enclosed| enclosed.as_ref().get_literal(name),
             )
     }
 }
@@ -56,9 +54,8 @@ pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
         if self.values.contains_key(&name.lexeme) {
             self.values.insert(name.lexeme.to_string(), value.clone());
             Ok(())
-        } else if let Some(enclosed) = self.enclosing.as_ref() {
-            let mut borrow: RefMut<Environment> = enclosed.borrow_mut();
-            borrow.assign(name, value)
+        } else if let Some(ref mut enclosed) = self.enclosing {
+            enclosed.assign(name, value)
         } else {
             Err(LoxError::Runtime(RuntimeError::throw(format!(
                 "Undefined variable: {}",

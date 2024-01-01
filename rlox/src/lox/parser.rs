@@ -117,7 +117,6 @@ impl Parser {
     fn assignment(&mut self) -> Result<Expr, LoxError> {
         // store Assing Expr in expr
         let assing_expr = self.equality()?;
-        println!("{}",assing_expr);
         if self.match_token_types(&[Equal]) {
 
             let equals = self.previous();
