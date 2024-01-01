@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self, Display};
 
 use crate::token_type::TokenType;
 
@@ -11,16 +11,6 @@ pub struct Token {
     pub line: usize,
 }
 
-impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (&self.literal, &self.literal) {
-            (Some(_value), Some(Literal::String(s))) if s.is_empty() => write!(f, "Lexeme: {}", self.lexeme),
-            (Some(value), _) => write!(f, "Lexeme: {} - Literal: {}", self.lexeme, value),
-            (None, _) => write!(f, "Lexeme: {}", self.lexeme),
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum Literal {
     String(String),
@@ -28,17 +18,29 @@ pub enum Literal {
     Boolean(bool),
     Nil,
 }
-impl fmt::Display for Literal {
+
+impl Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Literal::String(s) if s.is_empty() => Ok(()),
-            Literal::String(s) => write!(f, "String: {}", s),
-            Literal::Integer(num) => write!(f, "Integer: {}", num),
-            Literal::Boolean(b) => write!(f, "Boolean: {}", b),
-            Literal::Nil => write!(f, "nil"),
+            Literal::String(s) => s.fmt(f),
+            Literal::Integer(num) => num.fmt(f),
+            Literal::Boolean(b) => b.fmt(f),
+            Literal::Nil => write!(f, "`nil`"),
         }
     }
 }
+
+impl Literal {
+    pub fn as_str(&self) -> String {
+        match self {
+            Literal::String(s) => s.clone(),
+            Literal::Integer(num) => num.to_string(),
+            Literal::Boolean(b) => b.to_string(),
+            Literal::Nil => String::from("nil"),
+        }
+    }
+}
+
 
 // Implement custom equality impl because equality for lox is laxer than equality for rust and we
 // can have nill types

@@ -1,5 +1,7 @@
-use std::cell::RefCell;
-use std::io::{Cursor, Write };
+use std::fmt::Write;
+use std::io::Write;
+use std::rc::Rc;
+use std::sync::Mutex;
 
 use crate::environment::Environment;
 use crate::stmt::Stmt;
@@ -11,28 +13,19 @@ use crate::{InterpreterError, LoxError};
 pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
     environment: Box<Environment>,
-    //Write to an in memory buffer to test our interpreter:
-    output_buffer: RefCell<Cursor<Vec<u8>>>,
+    output_str: Rc<Mutex<dyn Write >>,
+
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
 // pattern
-impl Interpreter {
+impl  Interpreter {
     pub fn new() -> Self {
         Interpreter {
             environment: Box::new(Environment::new()),
-            output_buffer: RefCell::new(Cursor::new(Vec::new())),
+            output: Rc::new(Mutex::new(Write))
+
         }
-    }
-
-    pub fn write_to_buffer(&self, text:&str) {
-        let mut buffer = self.output_buffer.borrow_mut();
-        buffer.write_all(text.as_bytes()).unwrap();
-    } 
-
-    pub fn get_outpout(&self) ->  Vec<u8> {
-        println!("check: {:?}", self.output_buffer);
-        self.output_buffer.borrow().get_ref().clone()
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
@@ -57,8 +50,6 @@ impl Interpreter {
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
-                // write to buffer so you get the output of the buffer for testing
-                self.write_to_buffer(&value.as_str());
                 println!("{}", value);
                 Ok(())
             }

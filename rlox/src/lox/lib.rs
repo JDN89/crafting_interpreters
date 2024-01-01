@@ -6,6 +6,7 @@ pub use lox_error::*;
 use parser::Parser;
 use scanner::Scanner;
 
+mod ast;
 mod ast_printer;
 mod environment;
 mod expr;
@@ -16,7 +17,6 @@ mod scanner;
 mod stmt;
 mod token;
 mod token_type;
-mod ast;
 
 // possible need of converson to Box<dyn Error>
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {
@@ -95,4 +95,65 @@ fn run(source: &String, interpreter: &mut Interpreter) -> Result<(), LoxError> {
     // }
     interpreter.interpret(statements)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn remove_whitespace(input: &str) -> String {
+        input.lines().map(|line| line.trim()).collect::<Vec<&str>>().join("")
+    }
+    #[test]
+    fn test_run_with_valid_source() {
+        let code_block_test = String::from(
+            r#"var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;"#,
+        );
+
+        let mut interpreter = Interpreter::new();
+
+        // Second test
+        let _ = run(&code_block_test, &mut interpreter);
+        let output = interpreter.get_outpout();
+        let expected = r#" inner a
+    outer b
+    global c
+    outer a
+    outer b
+    global c
+    global a
+    global b
+    global c
+    "#;
+        let processed_expected = remove_whitespace(expected);
+
+        let output_str = String::from_utf8_lossy(&output)
+            .lines()
+            .map(|line| line)
+            .collect::<Vec<&str>>()
+            .join(" ");
+
+        println!("Actual Output:\n{}", output_str);
+        println!("Expected Output:\n{}", processed_expected);
+
+        assert_eq!(output_str, processed_expected.trim());
+    }
 }
