@@ -3,15 +3,13 @@ use crate::stmt::Stmt;
 use crate::token_type::TokenType;
 use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
-use std::cell::RefCell;
-use std::rc::Rc;
 
 #[derive(Debug, Clone)]
 pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
     // Having Multiple Owners of Mutable Data by Combining Rc<T> and RefCell<T> to fix
     // BorrowMutError
-    environment: Rc<RefCell<Environment>>,
+    environment: Box<Environment>,
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
@@ -19,23 +17,23 @@ pub struct Interpreter {
 impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
-            environment: Rc::new(RefCell::new(Environment::new())),
+            environment: Box::new(Environment::new()),
         }
     }
 
-    pub fn interpret(&self, statements: Vec<Stmt>) -> Result<(), LoxError> {
+    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
         for statement in statements {
             self.execute(&statement)?;
         }
         return Ok(());
     }
 
-    fn execute(&self, statement: &Stmt) -> Result<(), LoxError> {
+    fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
         match statement {
             Stmt::Block(stmt) => {
                 let _ = self.execute_block(
                     &stmt.statements,
-                    Environment::new_inner_environment(Rc::clone(&self.environment)),
+                    Environment::new_inner_environment(&self.environment.as_ref()),
                 );
                 Ok(())
             }
@@ -54,9 +52,7 @@ impl Interpreter {
                     Some(expression) => value = self.evaluate_expression(&expression)?,
                     None => value = Literal::Nil,
                 }
-                self.environment
-                    .borrow_mut()
-                    .define(&stmt.name.lexeme, value);
+                self.environment.define(&stmt.name.lexeme, value);
                 Ok(())
             }
         }
@@ -65,24 +61,25 @@ impl Interpreter {
     }
 
     // we create a new env for blocks scope and pass it to this funciton
-    fn execute_block(&self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+    fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         //outer environment
-        let previous = self.environment.replace(env);
+        let previous = &self.environment.clone();
+        self.environment = Box::new(env);
         //set inner environment
         for stmt in statements {
             self.execute(stmt)?;
         }
 
         //reset outer environment
-        let _ = self.environment.replace(previous);
+        self.environment = previous.clone();
         Ok(())
     }
 
-    fn evaluate_expression(&self, expression: &Expr) -> Result<Literal, LoxError> {
+    fn evaluate_expression(&mut self, expression: &Expr) -> Result<Literal, LoxError> {
         match expression {
             Expr::Assign(expr) => {
                 let value = self.evaluate_expression(&expr.value)?;
-                self.environment.borrow_mut().assign(&expr.name, &value)?;
+                self.environment.assign(&expr.name, &value)?;
                 return Ok(value);
             }
             Expr::Binary(expr) => {
@@ -187,11 +184,7 @@ impl Interpreter {
                 return Ok(Literal::Nil);
             }
             Expr::Variable(expr) => {
-                return Ok(self
-                    .environment
-                    .borrow_mut()
-                    .get_literal(&expr.name)?
-                    .clone());
+                return Ok(self.environment.get_literal(&expr.name)?.clone());
             }
         }
 
@@ -223,7 +216,7 @@ impl Interpreter {
 
 #[test]
 fn test_bang_equals() {
-    let interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Integer(123.00),
@@ -246,7 +239,7 @@ fn test_bang_equals() {
 
 #[test]
 fn test_equals_equals_integers() {
-    let interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Integer(123.00),
@@ -269,7 +262,7 @@ fn test_equals_equals_integers() {
 
 #[test]
 fn test_equals_equals_strings() {
-    let interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
@@ -292,7 +285,7 @@ fn test_equals_equals_strings() {
 
 #[test]
 fn test_bang_equals_strings() {
-    let interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::String("yolo".to_string()),
@@ -335,7 +328,7 @@ fn test_bang_equals_strings() {
 // I think object in the java code can be null but we create a token Literal nil in case of a null value in the source code.
 #[test]
 fn test_equals_equals_literal_nill() {
-    let interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Nil,
@@ -358,7 +351,7 @@ fn test_equals_equals_literal_nill() {
 
 #[test]
 fn test_equals_equals_nil_and_operand() {
-    let interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new();
     let bin_exp = BinaryExpr {
         left: Box::new(Expr::Literal(LiteralExpr {
             value: Literal::Nil,
