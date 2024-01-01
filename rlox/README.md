@@ -1,6 +1,9 @@
 ## TODO
 
-- Rip out visitor pattern and just replace with match expr { expr::... => execute previous visitor statement} simplify expr en stmt en place them all in ast file. start with replace expr visitors and work your way towards staments. start from refactor branch.
+- if stuck for structure: LukeMathWalker  jlox-rs
+- place tests in seperate folder
+- cleanup ast
+- start placing in seperate modules: scanner parser,.. plus related files
 - Refactor!: change visitor pattern to accept mut so that I can check at compile time and don't have to keep using RefCell, because it's making borrowing overly complicated.
 - Read chapter 15 and 16 of rust book: RefCell and Arc,...
 - format BinExpr,... so you can print a nice AST and paste it in the readme
