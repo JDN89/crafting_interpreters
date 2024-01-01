@@ -1,6 +1,5 @@
 use crate::environment::Environment;
 use crate::stmt::Stmt;
-use crate::stmt::StmtVisitor;
 use crate::token_type::TokenType;
 use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
@@ -32,7 +31,37 @@ impl Interpreter {
     }
 
     fn execute(&self, statement: &Stmt) -> Result<(), LoxError> {
-        return statement.accept(self);
+        match statement {
+            Stmt::Block(stmt) => {
+                let _ = self.execute_block(
+                    &stmt.statements,
+                    Environment::new_inner_environment(Rc::clone(&self.environment)),
+                );
+                Ok(())
+            }
+            Stmt::Expression(stmt) => {
+                self.evaluate_expression(&stmt.expression)?;
+                return Ok(());
+            }
+            Stmt::Print(stmt) => {
+                let value = self.evaluate_expression(&stmt.expression)?;
+                println!("{}", value);
+                Ok(())
+            }
+            Stmt::Var(stmt) => {
+                let value: Literal;
+                match &stmt.initializer {
+                    Some(expression) => value = self.evaluate_expression(&expression)?,
+                    None => value = Literal::Nil,
+                }
+                self.environment
+                    .borrow_mut()
+                    .define(&stmt.name.lexeme, value);
+                Ok(())
+            }
+        }
+
+        // return statement.accept(self);
     }
 
     // we create a new env for blocks scope and pass it to this funciton
@@ -192,40 +221,6 @@ impl Interpreter {
     }
 }
 
-// Statements produce no values
-impl StmtVisitor<()> for Interpreter {
-    fn visit_expression(&self, stmt: &crate::stmt::ExpressionStmt) -> Result<(), LoxError> {
-        self.evaluate_expression(&stmt.expression)?;
-        return Ok(());
-    }
-
-    fn visit_print(&self, stmt: &crate::stmt::PrintStmt) -> Result<(), LoxError> {
-        let value = self.evaluate_expression(&stmt.expression)?;
-        println!("{}", value);
-        Ok(())
-    }
-
-    fn visit_var(&self, stmt: &crate::stmt::VarStmt) -> Result<(), LoxError> {
-        let value: Literal;
-        match &stmt.initializer {
-            Some(expression) => value = self.evaluate_expression(&expression)?,
-            None => value = Literal::Nil,
-        }
-        self.environment
-            .borrow_mut()
-            .define(&stmt.name.lexeme, value);
-        Ok(())
-    }
-
-    fn visit_block(&self, stmt: &crate::stmt::BlockStmt) -> Result<(), LoxError> {
-        let _ = self.execute_block(
-            &stmt.statements,
-            Environment::new_inner_environment(Rc::clone(&self.environment)),
-        );
-        Ok(())
-    }
-}
-
 #[test]
 fn test_bang_equals() {
     let interpreter = Interpreter::new();
@@ -267,7 +262,7 @@ fn test_equals_equals_integers() {
             value: Literal::Integer(123.00),
         })),
     };
-    let result = interpreter.evaluate_expression( &Expr::Binary( bin_exp ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -290,7 +285,7 @@ fn test_equals_equals_strings() {
             value: Literal::String("yolo".to_string()),
         })),
     };
-    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -313,7 +308,7 @@ fn test_bang_equals_strings() {
             value: Literal::String("tralala".to_string()),
         })),
     };
-    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 
@@ -332,7 +327,7 @@ fn test_bang_equals_strings() {
             value: Literal::String("yolo".to_string()),
         })),
     };
-    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp_equal_operands ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp_equal_operands));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(false));
 }
@@ -356,7 +351,7 @@ fn test_equals_equals_literal_nill() {
             value: Literal::Nil,
         })),
     };
-    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(true));
 }
@@ -379,7 +374,7 @@ fn test_equals_equals_nil_and_operand() {
             value: Literal::String("yolo".to_string()),
         })),
     };
-    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(false));
 
@@ -398,7 +393,7 @@ fn test_equals_equals_nil_and_operand() {
             value: Literal::Nil,
         })),
     };
-    let result = interpreter.evaluate_expression(&Expr::Binary( bin_exp ));
+    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Literal::Boolean(false));
 }
