@@ -63,15 +63,14 @@ impl Interpreter {
     // we create a new env for blocks scope and pass it to this funciton
     fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         //outer environment
-        let previous = &self.environment.clone();
-        self.environment = Box::new(env);
+        let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
         //set inner environment
         for stmt in statements {
             self.execute(stmt)?;
         }
 
         //reset outer environment
-        self.environment = previous.clone();
+        *self.environment = *Box::new(previous);
         Ok(())
     }
 
