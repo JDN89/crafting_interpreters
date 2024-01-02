@@ -2,9 +2,8 @@ use std::cell::RefCell;
 use std::io::{Cursor, Write };
 
 use crate::environment::Environment;
-use crate::stmt::Stmt;
 use crate::token_type::TokenType;
-use crate::{expr::*, token::*};
+use crate::{ast::*, token::*};
 use crate::{InterpreterError, LoxError};
 
 #[derive(Debug, Clone)]

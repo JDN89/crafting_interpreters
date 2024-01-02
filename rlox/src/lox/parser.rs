@@ -1,9 +1,9 @@
-use crate::expr::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, AssignExpr};
-use crate::stmt::{BlockStmt, ExpressionStmt, Stmt};
-use crate::stmt::{PrintStmt, VarStmt};
+use crate::ast::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, AssignExpr};
+use crate::ast::{BlockStmt, ExpressionStmt, Stmt};
+use crate::ast::{PrintStmt, VarStmt};
 use crate::token::Literal;
 use crate::token_type::TokenType::{self, *};
-use crate::{expr::Expr, token::Token};
+use crate::{ast::Expr, token::Token};
 use crate::{Loc, LoxError, ParserError};
 
 #[allow(dead_code, unused_variables)]

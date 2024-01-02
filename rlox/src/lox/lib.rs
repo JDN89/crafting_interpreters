@@ -9,12 +9,10 @@ use scanner::Scanner;
 mod ast;
 mod ast_printer;
 mod environment;
-mod expr;
 mod interpreter;
 mod lox_error;
 mod parser;
 mod scanner;
-mod stmt;
 mod token;
 mod token_type;
 
@@ -89,7 +87,7 @@ fn run(source: &String, interpreter: &mut Interpreter) -> Result<(), LoxError> {
     //     println!("{}",token);
     // }
     let mut parser = Parser::build_parser(tokens.clone());
-    let statements: Vec<stmt::Stmt> = parser.parse()?;
+    let statements: Vec<ast::Stmt> = parser.parse()?;
     // for ast in &statements {
     //     println!("{:?}",ast);
     // }
