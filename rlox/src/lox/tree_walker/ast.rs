@@ -1,4 +1,4 @@
-use crate::token::{Literal, Token};
+use crate::frontend::token::{Literal, Token};
 
 #[derive(Debug)]
 pub enum Stmt {

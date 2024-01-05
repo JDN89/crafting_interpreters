@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use crate::token::Token;
-use crate::RuntimeError;
-use crate::{token::Literal, LoxError};
+use crate::{LoxError, RuntimeError};
+use crate::frontend::token::{Literal, Token};
 
 #[derive(Debug,Clone)]
 
@@ -49,7 +48,7 @@ pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
     }
 }
 
-    // We get the current key and reasign a new value to it
+    // We get the current key and reassign a new value to it
     pub fn assign(&mut self, name: &Token, value: &Literal) -> Result<(), LoxError> {
         if self.values.contains_key(&name.lexeme) {
             self.values.insert(name.lexeme.to_string(), value.clone());

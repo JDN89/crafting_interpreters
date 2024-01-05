@@ -1,6 +1,5 @@
 use std::fmt::{self, Display};
-
-use crate::token_type::TokenType;
+use crate::frontend::token_type::TokenType;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]

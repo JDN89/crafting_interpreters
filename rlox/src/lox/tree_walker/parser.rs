@@ -1,10 +1,8 @@
-use crate::ast::{BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, AssignExpr};
-use crate::ast::{BlockStmt, ExpressionStmt, Stmt};
-use crate::ast::{PrintStmt, VarStmt};
-use crate::token::Literal;
-use crate::token_type::TokenType::{self, *};
-use crate::{ast::Expr, token::Token};
+use crate::frontend::token_type::TokenType::{self, *};
 use crate::{Loc, LoxError, ParserError};
+use crate::frontend::token::{Literal, Token};
+use crate::tree_walker::expr::*;
+use crate::tree_walker::stmt::*;
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -264,7 +262,7 @@ impl Parser {
         self.tokens.get(self.current - 1)
     }
 
-    fn match_token_types(&mut self, token_types: &[crate::token_type::TokenType]) -> bool {
+    fn match_token_types(&mut self, token_types: &[crate::frontend::token_type::TokenType]) -> bool {
         let mut found_match = false;
 
         for ttype in token_types {

@@ -1,12 +1,12 @@
 use crate::lox_error::Loc;
 use crate::lox_error::LoxError;
-use crate::token::{Literal, Token};
-use crate::token_type::TokenType::{self, *};
+use crate::frontend::token_type::TokenType::{self, *};
 use crate::ParserError;
 use std::string::String;
 
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use crate::frontend::token::{Literal, Token};
 
 lazy_static! {
     static ref KEYWORDS: HashMap<String, TokenType> = {

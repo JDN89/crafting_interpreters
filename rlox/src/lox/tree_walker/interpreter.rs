@@ -1,31 +1,42 @@
-use std::fmt::Write;
-use std::io::Write;
-use std::rc::Rc;
-use std::sync::Mutex;
+use std::cell::RefCell;
+use std::io::{Cursor, Write };
 
 use crate::environment::Environment;
 use crate::stmt::Stmt;
 use crate::token_type::TokenType;
 use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
+use crate::frontend::token::Literal;
+use crate::tree_walker::environment::Environment;
+use crate::tree_walker::expr::Expr;
+use crate::tree_walker::stmt::Stmt;
 
 #[derive(Debug, Clone)]
 pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
     environment: Box<Environment>,
-    output_str: Rc<Mutex<dyn Write >>,
-
+    //Write to an in memory buffer to test our interpreter:
+    output_buffer: RefCell<Cursor<Vec<u8>>>,
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
 // pattern
-impl  Interpreter {
+impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
             environment: Box::new(Environment::new()),
-            output: Rc::new(Mutex::new(Write))
-
+            output_buffer: RefCell::new(Cursor::new(Vec::new())),
         }
+    }
+
+    pub fn write_to_buffer(&self, text:&str) {
+        let mut buffer = self.output_buffer.borrow_mut();
+        buffer.write_all(text.as_bytes()).unwrap();
+    } 
+
+    pub fn get_outpout(&self) ->  Vec<u8> {
+        println!("check: {:?}", self.output_buffer);
+        self.output_buffer.borrow().get_ref().clone()
     }
 
     pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), LoxError> {
@@ -50,6 +61,8 @@ impl  Interpreter {
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
+                // write to buffer so you get the output of the buffer for testing
+                self.write_to_buffer(&value.as_str());
                 println!("{}", value);
                 Ok(())
             }
@@ -220,179 +233,3 @@ impl  Interpreter {
     }
 }
 
-#[test]
-fn test_bang_equals() {
-    let mut interpreter = Interpreter::new();
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Integer(123.00),
-        })),
-        operator: crate::token::Token {
-            token_type: TokenType::BangEqual,
-            lexeme: "!=".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Integer(124.00),
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(true));
-}
-
-#[test]
-fn test_equals_equals_integers() {
-    let mut interpreter = Interpreter::new();
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Integer(123.00),
-        })),
-        operator: crate::token::Token {
-            token_type: TokenType::EqualEqual,
-            lexeme: "==".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Integer(123.00),
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(true));
-}
-
-#[test]
-fn test_equals_equals_strings() {
-    let mut interpreter = Interpreter::new();
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-        operator: crate::token::Token {
-            token_type: TokenType::EqualEqual,
-            lexeme: "==".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(true));
-}
-
-#[test]
-fn test_bang_equals_strings() {
-    let mut interpreter = Interpreter::new();
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-        operator: crate::token::Token {
-            token_type: TokenType::BangEqual,
-            lexeme: "!=".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("tralala".to_string()),
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(true));
-
-    let bin_exp_equal_operands = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-        operator: crate::token::Token {
-            token_type: TokenType::BangEqual,
-            lexeme: "!=".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp_equal_operands));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(false));
-}
-
-// I think object in the java code can be null but we create a token Literal nil in case of a null value in the source code.
-#[test]
-fn test_equals_equals_literal_nill() {
-    let mut interpreter = Interpreter::new();
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Nil,
-        })),
-        operator: Token {
-            token_type: TokenType::EqualEqual,
-            lexeme: "==".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Nil,
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(true));
-}
-
-#[test]
-fn test_equals_equals_nil_and_operand() {
-    let mut interpreter = Interpreter::new();
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Nil,
-        })),
-        operator: Token {
-            token_type: TokenType::EqualEqual,
-            lexeme: "==".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(false));
-
-    let bin_exp = BinaryExpr {
-        left: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::String("yolo".to_string()),
-        })),
-        operator: Token {
-            token_type: TokenType::EqualEqual,
-            lexeme: "==".to_string(),
-            literal: None,
-            line: 123,
-        },
-
-        right: Box::new(Expr::Literal(LiteralExpr {
-            value: Literal::Nil,
-        })),
-    };
-    let result = interpreter.evaluate_expression(&Expr::Binary(bin_exp));
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), Literal::Boolean(false));
-}
