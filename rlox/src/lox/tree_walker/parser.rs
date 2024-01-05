@@ -1,8 +1,7 @@
 use crate::frontend::token_type::TokenType::{self, *};
 use crate::{Loc, LoxError, ParserError};
 use crate::frontend::token::{Literal, Token};
-use crate::tree_walker::expr::*;
-use crate::tree_walker::stmt::*;
+use crate::tree_walker::ast::*;
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]

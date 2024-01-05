@@ -1,15 +1,11 @@
 use std::cell::RefCell;
 use std::io::{Cursor, Write };
 
-use crate::environment::Environment;
-use crate::stmt::Stmt;
-use crate::token_type::TokenType;
-use crate::{expr::*, token::*};
 use crate::{InterpreterError, LoxError};
 use crate::frontend::token::Literal;
+use crate::frontend::token_type::TokenType;
+use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
-use crate::tree_walker::expr::Expr;
-use crate::tree_walker::stmt::Stmt;
 
 #[derive(Debug, Clone)]
 pub struct Interpreter {

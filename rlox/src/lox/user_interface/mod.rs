@@ -2,9 +2,9 @@ use std::{fs, io, process};
 use std::io::{BufRead, Write};
 use crate::frontend::scanner::Scanner;
 use crate::{LoxError};
-use crate::tree_walker::stmt;
 use crate::tree_walker::interpreter::Interpreter;
 use crate::tree_walker::parser::Parser;
+use crate::tree_walker::ast::Stmt;
 
 
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {
@@ -74,7 +74,7 @@ pub fn run(source: &String, interpreter: &mut Interpreter) -> Result<(), LoxErro
     let mut scanner = Scanner::build_scanner(source);
     let tokens = scanner.scan_tokens()?;
     let mut parser = Parser::build_parser(tokens.clone());
-    let statements: Vec<stmt::Stmt> = parser.parse()?;
+    let statements: Vec<Stmt> = parser.parse()?;
     interpreter.interpret(statements)?;
     Ok(())
 }
