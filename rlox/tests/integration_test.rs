@@ -7,6 +7,8 @@ use rulox::user_interface::run;
 
 #[test]
 fn test_scope() {
+    // setup
+    //
     let mut interpreter = Interpreter::new();
     let input = String::from(
         r#"var a = "global a";
