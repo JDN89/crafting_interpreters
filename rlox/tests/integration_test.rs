@@ -7,9 +7,9 @@ use rulox::user_interface::run;
 
 #[test]
 fn test_scope() {
-    // setup
-    //
+    // SETUP
     let mut interpreter = Interpreter::new();
+    // GIVEN
     let input = String::from(
         r#"var a = "global a";
 var b = "global b";
@@ -32,10 +32,14 @@ print b;
 print c;"#,
     );
 
+    // WHEN
+
     match run(&input, &mut interpreter){
         Ok(_) => () ,
         Err(e) => println!("{:?}",e)
     }
+
+    // THEN
     let output = interpreter.get_outpout();
     let expected = r#" inner a
     outer b
