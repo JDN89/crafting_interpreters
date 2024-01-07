@@ -1,18 +1,9 @@
 ## TODO
-
-- if stuck for structure: LukeMathWalker  jlox-rs
-- place tests in seperate folder
-- cleanup ast
-- start placing in seperate modules: scanner parser,.. plus related files
-- Refactor!: change visitor pattern to accept mut so that I can check at compile time and don't have to keep using RefCell, because it's making borrowing overly complicated.
-- Read chapter 15 and 16 of rust book: RefCell and Arc,...
-- format BinExpr,... so you can print a nice AST and paste it in the readme
-- test al scenarios: does the interpreter work 
-- see if you can replace match in some places with __if let__, better to use in combination with enums where I'm only interested in one specific enum field
+- when interpreter part is finished -> rewrite the parser:
+  - https://www.journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
+  - parser talk jonathan blow around minute 55. recursive descent when prescedence is increasing and logical parse single binary with while loop when precedence is decreasing
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
-- after finishing up the parser,write a test for parser and scanner and see if you can speed it up through removing the clonse and passing the reference. Check AOC 2022 for axmple of optimizing and measuring speed (I put some explenation there in the past).
 - remove #[allow(dead_code, unused_variables)]
--   sfd
 
 
 ### Example
