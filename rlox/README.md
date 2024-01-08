@@ -1,3 +1,7 @@
+## Review
+- Get a better grasps of how precendence rules are defined in the parser and get translated into an AST
+
+
 ## TODO
 - when interpreter part is finished -> rewrite the parser:
   - https://www.journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
