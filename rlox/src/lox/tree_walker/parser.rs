@@ -5,6 +5,17 @@ use crate::{Loc, LoxError, ParserError};
 
 // don't forget to compare this to the PRAT parser:
 // https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
+//When you’re writing a parser, recursive descent is as easy as spreading peanut butter.
+// It excels when you can figure out what to parse based on the next bit of code you’re looking at.
+// That’s usually true at the declaration and statement levels of a language’s grammar since most syntax there starts with keywords—class, if, for, while, etc.
+
+//Parsing gets trickier when you get to expressions.
+// When it comes to infix operators like +, postfix ones like ++, and even mixfix expressions like ?:,
+// it can be hard to tell what kind of expression you’re parsing until you’re halfway through it.
+// You can do this with recursive descent, but it’s a chore.
+// You have to write separate functions for each level of precedence (JavaScript has 17 of them, for example),
+// manually handle associativity, and smear your grammar across a bunch of parsing code until it’s hard to see.
+
 //
 // In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
 // each precedence calls a following function that deals with a higher precedence level
@@ -18,7 +29,7 @@ use crate::{Loc, LoxError, ParserError};
 
 // the tricky part here is the GROUPING which in turn can call parse expression again
 // EXAMPLE ( 1 + 2) * 3
-//    
+//
 //      *
 //     / \
 //    +   3
@@ -27,7 +38,7 @@ use crate::{Loc, LoxError, ParserError};
 //
 // we go down the recursive chain of call until we hit ( here we call recursively call expression,
 // which in turn parses 1 + 2 in a binary expression and wraps it in a grouping expression
-// we go up the chain of calls until we hit *. 
+// we go up the chain of calls until we hit *.
 // The while loop places the previous grouping expression on the left side of the tree and the
 // remaining 3 on the right side of the tree.
 //
