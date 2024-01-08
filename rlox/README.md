@@ -3,6 +3,8 @@
 
 
 ## TODO
+- Compare parser with PRAT parsing and later also with the book writing an interpreter in go. Apparently these forms of parsing are easier to understand and more efficient. The current parser makes to many function calls. We keep going deeper in the chain of calls until we reach the correct prescedence level which might not be te best way of doing it.
+  - https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 - when interpreter part is finished -> rewrite the parser:
   - https://www.journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
   - parser talk jonathan blow around minute 55. recursive descent when prescedence is increasing and logical parse single binary with while loop when precedence is decreasing
