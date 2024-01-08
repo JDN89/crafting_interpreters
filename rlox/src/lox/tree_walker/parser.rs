@@ -1,7 +1,39 @@
-use crate::frontend::token_type::TokenType::{self, *};
-use crate::{Loc, LoxError, ParserError};
 use crate::frontend::token::{Literal, Token};
+use crate::frontend::token_type::TokenType::{self, *};
 use crate::tree_walker::ast::*;
+use crate::{Loc, LoxError, ParserError};
+
+// don't forget to compare this to the PRAT parser:
+// https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
+//
+// In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
+// each precedence calls a following function that deals with a higher precedence level
+// expression     → equality ;
+// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+// term           → factor ( ( "-" | "+" ) factor )* ;
+// factor         → unary ( ( "/" | "*" ) unary )* ;
+// unary          → ( "!" | "-" ) unary | primary ;
+// primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+
+// the tricky part here is the GROUPING which in turn can call parse expression again
+// EXAMPLE ( 1 + 2) * 3
+//    
+//      *
+//     / \
+//    +   3
+//   / \
+//  1   2
+//
+// we go down the recursive chain of call until we hit ( here we call recursively call expression,
+// which in turn parses 1 + 2 in a binary expression and wraps it in a grouping expression
+// we go up the chain of calls until we hit *. 
+// The while loop places the previous grouping expression on the left side of the tree and the
+// remaining 3 on the right side of the tree.
+//
+// The recrusive calls build up the right leaning tree and the while statements build up the left
+// leaning tree. Everytime you hit a while statement the previously parsed expr get placed to the
+// left operand side
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -115,7 +147,6 @@ impl Parser {
         // store Assing Expr in expr
         let assing_expr = self.equality()?;
         if self.match_token_types(&[Equal]) {
-
             let equals = self.previous();
             // we call assginement again because we can have var a = 1 = 2 = 3
             let literal_expr = self.assignment()?;
@@ -261,7 +292,10 @@ impl Parser {
         self.tokens.get(self.current - 1)
     }
 
-    fn match_token_types(&mut self, token_types: &[crate::frontend::token_type::TokenType]) -> bool {
+    fn match_token_types(
+        &mut self,
+        token_types: &[crate::frontend::token_type::TokenType],
+    ) -> bool {
         let mut found_match = false;
 
         for ttype in token_types {
