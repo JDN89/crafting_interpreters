@@ -27,6 +27,17 @@ use crate::{Loc, LoxError, ParserError};
 // unary          → ( "!" | "-" ) unary | primary ;
 // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 
+//  STATEMENT GRAMAR RULES
+// | Production     | Expansion                                      |
+// |----------------|------------------------------------------------|
+// | program        | declaration* EOF ;                             |
+// | declaration    | varDecel | statement;                          |
+// | statement      | exprStmt |ifStmt | printStmt | block;          |
+// | ifStmt         | "if" "("  expression ")" statement ("else" statement)?|
+// | block          | "{" declaration* "}";                          |
+// | exprStmt       | expression ";"                                 |
+// | printStmt      | "print" expression ";"                         |
+//
 // the tricky part here is the GROUPING which in turn can call parse expression again
 // EXAMPLE ( 1 + 2) * 3
 //
@@ -111,6 +122,10 @@ impl Parser {
     //parse statement syntax trees
     // statement      → exprStmt | printStmt ;
     fn statement(&mut self) -> Result<Stmt, LoxError> {
+        if self.match_token_types(&[If]) {
+            return Ok(self.parse_if_statement()?);
+        }
+
         if self.match_token_types(&[Print]) {
             return Ok(self.print_statement()?);
         }
@@ -121,6 +136,23 @@ impl Parser {
         }
 
         return Ok(self.expression_statement()?);
+    }
+
+    fn parse_if_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(&LeftBrace, "Expect '(', after 'if'")?;
+        let condition = self.expression()?;
+        self.consume(&RightBrace, "Expect '(', after if condition '")?;
+        let then_branch = Box::new(self.statement()?);
+        let else_branch = if self.match_token_types(&[Else]) {
+            Some(Box::new(self.statement()?))
+        } else {
+            None
+        };
+        return Ok(Stmt::If(IfStmt {
+            condition,
+            then_branch,
+            else_branch,
+        }));
     }
 
     // printStmt      → "print" expression ";" ;
@@ -305,17 +337,16 @@ impl Parser {
 
     fn match_token_types(
         &mut self,
-        token_types: &[crate::frontend::token_type::TokenType],
+        token_types: &[TokenType],
     ) -> bool {
-        let mut found_match = false;
-
-        for ttype in token_types {
-            if self.check(&ttype) {
+        token_types.iter().any(|ttype| {
+            if self.check(ttype) {
                 self.advance();
-                found_match = true;
+                true
+            } else {
+                false
             }
-        }
-        found_match
+        })
     }
 
     // todo instead of unwrap return error -> unwrap_or_else

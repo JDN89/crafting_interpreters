@@ -71,6 +71,7 @@ impl Interpreter {
                 self.environment.define(&stmt.name.lexeme, value);
                 Ok(())
             }
+            Stmt::If(_) => todo!(),
         }
 
         // return statement.accept(self);
