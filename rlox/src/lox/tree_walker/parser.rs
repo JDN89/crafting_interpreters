@@ -6,6 +6,7 @@ use crate::{Loc, LoxError, ParserError};
 // don't forget to compare this to the PRAT parser:
 // https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 //
+// https://en.wikipedia.org/wiki/Order_of_operations#:~:text=Most%20programming%20languages%20use%20precedence,is%20strictly%20left%20to%20right).
 // In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
 // each precedence calls a following function that deals with a higher precedence level
 // expression     → assignment ;
@@ -181,7 +182,7 @@ impl Parser {
     // long as we match the same operator type because the are left associative
     fn assignment(&mut self) -> Result<Expr, LoxError> {
         // store Assing Expr in expr
-        let assing_expr = self.equality()?;
+        let assing_expr = self.parse_or()?;
         if self.match_token_types(&[Equal]) {
             let equals = self.previous();
             // we call assginement again because we can have var a = 1 = 2 = 3
@@ -197,6 +198,30 @@ impl Parser {
         }
         Ok(assing_expr)
     }
+
+    fn parse_or(&mut self) -> Result<Expr, LoxError> {
+       let mut expr = self.parse_and()?; 
+        while self.match_token_types(&[Or]) {
+            let operator = self.previous().unwrap().clone();
+            let right = self.parse_and()?;
+            expr= Expr::Logical(LogicalExpr { left: Box::new(expr) , operator,right: Box::new(right) })
+            
+        } 
+
+        Ok(expr)
+    }
+
+fn parse_and(&mut self) -> Result<Expr,LoxError> {
+       let mut expr = self.equality()?; 
+        while self.match_token_types(&[And]) {
+            let operator = self.previous().unwrap().clone();
+            let right = self.equality()?;
+            expr= Expr::Logical(LogicalExpr { left: Box::new(expr) , operator,right: Box::new(right) })
+            
+        } 
+
+        Ok(expr)
+}
 
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     fn equality(&mut self) -> Result<Expr, LoxError> {
@@ -415,4 +440,6 @@ impl Parser {
         }
         Ok(())
     }
+
 }
+

@@ -51,6 +51,7 @@ pub enum Expr {
     Binary(BinaryExpr),
     Grouping(GroupingExpr),
     Literal(LiteralExpr),
+    Logical(LogicalExpr),
     Unary(UnaryExpr),
     Variable(VariableExpr),
 }
@@ -63,6 +64,13 @@ pub struct AssignExpr {
 
 #[derive(Debug)]
 pub struct BinaryExpr {
+    pub left: Box<Expr>,
+    pub operator: Token,
+    pub right: Box<Expr>,
+}
+
+#[derive(Debug)]
+pub struct LogicalExpr {
     pub left: Box<Expr>,
     pub operator: Token,
     pub right: Box<Expr>,
