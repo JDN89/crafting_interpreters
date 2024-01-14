@@ -8,7 +8,10 @@ use crate::{Loc, LoxError, ParserError};
 //
 // In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
 // each precedence calls a following function that deals with a higher precedence level
-// expression     → equality ;
+// expression     → assignment ;
+// assignment     → IDENTIFIER "=" assignment | logic_or;
+// logic_or       → logic_and ("or" logic_and)*; 
+// logic_and      → equality ("and" equality)*;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           → factor ( ( "-" | "+" ) factor )* ;
