@@ -108,6 +108,24 @@ impl Interpreter {
                 self.environment.assign(&expr.name, &value)?;
                 return Ok(value);
             }
+            // OR and first is truthy return left
+            // AND and first is false return left
+            Expr::Logical(expr) => {
+                let left = self.evaluate_expression(&expr.left)?;
+                if expr.operator.token_type == TokenType::Or {
+                    if self.is_truthy(&left) {
+                        return Ok(left);
+                    }
+                } 
+                // Logical AND operator if operand is false return left otherwise return right
+                else {
+                    if !self.is_truthy(&left) {
+                        return Ok(left);
+                    }
+                }
+                let right = self.evaluate_expression(&expr.right)?;
+                return Ok(right);
+            }
             Expr::Binary(expr) => {
                 let left = self.evaluate_expression(&expr.left)?;
                 let right = self.evaluate_expression(&expr.right)?;
