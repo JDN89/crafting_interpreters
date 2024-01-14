@@ -82,6 +82,13 @@ impl Interpreter {
                     Ok(())
                 }
             }
+            Stmt::While(stmt) => {
+                let evaluate_while_stmt = self.evaluate_expression(&stmt.expr)?;
+                while self.is_truthy(&evaluate_while_stmt) {
+                    self.execute(&stmt.body)?;
+                }
+                return Ok(());
+            }
         }
 
         // return statement.accept(self);
@@ -116,7 +123,7 @@ impl Interpreter {
                     if self.is_truthy(&left) {
                         return Ok(left);
                     }
-                } 
+                }
                 // Logical AND operator if operand is false return left otherwise return right
                 else {
                     if !self.is_truthy(&left) {

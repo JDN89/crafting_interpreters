@@ -14,11 +14,18 @@ pub enum Stmt {
     If(IfStmt),
     Print(PrintStmt),
     Block(BlockStmt),
+    While(WhileStmt),
 }
 
 #[derive(Debug)]
 pub struct BlockStmt {
     pub statements: Vec<Stmt>,
+}
+
+#[derive(Debug)]
+pub struct WhileStmt {
+    pub expr: Expr,
+    pub body: Box<Stmt>,
 }
 
 #[derive(Debug)]

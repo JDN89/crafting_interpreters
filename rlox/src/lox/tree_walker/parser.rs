@@ -11,7 +11,7 @@ use crate::{Loc, LoxError, ParserError};
 // each precedence calls a following function that deals with a higher precedence level
 // expression     → assignment ;
 // assignment     → IDENTIFIER "=" assignment | logic_or;
-// logic_or       → logic_and ("or" logic_and)*; 
+// logic_or       → logic_and ("or" logic_and)*;
 // logic_and      → equality ("and" equality)*;
 // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -21,15 +21,16 @@ use crate::{Loc, LoxError, ParserError};
 // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 
 //  STATEMENT GRAMAR RULES
-// | Production     | Expansion                                      |
-// |----------------|------------------------------------------------|
-// | program        | declaration* EOF ;                             |
-// | declaration    | varDecel | statement;                          |
-// | statement      | exprStmt |ifStmt | printStmt | block;          |
+// | Production     | Expansion                                             |
+// |----------------|-------------------------------------------------------|
+// | program        | declaration* EOF ;                                    |
+// | declaration    | varDecel | statement;                                 |
+// | statement      | exprStmt |ifStmt | printStmt | whileStmt |block;      |
+// | whileStmt      |  "while" "(" expression ")" statement;                |
 // | ifStmt         | "if" "("  expression ")" statement ("else" statement)?|
-// | block          | "{" declaration* "}";                          |
-// | exprStmt       | expression ";"                                 |
-// | printStmt      | "print" expression ";"                         |
+// | block          | "{" declaration* "}";                                 |
+// | exprStmt       | expression ";"                                        |
+// | printStmt      | "print" expression ";"                                |
 //
 // the tricky part here is the GROUPING which in turn can call parse expression again
 // EXAMPLE ( 1 + 2) * 3
@@ -89,29 +90,6 @@ impl Parser {
         };
     }
 
-    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
-        // Separate scope for the mutable borrow of `self` for `name`
-        //consume token and store in name
-        let name = {
-            // Inner scope starts here
-            let name_token = self.consume(&Identifier, "expect variable name.")?;
-            // Rust doesn't allow moving out of borrowed content within the same scope
-            // Creating a new scope allows the borrow of `name_token` to end before
-            // attempting to move or clone it
-            name_token.clone()
-            // Inner scope ends here
-        };
-
-        let mut initializer: Option<Expr> = None;
-        if self.match_token_types(&[Equal]) {
-            initializer = Some(self.expression()?);
-        }
-
-        let _consumed_semicolon =
-            self.consume(&Semicolon, "Expect ';' after variable declaration.");
-        return Ok(Stmt::Var(VarStmt { name, initializer }));
-    }
-
     //parse statement syntax trees
     // statement      → exprStmt | printStmt ;
     fn statement(&mut self) -> Result<Stmt, LoxError> {
@@ -121,6 +99,9 @@ impl Parser {
 
         if self.match_token_types(&[Print]) {
             return Ok(self.parse_print_statement()?);
+        }
+        if self.match_token_types(&[While]) {
+            return Ok(self.parse_while_statement())?;
         }
         if self.match_token_types(&[LeftBrace]) {
             return Ok(Stmt::Block(BlockStmt {
@@ -146,6 +127,39 @@ impl Parser {
             condition,
             then_branch,
             else_branch,
+        }));
+    }
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
+        // Separate scope for the mutable borrow of `self` for `name`
+        //consume token and store in name
+        let name = {
+            // Inner scope starts here
+            let name_token = self.consume(&Identifier, "expect variable name.")?;
+            // Rust doesn't allow moving out of borrowed content within the same scope
+            // Creating a new scope allows the borrow of `name_token` to end before
+            // attempting to move or clone it
+            name_token.clone()
+            // Inner scope ends here
+        };
+
+        let mut initializer: Option<Expr> = None;
+        if self.match_token_types(&[Equal]) {
+            initializer = Some(self.expression()?);
+        }
+
+        let _consumed_semicolon =
+            self.consume(&Semicolon, "Expect ';' after variable declaration.");
+        return Ok(Stmt::Var(VarStmt { name, initializer }));
+    }
+
+    fn parse_while_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(&LeftParen, "Expect '(' after 'while'.)")?;
+        let condition = self.expression()?;
+        self.consume(&RightParen, "Expect ')' after condition. ")?;
+        let body = self.statement()?;
+        return Ok(Stmt::While(WhileStmt {
+            expr: condition,
+            body: Box::new(body),
         }));
     }
 
@@ -200,28 +214,34 @@ impl Parser {
     }
 
     fn parse_or(&mut self) -> Result<Expr, LoxError> {
-       let mut expr = self.parse_and()?; 
+        let mut expr = self.parse_and()?;
         while self.match_token_types(&[Or]) {
             let operator = self.previous().unwrap().clone();
             let right = self.parse_and()?;
-            expr= Expr::Logical(LogicalExpr { left: Box::new(expr) , operator,right: Box::new(right) })
-            
-        } 
+            expr = Expr::Logical(LogicalExpr {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            })
+        }
 
         Ok(expr)
     }
 
-fn parse_and(&mut self) -> Result<Expr,LoxError> {
-       let mut expr = self.equality()?; 
+    fn parse_and(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.equality()?;
         while self.match_token_types(&[And]) {
             let operator = self.previous().unwrap().clone();
             let right = self.equality()?;
-            expr= Expr::Logical(LogicalExpr { left: Box::new(expr) , operator,right: Box::new(right) })
-            
-        } 
+            expr = Expr::Logical(LogicalExpr {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            })
+        }
 
         Ok(expr)
-}
+    }
 
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     fn equality(&mut self) -> Result<Expr, LoxError> {
@@ -353,10 +373,7 @@ fn parse_and(&mut self) -> Result<Expr,LoxError> {
         self.tokens.get(self.current - 1)
     }
 
-    fn match_token_types(
-        &mut self,
-        token_types: &[TokenType],
-    ) -> bool {
+    fn match_token_types(&mut self, token_types: &[TokenType]) -> bool {
         token_types.iter().any(|ttype| {
             if self.check(ttype) {
                 self.advance();
@@ -440,6 +457,4 @@ fn parse_and(&mut self) -> Result<Expr,LoxError> {
         }
         Ok(())
     }
-
 }
-
