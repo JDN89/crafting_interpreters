@@ -1,11 +1,11 @@
 use std::cell::RefCell;
-use std::io::{Cursor, Write };
+use std::io::{Cursor, Write};
 
-use crate::{InterpreterError, LoxError};
 use crate::frontend::token::Literal;
 use crate::frontend::token_type::TokenType;
 use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
+use crate::{InterpreterError, LoxError};
 
 #[derive(Debug, Clone)]
 pub struct Interpreter {
@@ -25,12 +25,12 @@ impl Interpreter {
         }
     }
 
-    pub fn write_to_buffer(&self, text:&str) {
+    pub fn write_to_buffer(&self, text: &str) {
         let mut buffer = self.output_buffer.borrow_mut();
         buffer.write_all(text.as_bytes()).unwrap();
-    } 
+    }
 
-    pub fn get_outpout(&self) ->  Vec<u8> {
+    pub fn get_outpout(&self) -> Vec<u8> {
         println!("check: {:?}", self.output_buffer);
         self.output_buffer.borrow().get_ref().clone()
     }
@@ -71,7 +71,17 @@ impl Interpreter {
                 self.environment.define(&stmt.name.lexeme, value);
                 Ok(())
             }
-            Stmt::If(_) => todo!(),
+            Stmt::If(stmt) => {
+                let evaluate_if_condition = self.evaluate_expression(&stmt.condition)?;
+
+                if self.is_truthy(&evaluate_if_condition) {
+                    self.execute(&stmt.then_branch)
+                } else if let Some(else_statement) = &stmt.else_branch {
+                    self.execute(else_statement)
+                } else {
+                    Ok(())
+                }
+            }
         }
 
         // return statement.accept(self);
@@ -193,7 +203,7 @@ impl Interpreter {
                         )));
                     }
                 } else if expr.operator.token_type == TokenType::Bang {
-                    let bool = self.is_truthy(right);
+                    let bool = self.is_truthy(&right);
                     return Ok(Literal::Boolean(bool));
                 }
                 // unreachable
@@ -206,7 +216,7 @@ impl Interpreter {
 
         // return expression.accept(self);
     }
-    fn is_truthy(&self, right: Literal) -> bool {
+    fn is_truthy(&self, right: &Literal) -> bool {
         match right {
             Literal::Nil | Literal::Boolean(false) => false,
             _ => true,
@@ -229,4 +239,3 @@ impl Interpreter {
         ));
     }
 }
-

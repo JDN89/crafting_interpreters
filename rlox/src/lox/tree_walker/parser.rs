@@ -5,17 +5,6 @@ use crate::{Loc, LoxError, ParserError};
 
 // don't forget to compare this to the PRAT parser:
 // https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
-//When you’re writing a parser, recursive descent is as easy as spreading peanut butter.
-// It excels when you can figure out what to parse based on the next bit of code you’re looking at.
-// That’s usually true at the declaration and statement levels of a language’s grammar since most syntax there starts with keywords—class, if, for, while, etc.
-
-//Parsing gets trickier when you get to expressions.
-// When it comes to infix operators like +, postfix ones like ++, and even mixfix expressions like ?:,
-// it can be hard to tell what kind of expression you’re parsing until you’re halfway through it.
-// You can do this with recursive descent, but it’s a chore.
-// You have to write separate functions for each level of precedence (JavaScript has 17 of them, for example),
-// manually handle associativity, and smear your grammar across a bunch of parsing code until it’s hard to see.
-
 //
 // In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
 // each precedence calls a following function that deals with a higher precedence level
@@ -127,7 +116,7 @@ impl Parser {
         }
 
         if self.match_token_types(&[Print]) {
-            return Ok(self.print_statement()?);
+            return Ok(self.parse_print_statement()?);
         }
         if self.match_token_types(&[LeftBrace]) {
             return Ok(Stmt::Block(BlockStmt {
@@ -143,6 +132,7 @@ impl Parser {
         let condition = self.expression()?;
         self.consume(&RightBrace, "Expect '(', after if condition '")?;
         let then_branch = Box::new(self.statement()?);
+        // Eagerly check fo an else statement so it belongs to the closest if statement
         let else_branch = if self.match_token_types(&[Else]) {
             Some(Box::new(self.statement()?))
         } else {
@@ -156,7 +146,7 @@ impl Parser {
     }
 
     // printStmt      → "print" expression ";" ;
-    fn print_statement(&mut self) -> Result<Stmt, LoxError> {
+    fn parse_print_statement(&mut self) -> Result<Stmt, LoxError> {
         let value = self.expression()?;
         self.consume(&Semicolon, "Expect ';' after value.")?;
         return Ok(Stmt::Print(PrintStmt { expression: value }));
