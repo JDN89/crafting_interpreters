@@ -25,7 +25,7 @@ use crate::{Loc, LoxError, ParserError};
 // |----------------|-------------------------------------------------------|
 // | program        | declaration* EOF ;                                    |
 // | declaration    | varDecel | statement;                                 |
-// | statement      | exprStmt |ifStmt | printStmt | whileStmt |block;      |
+// | statement      | exprStmt |forStmt | ifStmt | printStmt | whileStmt |block|
 // | whileStmt      |  "while" "(" expression ")" statement;                |
 // | ifStmt         | "if" "("  expression ")" statement ("else" statement)?|
 // | block          | "{" declaration* "}";                                 |
@@ -93,6 +93,9 @@ impl Parser {
     //parse statement syntax trees
     // statement      → exprStmt | printStmt ;
     fn statement(&mut self) -> Result<Stmt, LoxError> {
+        if self.match_token_types(&[For]) {
+            return Ok(self.parse_for_statement()?);
+        }
         if self.match_token_types(&[If]) {
             return Ok(self.parse_if_statement()?);
         }
@@ -456,5 +459,35 @@ impl Parser {
             self.advance();
         }
         Ok(())
+    }
+
+    fn parse_for_statement(&mut self) -> Result<Stmt, LoxError> {
+        // parse intializer of for loop
+        let initializer: Option<Stmt>;
+        if self.match_token_types(&[Semicolon]) {
+            initializer = None;
+        } else if self.match_token_types(&[Var]) {
+            initializer = Some(self.var_declaration()?);
+        } else {
+            initializer = Some(self.expression_statement()?);
+        }
+        // parse loop condition
+        let mut condition: Option<Expr> = None;
+        if !self.check(&Semicolon) {
+            condition = Some(self.expression()?);
+        }
+        let _ = self.consume(&Semicolon, "Expected ';' after loop condition");
+
+        // parse increment
+
+        let mut increment: Option<Expr> = None;
+        if !self.check(&RightParen) {
+            increment = Some(self.expression()?);
+        }
+        let _ = self.consume(&RightParen, "Expected '(' after for clause)");
+
+        let body = self.statement()?;
+
+        todo!()
     }
 }
