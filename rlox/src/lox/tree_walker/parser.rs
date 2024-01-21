@@ -489,15 +489,29 @@ impl Parser {
         let mut body = self.statement()?;
 
         if let Some(increment) = increment {
-            body = Stmt::Block(BlockStmt { statements: vec![body, Stmt::Expression(ExpressionStmt { expression: increment })] })
+            body = Stmt::Block(BlockStmt {
+                statements: vec![
+                    body,
+                    Stmt::Expression(ExpressionStmt {
+                        expression: increment,
+                    }),
+                ],
+            })
         }
 
-        if let Some(mut condition) = condition{
-            condition = Expr::Literal(LiteralExpr { value: Literal::Boolean(true) });
-                body = Stmt::While(WhileStmt { expr: condition, body: Box::new( body ) })
+        if let Some(mut condition) = condition {
+            condition = Expr::Literal(LiteralExpr {
+                value: Literal::Boolean(true),
+            });
+            body = Stmt::While(WhileStmt {
+                expr: condition,
+                body: Box::new(body),
+            })
         }
         if let Some(initializer) = initializer {
-            body = Stmt::Block(BlockStmt { statements: vec![initializer,body] })
+            body = Stmt::Block(BlockStmt {
+                statements: vec![initializer, body],
+            })
         }
 
         Ok(body)
