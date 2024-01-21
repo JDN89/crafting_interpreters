@@ -116,9 +116,9 @@ impl Parser {
     }
 
     fn parse_if_statement(&mut self) -> Result<Stmt, LoxError> {
-        self.consume(&LeftBrace, "Expect '(', after 'if'")?;
+        self.consume(&LeftParen, "Expect '(', after 'if'")?;
         let condition = self.expression()?;
-        self.consume(&RightBrace, "Expect '(', after if condition '")?;
+        self.consume(&RightParen, "Expect '(', after if condition '")?;
         let then_branch = Box::new(self.statement()?);
         // Eagerly check fo an else statement so it belongs to the closest if statement
         let else_branch = if self.match_token_types(&[Else]) {
