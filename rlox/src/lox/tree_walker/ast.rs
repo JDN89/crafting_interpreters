@@ -24,7 +24,7 @@ pub struct BlockStmt {
 
 #[derive(Debug)]
 pub struct WhileStmt {
-    pub expr: Expr,
+    pub condition: Expr,
     pub body: Box<Stmt>,
 }
 

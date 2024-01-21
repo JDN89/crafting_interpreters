@@ -31,7 +31,6 @@ impl Interpreter {
     }
 
     pub fn get_outpout(&self) -> Vec<u8> {
-        println!("check: {:?}", self.output_buffer);
         self.output_buffer.borrow().get_ref().clone()
     }
 
@@ -43,23 +42,26 @@ impl Interpreter {
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
+        println!("before we execute the new block statment of the while loop is the curr env: {:?}", self.environment);
         match statement {
             Stmt::Block(stmt) => {
-                let _ = self.execute_block(
+                let block = self.execute_block(
                     &stmt.statements,
                     Environment::new_inner_environment(&self.environment.as_ref()),
                 );
+                println!("block: {:?}", block);
+
                 Ok(())
             }
             Stmt::Expression(stmt) => {
-                self.evaluate_expression(&stmt.expression)?;
+         let expr =        self.evaluate_expression(&stmt.expression)?;
+                println!("expr: {:?}", expr);
                 return Ok(());
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
                 // write to buffer so you get the output of the buffer for testing
                 self.write_to_buffer(&value.as_str());
-                println!("{}", value);
                 Ok(())
             }
             Stmt::Var(stmt) => {
@@ -83,7 +85,10 @@ impl Interpreter {
                 }
             }
             Stmt::While(stmt) => {
-                let evaluate_while_stmt = self.evaluate_expression(&stmt.expr)?;
+                println!("while statement: {:?}",stmt);
+                let evaluate_while_stmt = self.evaluate_expression(&stmt.condition)?;
+                println!("is truthy: {:?}",evaluate_while_stmt);
+
                 while self.is_truthy(&evaluate_while_stmt) {
                     self.execute(&stmt.body)?;
                 }
@@ -94,17 +99,28 @@ impl Interpreter {
         // return statement.accept(self);
     }
 
-    // we create a new env for blocks scope and pass it to this funciton
+    // we create a new env for blocks scope and pass it to this function
     fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+
+        println!("curr env  = {:?}", env);
+
         //outer environment
         let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
+        println!("previous env  = {:?}", previous);
+
         //set inner environment
         for stmt in statements {
             self.execute(stmt)?;
+            println!("inner block statement = {:?}", stmt);
+
         }
 
+        // bug is here -> we keep resetting the environment in a while loop to the previous env so we lose the context!!
+        // this was good when we were taking care of the block scopes but now it broke the loops
+        // how can we merge the new and the old env?
         //reset outer environment
         *self.environment = *Box::new(previous);
+        println!("environment has been reset: {:?} , does it contain the newly set env? or does it dissapear?", self.environment);
         Ok(())
     }
 

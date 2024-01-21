@@ -158,10 +158,12 @@ impl Parser {
     fn parse_while_statement(&mut self) -> Result<Stmt, LoxError> {
         self.consume(&LeftParen, "Expect '(' after 'while'.)")?;
         let condition = self.expression()?;
+        println!("condition = {:?}",condition);
         self.consume(&RightParen, "Expect ')' after condition. ")?;
         let body = self.statement()?;
+        println!("body = {:?}",body);
         return Ok(Stmt::While(WhileStmt {
-            expr: condition,
+            condition: condition,
             body: Box::new(body),
         }));
     }
@@ -504,7 +506,7 @@ impl Parser {
                 value: Literal::Boolean(true),
             });
             body = Stmt::While(WhileStmt {
-                expr: condition,
+                condition: condition,
                 body: Box::new(body),
             })
         }

@@ -21,10 +21,12 @@ impl Environment {
 
 impl Environment {
     pub fn new_inner_environment(env:&Environment) -> Self {
-             Environment {
+        let env =      Environment {
                 enclosing: Some(Box::new(env.clone())),
                 values: HashMap::new(),
-            }
+            };
+        println!("env: {:?}", env);
+        return env
     }
 
     pub fn define(&mut self, name: &str, value: Literal) {
@@ -51,7 +53,12 @@ pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
     // We get the current key and reassign a new value to it
     pub fn assign(&mut self, name: &Token, value: &Literal) -> Result<(), LoxError> {
         if self.values.contains_key(&name.lexeme) {
+            println!("inside if assing => evn values: {:?}, passed token: {:?}, passed value: {:?}",self.values, name.lexeme,value);
+
             self.values.insert(name.lexeme.to_string(), value.clone());
+            println!("after instert values = : {:?} ",self.values);
+
+            ;
             Ok(())
         } else if let Some(ref mut enclosed) = self.enclosing {
             enclosed.assign(name, value)

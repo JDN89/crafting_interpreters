@@ -3,6 +3,7 @@
 
 
 ## TODO
+- couldn't solve bug -> but i am closer. in loop where we store outer env in env and execute first inner env -> we reset the env to the outer env so we have a =1 in the loop because we keep resetting the values! I am not sure what the solution is. Bring Java lox up to date an debug
 - Compare parser with PRAT parsing and later also with the book writing an interpreter in go. Apparently these forms of parsing are easier to understand and more efficient. The current parser makes to many function calls. We keep going deeper in the chain of calls until we reach the correct prescedence level which might not be te best way of doing it.
   - https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 - when interpreter part is finished -> rewrite the parser:
