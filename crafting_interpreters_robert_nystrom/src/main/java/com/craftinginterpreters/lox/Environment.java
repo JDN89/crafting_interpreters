@@ -41,4 +41,12 @@ class Environment {
     void define(String name, Object value) {
         values.put(name, value);
     }
+
+    public Environment getEnclosing() {
+        return enclosing;
+    }
+
+    public Map<String, Object> getValues() {
+        return values;
+    }
 }

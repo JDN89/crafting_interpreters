@@ -3,7 +3,7 @@ package com.craftinginterpreters.lox;
 import java.util.List;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment();
+    private Environment interpreterEnvironment = new Environment();
 
     void interpret(List<Stmt> statements) {
         try {
@@ -103,7 +103,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             if (!isTruthy(left)) return left;
         }
 
-        return evaluate(expr.right);    }
+        return evaluate(expr.right);
+    }
 
     @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
@@ -122,7 +123,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        return interpreterEnvironment.get(expr.name);
     }
 
     //    we recursively evaluate the subexpression and return it
@@ -130,21 +131,26 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 //        evaluate the expr and accept the visitor pattern
         return expr.accept(this);
     }
+
     private void execute(Stmt stmt) {
         stmt.accept(this);
     }
 
     void executeBlock(List<Stmt> statements,
-                      Environment environment) {
-        Environment previous = this.environment;
+                      Environment newEnclosingEnvironment) {
+        Environment previous = this.interpreterEnvironment;
+        System.out.println("privous now:" + previous.getValues());
         try {
-            this.environment = environment;
+            this.interpreterEnvironment = newEnclosingEnvironment;
 
             for (Stmt statement : statements) {
                 execute(statement);
+                System.out.println("previous in try block:" + previous.getValues());
             }
         } finally {
-            this.environment = previous;
+            System.out.println("after finaly but before assingment:" + previous.getValues());
+            this.interpreterEnvironment = previous;
+            System.out.println("after finaly and after assingment:" + previous.getValues());
         }
     }
 
@@ -169,7 +175,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements, new Environment(environment));
+        executeBlock(stmt.statements, new Environment(interpreterEnvironment));
         return null;
     }
 
@@ -186,7 +192,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         } else if (stmt.elseBranch != null) {
             execute(stmt.elseBranch);
         }
-        return null;    }
+        return null;
+    }
 
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
@@ -194,6 +201,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         System.out.println(stringify(value));
         return null;
     }
+
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
         Object value = null;
@@ -201,7 +209,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             value = evaluate(stmt.initializer);
         }
 
-        environment.define(stmt.name.getLexeme(), value);
+        interpreterEnvironment.define(stmt.name.getLexeme(), value);
         return null;
     }
 
@@ -216,7 +224,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+        interpreterEnvironment.assign(expr.name, value);
         return value;
     }
 }
