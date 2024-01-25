@@ -50,6 +50,7 @@ impl Interpreter {
             Stmt::Block(stmt) => {
                 let _ = self.execute_block(
                     &stmt.statements,
+                    // create a pointer to the current env
                     Environment::new_inner_environment(Rc::clone(&self.environment)),
                 );
                 Ok(())
