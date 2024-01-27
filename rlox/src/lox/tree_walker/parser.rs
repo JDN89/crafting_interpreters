@@ -163,7 +163,7 @@ impl Parser {
         let body = self.statement()?;
         println!("body = {:?}",body);
         return Ok(Stmt::While(WhileStmt {
-            condition: condition,
+            condition,
             body: Box::new(body),
         }));
     }

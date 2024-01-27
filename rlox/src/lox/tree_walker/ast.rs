@@ -1,7 +1,7 @@
 use crate::frontend::token::{Literal, Token};
 
 // https://doc.rust-lang.org/book/ch15-01-box.html
-// A value of recursive type can have another value of the same type as part of itself. 
+// A value of recursive type can have another value of the same type as part of itself.
 // Recursive types pose an issue because at compile time Rust needs to know how much space a type takes up.
 // However, the nesting of values of recursive types could theoretically continue infinitely, so Rust can’t know how much space the value needs.
 // Because boxes have a known size, we can enable recursive types by inserting a box in the recursive type definition.

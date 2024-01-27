@@ -138,6 +138,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     void executeBlock(List<Stmt> statements,
                       Environment newEnclosingEnvironment) {
+        // previous holds a reference to the current this.enviroment so when you adjust
+        //so when we place then env as an enclosing environment that we pass as an argument
+        // we are in passing a ref to the same object prisou env = current enclosing of the new environemnt
+        // so that's why previous keep up to date with the curent enviroment
+        //this didn't happen in my rust code because I was no using the borrowing system but instead mem.replace
         Environment previous = this.interpreterEnvironment;
         System.out.println("privous now:" + previous.getValues());
         try {
@@ -212,6 +217,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         interpreterEnvironment.define(stmt.name.getLexeme(), value);
         return null;
     }
+
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {

@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::{LoxError, RuntimeError};
 use crate::frontend::token::{Literal, Token};
@@ -6,23 +8,23 @@ use crate::frontend::token::{Literal, Token};
 #[derive(Debug,Clone)]
 
 pub struct Environment {
-    enclosing: Option<Box< Environment >>,
+    pub enclosing_parent_environment: Option<Rc<RefCell<Environment>>>,
     values: HashMap<String, Literal>,
 }
 
 impl Environment {
     pub fn new() -> Self {
         Environment {
-            enclosing: None,
+            enclosing_parent_environment: None,
             values: HashMap::new(),
         }
     }
 }
 
 impl Environment {
-    pub fn new_inner_environment(env:&Environment) -> Self {
+    pub fn new_inner_environment(parent_environment: Rc<RefCell< Environment >>) -> Self {
         let env =      Environment {
-                enclosing: Some(Box::new(env.clone())),
+                enclosing_parent_environment: Some(parent_environment) ,
                 values: HashMap::new(),
             };
         println!("env: {:?}", env);
@@ -38,14 +40,14 @@ pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
     if let Some(value) = self.values.get(&name.lexeme) {
         Ok(value.clone())
     } else {
-        self.enclosing
+        self.enclosing_parent_environment
             .as_ref()
             .map_or_else(
                 || Err(LoxError::Runtime(RuntimeError::throw(format!(
                     "undefined variable: {}",
                     name.lexeme
                 )))),
-                |enclosed| enclosed.as_ref().get_literal(name),
+                |enclosed| enclosed.borrow_mut().get_literal(name),
             )
     }
 }
@@ -60,8 +62,8 @@ pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
 
             ;
             Ok(())
-        } else if let Some(ref mut enclosed) = self.enclosing {
-            enclosed.assign(name, value)
+        } else if let Some(ref mut enclosed) = self.enclosing_parent_environment {
+            enclosed.borrow_mut().assign(name, value)
         } else {
             Err(LoxError::Runtime(RuntimeError::throw(format!(
                 "Undefined variable: {}",

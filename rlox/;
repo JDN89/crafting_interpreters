@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::io::{Cursor, Write};
-use std::rc::Rc;
+use std::mem::replace;
 
 use crate::frontend::token::Literal;
 use crate::frontend::token_type::TokenType;
@@ -8,12 +8,10 @@ use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
 use crate::{InterpreterError, LoxError};
 
-// TODO: read about lifetimes and anonymous lifetimes!!
-
 #[derive(Debug, Clone)]
 pub struct Interpreter {
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
-    environment: Rc<RefCell<Environment>>,
+    environment: Box<Environment>,
     //Write to an in memory buffer to test our interpreter:
     output_buffer: RefCell<Cursor<Vec<u8>>>,
 }
@@ -23,7 +21,7 @@ pub struct Interpreter {
 impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
-            environment: Rc::new(RefCell::new(Environment::new())),
+            environment: Box::new(Environment::new()),
             output_buffer: RefCell::new(Cursor::new(Vec::new())),
         }
     }
@@ -34,6 +32,7 @@ impl Interpreter {
     }
 
     pub fn get_outpout(&self) -> Vec<u8> {
+        println!("check: {:?}", self.output_buffer);
         self.output_buffer.borrow().get_ref().clone()
     }
 
@@ -45,27 +44,23 @@ impl Interpreter {
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
-        println!("before we execute the new block statment of the while loop is the curr env: {:?}", self.environment);
         match statement {
             Stmt::Block(stmt) => {
-                let block = self.execute_block(
+                let _ = self.execute_block(
                     &stmt.statements,
-                    // create a pointer to the current env
-                    Environment::new_inner_environment(Rc::clone(&self.environment)),
+                    Environment::new_inner_environment(&self.environment.as_ref()),
                 );
-                println!("block: {:?}", block);
-
                 Ok(())
             }
             Stmt::Expression(stmt) => {
-         let expr =        self.evaluate_expression(&stmt.expression)?;
-                println!("expr: {:?}", expr);
+                self.evaluate_expression(&stmt.expression)?;
                 return Ok(());
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
                 // write to buffer so you get the output of the buffer for testing
                 self.write_to_buffer(&value.as_str());
+                println!("{}", value);
                 Ok(())
             }
             Stmt::Var(stmt) => {
@@ -74,9 +69,7 @@ impl Interpreter {
                     Some(expression) => value = self.evaluate_expression(&expression)?,
                     None => value = Literal::Nil,
                 }
-                self.environment
-                    .borrow_mut()
-                    .define(&stmt.name.lexeme, value);
+                self.environment.define(&stmt.name.lexeme, value);
                 Ok(())
             }
             Stmt::If(stmt) => {
@@ -91,12 +84,9 @@ impl Interpreter {
                 }
             }
             Stmt::While(stmt) => {
-                while {
-                    let condition_result = self.evaluate_expression(&stmt.condition)?;
-
-                    self.is_truthy(&condition_result)
-                } {
-                    let _ = self.execute(&stmt.body);
+                let evaluate_while_stmt = self.evaluate_expression(&stmt.expr)?;
+                while self.is_truthy(&evaluate_while_stmt) {
+                    self.execute(&stmt.body)?;
                 }
                 return Ok(());
             }
@@ -106,25 +96,22 @@ impl Interpreter {
     }
 
     // we create a new env for blocks scope and pass it to this funciton
-    // When i reset the code to the old env i was not keeping up to date with the previous
-    // enviroment and this was becasue I was creating a new object via mem::replace so I was no
-    // referring to the same enviroment
-    // code that messed everyitng up!
-    // let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
-    // TODO write in learned and look up details of std::mem::replace!
     fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
-        // crate a pointer to the parrent env
-        let parent_env = self.environment.clone();
-        // new env that holds previous env as an enclosing field (BOX ENV)
-
-        {
-            self.environment = Rc::new(RefCell::new(env));
-            for stmt in statements {
-                self.execute(stmt)?;
-            }
+        //outer environment
+        let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
+        //set inner environment
+        for stmt in statements {
+            self.execute(stmt)?;
         }
+        // let enclosing = self.environment.enclosing;
 
-        self.environment = parent_env;
+        //reset outer environment
+        *self.environment = self.environment.enclosing.take();
+        // self.environment::std::mem::take(previous);
+        // let mut previous = std::mem::replace(&mut *self.environment, *previous);
+        // self.environment.replace( previous);
+        // *self.environment = replace( previous);
+        // *self.environment = *Box::new(previous);
         Ok(())
     }
 
@@ -132,7 +119,7 @@ impl Interpreter {
         match expression {
             Expr::Assign(expr) => {
                 let value = self.evaluate_expression(&expr.value)?;
-                self.environment.borrow_mut().assign(&expr.name, &value)?;
+                self.environment.assign(&expr.name, &value)?;
                 return Ok(value);
             }
             // OR and first is truthy return left
@@ -255,17 +242,13 @@ impl Interpreter {
                 return Ok(Literal::Nil);
             }
             Expr::Variable(expr) => {
-                return Ok(self
-                    .environment
-                    .borrow_mut()
-                    .get_literal(&expr.name)?
-                    .clone());
+                return Ok(self.environment.get_literal(&expr.name)?.clone());
             }
         }
 
         // return expression.accept(self);
     }
-    fn is_truthy(&mut self, right: &Literal) -> bool {
+    fn is_truthy(&self, right: &Literal) -> bool {
         match right {
             Literal::Nil | Literal::Boolean(false) => false,
             _ => true,
