@@ -158,7 +158,7 @@ impl Parser {
         self.consume(&RightParen, "Expect ')' after condition. ")?;
         let body = self.statement()?;
         return Ok(Stmt::While(WhileStmt {
-            expr: condition,
+            condition,
             body: Box::new(body),
         }));
     }

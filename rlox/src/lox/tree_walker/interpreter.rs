@@ -89,10 +89,12 @@ impl Interpreter {
                 }
             }
             Stmt::While(stmt) => {
-                let evaluate_while_stmt = self.evaluate_expression(&stmt.expr)?;
-                println!("{:?}", evaluate_while_stmt);
-                while self.is_truthy(&evaluate_while_stmt) {
-                    self.execute(&stmt.body)?;
+                while {
+                    let condition_result = self.evaluate_expression(&stmt.condition)?;
+
+                    self.is_truthy(&condition_result)
+                } {
+                    let _ = self.execute(&stmt.body);
                 }
                 return Ok(());
             }
@@ -261,7 +263,7 @@ impl Interpreter {
 
         // return expression.accept(self);
     }
-    fn is_truthy(&self, right: &Literal) -> bool {
+    fn is_truthy(&mut self, right: &Literal) -> bool {
         match right {
             Literal::Nil | Literal::Boolean(false) => false,
             _ => true,
