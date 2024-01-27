@@ -72,8 +72,9 @@ impl Interpreter {
                     Some(expression) => value = self.evaluate_expression(&expression)?,
                     None => value = Literal::Nil,
                 }
-                // Dereference the Rc to get to the RefCell, and then borrow_mut to get a mutable reference to the Environment
-                self.environment.borrow_mut().define(&stmt.name.lexeme, value);
+                self.environment
+                    .borrow_mut()
+                    .define(&stmt.name.lexeme, value);
                 Ok(())
             }
             Stmt::If(stmt) => {
@@ -89,7 +90,7 @@ impl Interpreter {
             }
             Stmt::While(stmt) => {
                 let evaluate_while_stmt = self.evaluate_expression(&stmt.expr)?;
-                println!("{:?}",evaluate_while_stmt);
+                println!("{:?}", evaluate_while_stmt);
                 while self.is_truthy(&evaluate_while_stmt) {
                     self.execute(&stmt.body)?;
                 }
@@ -108,7 +109,7 @@ impl Interpreter {
     // let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
     // TODO write in learned and look up details of std::mem::replace!
     fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
-        // crate a pointer to the parrent env 
+        // crate a pointer to the parrent env
         let parent_env = self.environment.clone();
         // new env that holds previous env as an enclosing field (BOX ENV)
 
@@ -250,7 +251,11 @@ impl Interpreter {
                 return Ok(Literal::Nil);
             }
             Expr::Variable(expr) => {
-                return Ok(self.environment.borrow_mut().get_literal(&expr.name)?.clone());
+                return Ok(self
+                    .environment
+                    .borrow_mut()
+                    .get_literal(&expr.name)?
+                    .clone());
             }
         }
 
