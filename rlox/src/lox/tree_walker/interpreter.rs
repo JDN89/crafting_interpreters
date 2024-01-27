@@ -45,7 +45,6 @@ impl Interpreter {
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
-        println!("before we execute the new block statment of the while loop is the curr env: {:?}", self.environment);
         match statement {
             Stmt::Block(stmt) => {
                 let block = self.execute_block(
@@ -53,17 +52,15 @@ impl Interpreter {
                     // create a pointer to the current env
                     Environment::new_inner_environment(Rc::clone(&self.environment)),
                 );
-                println!("block: {:?}", block);
-
                 Ok(())
             }
             Stmt::Expression(stmt) => {
-         let expr =        self.evaluate_expression(&stmt.expression)?;
-                println!("expr: {:?}", expr);
+                let expr = self.evaluate_expression(&stmt.expression)?;
                 return Ok(());
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
+                println!("{:?}", value);
                 // write to buffer so you get the output of the buffer for testing
                 self.write_to_buffer(&value.as_str());
                 Ok(())
