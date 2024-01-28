@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::{LoxError, RuntimeError};
 use crate::frontend::token::{Literal, Token};
+use crate::{LoxError, RuntimeError};
 
 #[derive(Debug, Clone)]
 pub struct Environment {
@@ -38,15 +38,15 @@ impl Environment {
         if let Some(value) = self.values.get(&name.lexeme) {
             Ok(value.clone())
         } else {
-            self.enclosing_parent_environment
-                .as_ref()
-                .map_or_else(
-                    || Err(LoxError::Runtime(RuntimeError::throw(format!(
+            self.enclosing_parent_environment.as_ref().map_or_else(
+                || {
+                    Err(LoxError::Runtime(RuntimeError::throw(format!(
                         "undefined variable: {}",
                         name.lexeme
-                    )))),
-                    |enclosed| enclosed.borrow_mut().get_literal(name),
-                )
+                    ))))
+                },
+                |enclosed| enclosed.borrow_mut().get_literal(name),
+            )
         }
     }
 
@@ -54,8 +54,6 @@ impl Environment {
     pub fn assign(&mut self, name: &Token, value: &Literal) -> Result<(), LoxError> {
         if self.values.contains_key(&name.lexeme) {
             self.values.insert(name.lexeme.to_string(), value.clone());
-
-            ;
             Ok(())
         } else if let Some(ref mut enclosed) = self.enclosing_parent_environment {
             enclosed.borrow_mut().assign(name, value)

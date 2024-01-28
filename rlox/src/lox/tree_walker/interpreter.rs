@@ -47,7 +47,7 @@ impl Interpreter {
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
         match statement {
             Stmt::Block(stmt) => {
-                let block = self.execute_block(
+                let _block = self.execute_block(
                     &stmt.statements,
                     // create a pointer to the current env
                     Environment::new_inner_environment(Rc::clone(&self.environment)),
@@ -55,7 +55,7 @@ impl Interpreter {
                 Ok(())
             }
             Stmt::Expression(stmt) => {
-                let expr = self.evaluate_expression(&stmt.expression)?;
+                let _expr = self.evaluate_expression(&stmt.expression)?;
                 return Ok(());
             }
             Stmt::Print(stmt) => {
