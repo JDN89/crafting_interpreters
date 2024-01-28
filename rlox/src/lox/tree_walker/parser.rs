@@ -462,6 +462,7 @@ impl Parser {
     }
 
     fn parse_for_statement(&mut self) -> Result<Stmt, LoxError> {
+        let _ = self.consume(&LeftParen, "Expect '(' after 'for'.");
         // parse intializer of for loop
         let initializer: Option<Stmt>;
         if self.match_token_types(&[Semicolon]) {
@@ -488,26 +489,22 @@ impl Parser {
 
         let mut body = self.statement()?;
 
-        if let Some(increment) = increment {
+        if let Some(inc) = increment {
             body = Stmt::Block(BlockStmt {
-                statements: vec![
-                    body,
-                    Stmt::Expression(ExpressionStmt {
-                        expression: increment,
-                    }),
-                ],
+                statements: vec![body, Stmt::Expression(ExpressionStmt { expression: inc })],
             })
         }
 
-        if let Some(mut condition) = condition {
-            condition = Expr::Literal(LiteralExpr {
+        if let None = condition {
+            condition = Some(Expr::Literal(LiteralExpr {
                 value: Literal::Boolean(true),
-            });
-            body = Stmt::While(WhileStmt {
-                condition: condition,
-                body: Box::new(body),
-            })
+            }));
         }
+        body = Stmt::While(WhileStmt {
+            condition: condition.expect("A condition should be present!"),
+            body: Box::new(body),
+        });
+
         if let Some(initializer) = initializer {
             body = Stmt::Block(BlockStmt {
                 statements: vec![initializer, body],
