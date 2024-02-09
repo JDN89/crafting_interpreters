@@ -258,6 +258,7 @@ impl Interpreter {
                     .get_literal(&expr.name)?
                     .clone());
             }
+            Expr::Call(_) => todo!(),
         }
 
         // return expression.accept(self);
