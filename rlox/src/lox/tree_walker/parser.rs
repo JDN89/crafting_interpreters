@@ -323,7 +323,37 @@ impl Parser {
             }));
         }
 
-        return Ok(self.primary()?);
+        return Ok(self.call()?);
+    }
+
+    fn call(&mut self) -> Result<Expr, LoxError> {
+        let mut expr = self.primary()?;
+        loop {
+            if self.match_token_types(&[LeftParen]) {
+                expr = self.finish_call(&expr)?
+            } else {
+                break;
+            }
+        }
+        return Ok(expr);
+    }
+
+    fn finish_call(&mut self, callee: &Expr) -> Result<Expr, LoxError> {
+        let mut arguments = Vec::new();
+        if !self.check(&RightParen) {
+            loop {
+                arguments.push(self.expression()?);
+                if !self.match_token_types(&[Comma]) {
+                    break;
+                }
+            }
+        }
+        let parenthesis = self.consume(&RightParen, "Expect ')' after arguments.");
+        return Ok(Expr::Call(CallExpr {
+            callee: Box::new(callee.clone()),
+            paren: parenthesis.unwrap().clone(),
+            arguments,
+        }));
     }
 
     // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
