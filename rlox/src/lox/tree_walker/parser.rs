@@ -1,3 +1,5 @@
+use std::error;
+
 use crate::frontend::token::{Literal, Token};
 use crate::frontend::token_type::TokenType::{self, *};
 use crate::tree_walker::ast::*;
@@ -342,6 +344,14 @@ impl Parser {
         let mut arguments = Vec::new();
         if !self.check(&RightParen) {
             loop {
+                if arguments.len() >= 255 {
+                    let token = self.peek().unwrap();
+                    return Err(LoxError::ParserError(ParserError::new(
+                        token.line,
+                        Loc::Lexeme(token.lexeme.to_owned()),
+                        "Can't have more than 255 arguments",
+                    )));
+                }
                 arguments.push(self.expression()?);
                 if !self.match_token_types(&[Comma]) {
                     break;
