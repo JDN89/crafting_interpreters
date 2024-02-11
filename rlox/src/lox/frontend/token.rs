@@ -1,5 +1,5 @@
+use crate::{frontend::token_type::TokenType, tree_walker::interpreter::Interpreter, LoxError};
 use std::fmt::{self, Display};
-use crate::frontend::token_type::TokenType;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -15,8 +15,12 @@ pub enum Literal {
     String(String),
     Integer(f64),
     Boolean(bool),
+    Function(Function),
     Nil,
 }
+
+#[derive(Debug, Clone)]
+pub struct Function {}
 
 impl Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -25,6 +29,7 @@ impl Display for Literal {
             Literal::Integer(num) => num.fmt(f),
             Literal::Boolean(b) => b.fmt(f),
             Literal::Nil => write!(f, "`nil`"),
+            Literal::Function(_) => todo!(),
         }
     }
 }
@@ -36,10 +41,10 @@ impl Literal {
             Literal::Integer(num) => num.to_string(),
             Literal::Boolean(b) => b.to_string(),
             Literal::Nil => String::from("nil"),
+            Literal::Function(_) => todo!(),
         }
     }
 }
-
 
 // Implement custom equality impl because equality for lox is laxer than equality for rust and we
 // can have nill types

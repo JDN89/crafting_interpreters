@@ -1,11 +1,10 @@
-use std::{fs, io, process};
-use std::io::{BufRead, Write};
 use crate::frontend::scanner::Scanner;
-use crate::{LoxError};
+use crate::tree_walker::ast::Stmt;
 use crate::tree_walker::interpreter::Interpreter;
 use crate::tree_walker::parser::Parser;
-use crate::tree_walker::ast::Stmt;
-
+use crate::LoxError;
+use std::io::{BufRead, Write};
+use std::{fs, io, process};
 
 pub fn run_file(file_path: &str) -> Result<(), io::Error> {
     // initialize the interpreter, which contains the environment field, so that we can hold on to the state of the program one we run it
@@ -78,3 +77,4 @@ pub fn run(source: &String, interpreter: &mut Interpreter) -> Result<(), LoxErro
     interpreter.interpret(statements)?;
     Ok(())
 }
+

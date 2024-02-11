@@ -2,11 +2,11 @@ use std::cell::RefCell;
 use std::io::{Cursor, Write};
 use std::rc::Rc;
 
-use crate::frontend::token::Literal;
+use crate::frontend::token::{Literal, LoxCallable};
 use crate::frontend::token_type::TokenType;
 use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
-use crate::{InterpreterError, LoxError};
+use crate::{InterpreterError, LoxError, RuntimeError};
 
 // TODO: read about lifetimes and anonymous lifetimes!!
 
@@ -258,7 +258,23 @@ impl Interpreter {
                     .get_literal(&expr.name)?
                     .clone());
             }
-            Expr::Call(_) => todo!(),
+            Expr::Call(expr) => {
+                let callee = self.evaluate_expression(&expr.callee)?;
+                let mut arguments = Vec::new();
+                for arg in &expr.arguments {
+                    arguments.push(self.evaluate_expression(&arg)?);
+                }
+
+                todo!()
+                // if let Literal::Func(callee_callable) = callee {
+                //     return Ok(callee_callable.call(self, arguments)?);
+                // } else {
+                //     Err(LoxError::Runtime(RuntimeError::throw(format!(
+                //         "Can only call functions and classes: {:?}",
+                //         expr.paren
+                //     ))))
+                // }
+            }
         }
 
         // return expression.accept(self);

@@ -1,5 +1,3 @@
-use std::error;
-
 use crate::frontend::token::{Literal, Token};
 use crate::frontend::token_type::TokenType::{self, *};
 use crate::tree_walker::ast::*;
