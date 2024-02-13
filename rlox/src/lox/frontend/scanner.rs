@@ -135,12 +135,13 @@ impl Scanner {
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
 
+            // String start with var identifier = "String value between quorts"
             '"' => self.string()?,
 
-            // _ => (),
             c => {
                 if self.check_is_digit(Some(c)) {
                     self.consume_number()?;
+                // alpha chars are indetifiers when they are not between quotation marks
                 } else if self.is_alpha(c) {
                     self.identifier()?;
                 } else {
@@ -233,10 +234,9 @@ impl Scanner {
     }
 
     fn peek(&self) -> Option<char> {
-        return self.source.chars().nth(self.current); // TODO: add error handling
+        return self.source.chars().nth(self.current);
     }
 
-    // TODO fix bug -> lexeme of string literal is fucked up -> start up java program
     fn string(&mut self) -> Result<(), LoxError> {
         // if '"' we skip while loop and jump to self.advance() to consume the closing ".
         while self.peek() != Some('"') && !self.is_at_end() {
@@ -252,6 +252,7 @@ impl Scanner {
                 "Unterminated tring",
             )));
         }
+        // while loop has ended because we hit "
         self.advance()?; // consume the closing ".
 
         //Trim the surrounding quotes
