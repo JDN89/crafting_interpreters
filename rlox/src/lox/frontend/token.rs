@@ -1,4 +1,4 @@
-use crate::{frontend::token_type::TokenType, tree_walker::interpreter::Interpreter, LoxError};
+use crate::frontend::token_type::TokenType;
 use std::fmt::{self, Display};
 
 #[allow(dead_code)]

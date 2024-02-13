@@ -2,7 +2,8 @@ use std::cell::RefCell;
 use std::io::{Cursor, Write};
 use std::rc::Rc;
 
-use crate::frontend::token::{Literal, LoxCallable};
+use crate::frontend::lox_callable::LoxCallable;
+use crate::frontend::token::Literal;
 use crate::frontend::token_type::TokenType;
 use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
@@ -260,20 +261,28 @@ impl Interpreter {
             }
             Expr::Call(expr) => {
                 let callee = self.evaluate_expression(&expr.callee)?;
-                let mut arguments = Vec::new();
-                for arg in &expr.arguments {
-                    arguments.push(self.evaluate_expression(&arg)?);
-                }
 
-                todo!()
-                // if let Literal::Func(callee_callable) = callee {
-                //     return Ok(callee_callable.call(self, arguments)?);
-                // } else {
-                //     Err(LoxError::Runtime(RuntimeError::throw(format!(
-                //         "Can only call functions and classes: {:?}",
-                //         expr.paren
-                //     ))))
-                // }
+                let arguments = expr
+                    .arguments
+                    .clone()
+                    .into_iter()
+                    .map(|a| self.evaluate_expression(&a))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                match callee {
+                    Literal::Function(callee) => {
+                        return Ok(callee.call(self, arguments)?);
+                    }
+                    Literal::String(_)
+                    | Literal::Integer(_)
+                    | Literal::Boolean(_)
+                    | Literal::Nil => {
+                        return Err(LoxError::Runtime(RuntimeError::throw(format!(
+                            "Can only call functions and classes: {:?}",
+                            expr.paren
+                        ))));
+                    }
+                }
             }
         }
 

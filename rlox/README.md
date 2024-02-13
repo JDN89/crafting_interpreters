@@ -4,6 +4,8 @@
 
 ## TODO
 
+- Token : get Literal field out of token
+- create builder patterns for structs -> see luke for inspiration
 - cleanup comments and describe what you learned with Rc RefCell and when to use it -> instead of box environment
 - check when we exit we should't just print the error instead and keep rlox running
 - profile interpreter once it's finished

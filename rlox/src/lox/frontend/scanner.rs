@@ -1,12 +1,12 @@
+use crate::frontend::token_type::TokenType::{self, *};
 use crate::lox_error::Loc;
 use crate::lox_error::LoxError;
-use crate::frontend::token_type::TokenType::{self, *};
 use crate::ParserError;
 use std::string::String;
 
+use crate::frontend::token::{Literal, Token};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
-use crate::frontend::token::{Literal, Token};
 
 lazy_static! {
     static ref KEYWORDS: HashMap<String, TokenType> = {
@@ -207,6 +207,13 @@ impl Scanner {
             Some(Literal::Nil) => {
                 Token::new(ttype, lexeme.to_owned(), Some(Literal::Nil), self.line)
             }
+            // this will enver get called -> remove Litereal from token?
+            Some(Literal::Function(funtion)) => Token::new(
+                ttype,
+                lexeme.to_string(),
+                Some(Literal::Function(funtion)),
+                self.line,
+            ),
         };
         let tokens = self.tokens.push(token);
         tokens
