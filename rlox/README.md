@@ -4,7 +4,9 @@
 
 ## TODO
 
-- Token : get Literal field out of token
+- implent clock in envrironment and see how to call 
+- review RC and Refcell
+- cleanup runtime error message and impl fn
 - create builder patterns for structs -> see luke for inspiration
 - cleanup comments and describe what you learned with Rc RefCell and when to use it -> instead of box environment
 - check when we exit we should't just print the error instead and keep rlox running

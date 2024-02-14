@@ -13,6 +13,7 @@ use crate::{InterpreterError, LoxError, RuntimeError};
 
 #[derive(Debug, Clone)]
 pub struct Interpreter {
+    pub globals: Rc<RefCell<Environment>>,
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
     environment: Rc<RefCell<Environment>>,
     //Write to an in memory buffer to test our interpreter:
@@ -23,8 +24,14 @@ pub struct Interpreter {
 // pattern
 impl Interpreter {
     pub fn new() -> Self {
+        let globals = Rc::new(RefCell::new(Environment::new()));
+
+        // define the clock
+        //env.define(Clock.name().into(), Value::Callable(Rc::new(Clock)));
+
         Interpreter {
-            environment: Rc::new(RefCell::new(Environment::new())),
+            globals: Rc::clone(&globals),
+            environment: Rc::clone(&globals), // Corrected line
             output_buffer: RefCell::new(Cursor::new(Vec::new())),
         }
     }
