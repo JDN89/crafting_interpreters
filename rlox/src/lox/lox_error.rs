@@ -19,6 +19,12 @@ impl RuntimeError {
         }
     }
 
+    pub fn arity_mismatch(expected: u8, found: u8) -> Self {
+        Self {
+            message: format!("Expect {expected} arguments, but got {found} arguments."),
+        }
+    }
+
     //Todo get access to token so we can get the line where the error originated
     pub fn report(&self) {
         eprintln!("{:?}", self.message);

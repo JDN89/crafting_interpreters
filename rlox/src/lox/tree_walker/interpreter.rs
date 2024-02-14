@@ -271,6 +271,13 @@ impl Interpreter {
 
                 match callee {
                     Literal::Function(callee) => {
+                        let n_arguments = arguments.len() as u8;
+                        if callee.arity() != n_arguments {
+                            return Err(LoxError::Runtime(
+                                RuntimeError::arity_mismatch(callee.arity(), n_arguments).into(),
+                            ));
+                        }
+
                         return Ok(callee.call(self, arguments)?);
                     }
                     Literal::String(_)
