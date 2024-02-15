@@ -1,9 +1,16 @@
+use core::fmt;
+
 use super::token::{Function, Literal};
 use crate::{tree_walker::interpreter::Interpreter, LoxError};
 
-pub trait LoxCallable {
+pub trait LoxCallable: fmt::Debug {
     fn arity(&self) -> u8;
     fn call(self, interpreter: &Interpreter, args: Vec<Literal>) -> Result<Literal, LoxError>;
+}
+impl fmt::Display for dyn LoxCallable {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<fn >",)
+    }
 }
 
 impl LoxCallable for Function {

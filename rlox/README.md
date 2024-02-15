@@ -4,8 +4,8 @@
 
 ## TODO
 
-- implent clock in envrironment and see how to call 
-- review RC and Refcell
+- ignore native functions for now aka clock, and just continue implementing the normal funciton flow
+  - review that chapter later
 - cleanup runtime error message and impl fn
 - create builder patterns for structs -> see luke for inspiration
 - cleanup comments and describe what you learned with Rc RefCell and when to use it -> instead of box environment
