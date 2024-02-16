@@ -105,6 +105,7 @@ impl Interpreter {
                 }
                 return Ok(());
             }
+            Stmt::Function(_) => todo!(),
         }
 
         // return statement.accept(self);

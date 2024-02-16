@@ -4,12 +4,16 @@
 // However, the nesting of values of recursive types could theoretically continue infinitely, so Rust can’t know how much space the value needs.
 // Because boxes have a known size, we can enable recursive types by inserting a box in the recursive type definition.
 
-use crate::frontend::{lox_value::LoxValue, token::Token};
+use crate::frontend::{
+    lox_value::{Function, LoxValue},
+    token::Token,
+};
 
 // STATEMENTS
 #[derive(Debug)]
 pub enum Stmt {
     Expression(ExpressionStmt),
+    Function(FunctionStmt),
     Var(VarStmt),
     If(IfStmt),
     Print(PrintStmt),
@@ -20,6 +24,13 @@ pub enum Stmt {
 #[derive(Debug)]
 pub struct BlockStmt {
     pub statements: Vec<Stmt>,
+}
+
+#[derive(Debug)]
+pub struct FunctionStmt {
+    pub name: Token,
+    pub params: Vec<Token>,
+    pub body: Vec<Box<Stmt>>,
 }
 
 #[derive(Debug)]

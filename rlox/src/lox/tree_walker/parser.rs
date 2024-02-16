@@ -84,7 +84,9 @@ impl Parser {
     }
 
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
-        if self.match_token_types(&[Var]) {
+        if self.match_token_types(&[Fun]) {
+            return Ok(self.parse_function_statement("function")?);
+        } else if self.match_token_types(&[Var]) {
             return Ok(self.var_declaration()?);
         } else {
             return Ok(self.statement()?);
@@ -179,6 +181,36 @@ impl Parser {
         let expression = self.expression()?;
         self.consume(&Semicolon, "Expect ';' expression.")?;
         return Ok(Stmt::Expression(ExpressionStmt { expression }));
+    }
+
+    fn parse_function_statement(&mut self, kind: &str) -> Result<Stmt, LoxError> {
+        let name = self.consume(&Identifier, format!("Expect {} name.", &kind).as_str());
+        self.consume(
+            &LeftParen,
+            format!("Expect ( after {} name.", &kind).as_str(),
+        );
+        let mut parameters = Vec::new();
+        if !self.check(&RightParen) {
+            // todo: you should always consume first identifier if there is one
+
+            loop {
+                if parameters.len() >= 255 {
+                    return Err(LoxError::ParserError(ParserError::new(
+                        self.peek().unwrap().line,
+                        Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
+                        "Can't have more than 255 parameters",
+                    )));
+                }
+
+                parameters.push(self.consume(&Identifier, "Expect parameter name."));
+
+                if !self.match_token_types(&[Comma]) {
+                    break;
+                }
+            }
+        }
+
+        Ok(())
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
