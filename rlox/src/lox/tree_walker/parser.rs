@@ -54,14 +54,14 @@ use crate::{Loc, LoxError, ParserError};
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
-pub struct Parser {
-    tokens: Vec<Token>,
+pub struct Parser<'a> {
+    tokens: &'a Vec<Token>,
     current: usize,
 }
 
 #[allow(dead_code, unused_variables)]
-impl Parser {
-    pub fn build_parser(tokens: Vec<Token>) -> Parser {
+impl<'a> Parser<'a> {
+    pub fn build_parser(tokens: &Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
     }
 
@@ -119,9 +119,9 @@ impl Parser {
     }
 
     fn parse_if_statement(&mut self) -> Result<Stmt, LoxError> {
-        self.consume(&LeftParen, "Expect '(', after 'if'")?;
+        self.consume(LeftParen, "Expect '(', after 'if'")?;
         let condition = self.expression()?;
-        self.consume(&RightParen, "Expect '(', after if condition '")?;
+        self.consume(RightParen, "Expect '(', after if condition '")?;
         let then_branch = Box::new(self.statement()?);
         // Eagerly check fo an else statement so it belongs to the closest if statement
         let else_branch = if self.match_token_types(&[Else]) {
@@ -140,7 +140,7 @@ impl Parser {
         //consume token and store in name
         let name = {
             // Inner scope starts here
-            let name_token = self.consume(&Identifier, "expect variable name.")?;
+            let name_token = self.consume(Identifier, "expect variable name.")?;
             // Rust doesn't allow moving out of borrowed content within the same scope
             // Creating a new scope allows the borrow of `name_token` to end before
             // attempting to move or clone it
@@ -153,15 +153,14 @@ impl Parser {
             initializer = Some(self.expression()?);
         }
 
-        let _consumed_semicolon =
-            self.consume(&Semicolon, "Expect ';' after variable declaration.");
+        let _consumed_semicolon = self.consume(Semicolon, "Expect ';' after variable declaration.");
         return Ok(Stmt::Var(VarStmt { name, initializer }));
     }
 
     fn parse_while_statement(&mut self) -> Result<Stmt, LoxError> {
-        self.consume(&LeftParen, "Expect '(' after 'while'.)")?;
+        self.consume(LeftParen, "Expect '(' after 'while'.)")?;
         let condition = self.expression()?;
-        self.consume(&RightParen, "Expect ')' after condition. ")?;
+        self.consume(RightParen, "Expect ')' after condition. ")?;
         let body = self.statement()?;
         return Ok(Stmt::While(WhileStmt {
             condition,
@@ -172,21 +171,21 @@ impl Parser {
     // printStmt      → "print" expression ";" ;
     fn parse_print_statement(&mut self) -> Result<Stmt, LoxError> {
         let value = self.expression()?;
-        self.consume(&Semicolon, "Expect ';' after value.")?;
+        self.consume(Semicolon, "Expect ';' after value.")?;
         return Ok(Stmt::Print(PrintStmt { expression: value }));
     }
 
     // exprStmt       → expression ";" ;
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
         let expression = self.expression()?;
-        self.consume(&Semicolon, "Expect ';' expression.")?;
+        self.consume(Semicolon, "Expect ';' expression.")?;
         return Ok(Stmt::Expression(ExpressionStmt { expression }));
     }
 
     fn parse_function_statement(&mut self, kind: &str) -> Result<Stmt, LoxError> {
-        let name = self.consume(&Identifier, format!("Expect {} name.", &kind).as_str());
-        self.consume(
-            &LeftParen,
+        let name = self.consume(Identifier, &format!("Expect {} name.", kind).as_str())?;
+        let _ = self.consume(
+            LeftParen,
             format!("Expect ( after {} name.", &kind).as_str(),
         );
         let mut parameters = Vec::new();
@@ -202,15 +201,28 @@ impl Parser {
                     )));
                 }
 
-                parameters.push(self.consume(&Identifier, "Expect parameter name."));
+                parameters.push(self.consume(Identifier, "Expect parameter name.")?);
 
                 if !self.match_token_types(&[Comma]) {
                     break;
                 }
             }
         }
-
-        Ok(())
+        self.consume(RightParen, "Expect ')' after parameters!");
+        self.consume(
+            LeftBrace,
+            format!("Expect {{ before {} body.", &kind).as_str(),
+        );
+        let body = self.block()?;
+        return Ok(Stmt::Function(FunctionStmt {
+            name: name.clone(),
+            params: parameters
+                .iter()
+                .cloned()
+                .map(|token| (*token).clone())
+                .collect(),
+            body: Box::new(body),
+        }));
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
@@ -218,7 +230,7 @@ impl Parser {
         while !self.check(&RightBrace) && !self.is_at_end() {
             statements.push(self.declaration()?);
         }
-        let _ = self.consume(&RightBrace, "Expect '}' after block");
+        let _ = self.consume(RightBrace, "Expect '}' after block");
         return Ok(statements);
     }
 
@@ -389,7 +401,7 @@ impl Parser {
                 }
             }
         }
-        let parenthesis = self.consume(&RightParen, "Expect ')' after arguments.");
+        let parenthesis = self.consume(RightParen, "Expect ')' after arguments.");
         return Ok(Expr::Call(CallExpr {
             callee: Box::new(callee.clone()),
             paren: parenthesis.unwrap().clone(),
@@ -422,7 +434,7 @@ impl Parser {
 
         if self.match_token_types(&[LeftParen]) {
             let expr = self.expression()?;
-            self.consume(&RightParen, "expect ')' after expression")?;
+            self.consume(RightParen, "expect ')' after expression")?;
             return Ok(Expr::Grouping(GroupingExpr {
                 expression: Box::new(expr),
             }));
@@ -481,7 +493,7 @@ impl Parser {
         self.peek().unwrap().token_type == Eof
     }
 
-    fn consume(&mut self, ttype: &TokenType, error_message: &str) -> Result<&Token, LoxError> {
+    fn consume(&mut self, ttype: TokenType, error_message: &str) -> Result<&Token, LoxError> {
         if self.check(&ttype) {
             return Ok(self.advance());
         }
@@ -533,7 +545,7 @@ impl Parser {
     }
 
     fn parse_for_statement(&mut self) -> Result<Stmt, LoxError> {
-        let _ = self.consume(&LeftParen, "Expect '(' after 'for'.");
+        let _ = self.consume(LeftParen, "Expect '(' after 'for'.");
         // parse intializer of for loop
         let initializer: Option<Stmt>;
         if self.match_token_types(&[Semicolon]) {
@@ -548,7 +560,7 @@ impl Parser {
         if !self.check(&Semicolon) {
             condition = Some(self.expression()?);
         }
-        let _ = self.consume(&Semicolon, "Expected ';' after loop condition");
+        let _ = self.consume(Semicolon, "Expected ';' after loop condition");
 
         // parse increment
 
@@ -556,7 +568,7 @@ impl Parser {
         if !self.check(&RightParen) {
             increment = Some(self.expression()?);
         }
-        let _ = self.consume(&RightParen, "Expected '(' after for clause)");
+        let _ = self.consume(RightParen, "Expected '(' after for clause)");
 
         let mut body = self.statement()?;
 
