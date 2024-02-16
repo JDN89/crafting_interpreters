@@ -3,7 +3,7 @@ use std::io::{Cursor, Write};
 use std::rc::Rc;
 
 use crate::frontend::lox_callable::LoxCallable;
-use crate::frontend::token::Literal;
+use crate::frontend::lox_value::LoxValue;
 use crate::frontend::token_type::TokenType;
 use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
@@ -74,10 +74,10 @@ impl Interpreter {
                 Ok(())
             }
             Stmt::Var(stmt) => {
-                let value: Literal;
+                let value: LoxValue;
                 match &stmt.initializer {
                     Some(expression) => value = self.evaluate_expression(&expression)?,
-                    None => value = Literal::Nil,
+                    None => value = LoxValue::Nil,
                 }
                 self.environment
                     .borrow_mut()
@@ -133,7 +133,7 @@ impl Interpreter {
         Ok(())
     }
 
-    fn evaluate_expression(&mut self, expression: &Expr) -> Result<Literal, LoxError> {
+    fn evaluate_expression(&mut self, expression: &Expr) -> Result<LoxValue, LoxError> {
         match expression {
             Expr::Assign(expr) => {
                 let value = self.evaluate_expression(&expr.value)?;
@@ -163,22 +163,26 @@ impl Interpreter {
                 let right = self.evaluate_expression(&expr.right)?;
 
                 match (&left, &right) {
-                    (Literal::Integer(left_value), Literal::Integer(right_value)) => {
+                    (LoxValue::Integer(left_value), LoxValue::Integer(right_value)) => {
                         match expr.operator.token_type {
-                            TokenType::Minus => Ok(Literal::Integer(left_value - right_value)),
-                            TokenType::Slash => Ok(Literal::Integer(left_value / right_value)),
-                            TokenType::Star => Ok(Literal::Integer(left_value * right_value)),
-                            TokenType::Plus => Ok(Literal::Integer(left_value + right_value)),
-                            TokenType::Greater => Ok(Literal::Boolean(left_value > right_value)),
+                            TokenType::Minus => Ok(LoxValue::Integer(left_value - right_value)),
+                            TokenType::Slash => Ok(LoxValue::Integer(left_value / right_value)),
+                            TokenType::Star => Ok(LoxValue::Integer(left_value * right_value)),
+                            TokenType::Plus => Ok(LoxValue::Integer(left_value + right_value)),
+                            TokenType::Greater => Ok(LoxValue::Boolean(left_value > right_value)),
                             TokenType::GreaterEqual => {
-                                Ok(Literal::Boolean(left_value >= right_value))
+                                Ok(LoxValue::Boolean(left_value >= right_value))
                             }
-                            TokenType::Less => Ok(Literal::Boolean(left_value < right_value)),
-                            TokenType::LessEqual => Ok(Literal::Boolean(left_value <= right_value)),
+                            TokenType::Less => Ok(LoxValue::Boolean(left_value < right_value)),
+                            TokenType::LessEqual => {
+                                Ok(LoxValue::Boolean(left_value <= right_value))
+                            }
                             TokenType::EqualEqual => {
-                                Ok(Literal::Boolean(left_value == right_value))
+                                Ok(LoxValue::Boolean(left_value == right_value))
                             }
-                            TokenType::BangEqual => Ok(Literal::Boolean(left_value != right_value)),
+                            TokenType::BangEqual => {
+                                Ok(LoxValue::Boolean(left_value != right_value))
+                            }
                             _ => Err(self.create_interpreter_error(
                                 expr.operator.line,
                                 &expr.operator.token_type,
@@ -188,15 +192,15 @@ impl Interpreter {
                         }
                     }
 
-                    (Literal::String(left_value), Literal::String(right_value)) => {
+                    (LoxValue::String(left_value), LoxValue::String(right_value)) => {
                         let mut left_value = left_value.clone();
                         match expr.operator.token_type {
                             TokenType::Plus => {
                                 left_value.push_str(&right_value);
-                                Ok(Literal::String(left_value.to_string()))
+                                Ok(LoxValue::String(left_value.to_string()))
                             }
-                            TokenType::EqualEqual => Ok(Literal::Boolean(left == right)),
-                            TokenType::BangEqual => Ok(Literal::Boolean(left != right)),
+                            TokenType::EqualEqual => Ok(LoxValue::Boolean(left == right)),
+                            TokenType::BangEqual => Ok(LoxValue::Boolean(left != right)),
                             _ => Err(self.create_interpreter_error(
                                 expr.operator.line,
                                 &expr.operator.token_type,
@@ -206,8 +210,8 @@ impl Interpreter {
                         }
                     }
 
-                    (Literal::Nil, Literal::Nil) => match expr.operator.token_type {
-                        TokenType::EqualEqual => Ok(Literal::Boolean(true)),
+                    (LoxValue::Nil, LoxValue::Nil) => match expr.operator.token_type {
+                        TokenType::EqualEqual => Ok(LoxValue::Boolean(true)),
                         _ => Err(self.create_interpreter_error(
                             expr.operator.line,
                             &expr.operator.token_type,
@@ -215,8 +219,8 @@ impl Interpreter {
                             right,
                         )),
                     },
-                    (Literal::Nil, _) | (_, Literal::Nil) => match expr.operator.token_type {
-                        TokenType::EqualEqual => Ok(Literal::Boolean(false)),
+                    (LoxValue::Nil, _) | (_, LoxValue::Nil) => match expr.operator.token_type {
+                        TokenType::EqualEqual => Ok(LoxValue::Boolean(false)),
                         _ => Err(self.create_interpreter_error(
                             expr.operator.line,
                             &expr.operator.token_type,
@@ -244,8 +248,8 @@ impl Interpreter {
                 let right = self.evaluate_expression(&expr.right)?;
 
                 if expr.operator.token_type == TokenType::Minus {
-                    if let Literal::Integer(number) = right {
-                        return Ok(Literal::Integer(-number));
+                    if let LoxValue::Integer(number) = right {
+                        return Ok(LoxValue::Integer(-number));
                     } else {
                         return Err(LoxError::Interpreter(InterpreterError::throw(
                             expr.operator.line,
@@ -254,10 +258,10 @@ impl Interpreter {
                     }
                 } else if expr.operator.token_type == TokenType::Bang {
                     let bool = self.is_truthy(&right);
-                    return Ok(Literal::Boolean(bool));
+                    return Ok(LoxValue::Boolean(bool));
                 }
                 // unreachable
-                return Ok(Literal::Nil);
+                return Ok(LoxValue::Nil);
             }
             Expr::Variable(expr) => {
                 return Ok(self
@@ -277,7 +281,7 @@ impl Interpreter {
                     .collect::<Result<Vec<_>, _>>()?;
 
                 match callee {
-                    Literal::Function(callee) => {
+                    LoxValue::Function(callee) => {
                         let n_arguments = arguments.len() as u8;
                         if callee.arity() != n_arguments {
                             return Err(LoxError::Runtime(
@@ -287,10 +291,10 @@ impl Interpreter {
 
                         return Ok(callee.call(self, arguments)?);
                     }
-                    Literal::String(_)
-                    | Literal::Integer(_)
-                    | Literal::Boolean(_)
-                    | Literal::Nil => {
+                    LoxValue::String(_)
+                    | LoxValue::Integer(_)
+                    | LoxValue::Boolean(_)
+                    | LoxValue::Nil => {
                         return Err(LoxError::Runtime(RuntimeError::throw(format!(
                             "Can only call functions and classes: {:?}",
                             expr.paren
@@ -302,9 +306,9 @@ impl Interpreter {
 
         // return expression.accept(self);
     }
-    fn is_truthy(&mut self, right: &Literal) -> bool {
+    fn is_truthy(&mut self, right: &LoxValue) -> bool {
         match right {
-            Literal::Nil | Literal::Boolean(false) => false,
+            LoxValue::Nil | LoxValue::Boolean(false) => false,
             _ => true,
         }
     }
@@ -313,8 +317,8 @@ impl Interpreter {
         &self,
         location: usize,
         token_type: &TokenType,
-        left: Literal,
-        right: Literal,
+        left: LoxValue,
+        right: LoxValue,
     ) -> LoxError {
         return LoxError::Interpreter(InterpreterError::throw(
             location,

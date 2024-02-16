@@ -1,6 +1,6 @@
-use crate::frontend::{self, lox_callable::LoxCallable, token::Literal};
-
 use chrono::offset::Utc;
+
+use crate::frontend::{lox_callable::LoxCallable, lox_value::LoxValue};
 
 use super::interpreter;
 
@@ -15,8 +15,8 @@ impl LoxCallable for Clock {
     fn call(
         self,
         _: &interpreter::Interpreter,
-        _: Vec<Literal>,
-    ) -> Result<Literal, crate::LoxError> {
-        return Ok(Literal::Integer(Utc::now().timestamp() as f64));
+        _: Vec<LoxValue>,
+    ) -> Result<LoxValue, crate::LoxError> {
+        return Ok(LoxValue::Integer(Utc::now().timestamp() as f64));
     }
 }

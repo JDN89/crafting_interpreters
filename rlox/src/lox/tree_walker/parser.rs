@@ -1,4 +1,5 @@
-use crate::frontend::token::{Literal, Token};
+use crate::frontend::lox_value::LoxValue;
+use crate::frontend::token::Token;
 use crate::frontend::token_type::TokenType::{self, *};
 use crate::tree_walker::ast::*;
 use crate::{Loc, LoxError, ParserError};
@@ -368,17 +369,17 @@ impl Parser {
     fn primary(&mut self) -> Result<Expr, LoxError> {
         if self.match_token_types(&[False]) {
             return Ok(Expr::Literal(LiteralExpr {
-                value: Literal::Boolean(false),
+                value: LoxValue::Boolean(false),
             }));
         }
         if self.match_token_types(&[True]) {
             return Ok(Expr::Literal(LiteralExpr {
-                value: Literal::Boolean(true),
+                value: LoxValue::Boolean(true),
             }));
         }
         if self.match_token_types(&[Nil]) {
             return Ok(Expr::Literal(LiteralExpr {
-                value: Literal::Nil,
+                value: LoxValue::Nil,
             }));
         }
         if self.match_token_types(&[Number, String]) {
@@ -535,7 +536,7 @@ impl Parser {
 
         if let None = condition {
             condition = Some(Expr::Literal(LiteralExpr {
-                value: Literal::Boolean(true),
+                value: LoxValue::Boolean(true),
             }));
         }
         body = Stmt::While(WhileStmt {

@@ -4,9 +4,11 @@ use crate::lox_error::LoxError;
 use crate::ParserError;
 use std::string::String;
 
-use crate::frontend::token::{Literal, Token};
+use crate::frontend::token::Token;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+
+use super::lox_value::LoxValue;
 
 lazy_static! {
     static ref KEYWORDS: HashMap<String, TokenType> = {
@@ -175,7 +177,7 @@ impl Scanner {
         self.add_token_object(ttype, None);
     }
 
-    fn add_token_object(&mut self, ttype: TokenType, literal: Option<Literal>) {
+    fn add_token_object(&mut self, ttype: TokenType, literal: Option<LoxValue>) {
         // Comments get consumed until the end of the line
         // for String the lexeme is different
         let lexeme = &self.source[self.start..self.current];
@@ -183,36 +185,36 @@ impl Scanner {
             None => Token::new(
                 ttype,
                 lexeme.to_string(),
-                Some(Literal::String("".to_string())),
+                Some(LoxValue::String("".to_string())),
                 self.line,
             ),
-            Some(Literal::String(value)) => Token::new(
+            Some(LoxValue::String(value)) => Token::new(
                 ttype,
                 self.source[self.start + 1..self.current - 1].to_string(),
-                Some(Literal::String(value.to_string())),
+                Some(LoxValue::String(value.to_string())),
                 self.line,
             ),
-            Some(Literal::Integer(value)) => Token::new(
+            Some(LoxValue::Integer(value)) => Token::new(
                 ttype,
                 lexeme.to_string(),
-                Some(Literal::Integer(value)),
+                Some(LoxValue::Integer(value)),
                 self.line,
             ),
-            Some(Literal::Boolean(value)) => Token::new(
+            Some(LoxValue::Boolean(value)) => Token::new(
                 ttype,
                 lexeme.to_owned(),
-                Some(Literal::Boolean(value)),
+                Some(LoxValue::Boolean(value)),
                 self.line,
             ),
 
-            Some(Literal::Nil) => {
-                Token::new(ttype, lexeme.to_owned(), Some(Literal::Nil), self.line)
+            Some(LoxValue::Nil) => {
+                Token::new(ttype, lexeme.to_owned(), Some(LoxValue::Nil), self.line)
             }
             // this will enver get called -> remove Litereal from token?
-            Some(Literal::Function(funtion)) => Token::new(
+            Some(LoxValue::Function(funtion)) => Token::new(
                 ttype,
                 lexeme.to_string(),
-                Some(Literal::Function(funtion)),
+                Some(LoxValue::Function(funtion)),
                 self.line,
             ),
         };
@@ -257,7 +259,7 @@ impl Scanner {
 
         //Trim the surrounding quotes
         let string_value = &self.source[self.start + 1..self.current - 1];
-        self.add_token_object(String, Some(Literal::String(string_value.to_string())));
+        self.add_token_object(String, Some(LoxValue::String(string_value.to_string())));
 
         Ok(())
     }
@@ -287,7 +289,7 @@ impl Scanner {
         let num = self.source[self.start..self.current].parse::<f64>();
 
         match num {
-            Ok(num) => self.add_token_object(Number, Some(Literal::Integer(num))),
+            Ok(num) => self.add_token_object(Number, Some(LoxValue::Integer(num))),
             Err(_) => {
                 return Err(LoxError::ScannerError(ParserError::new(
                     self.line,
@@ -315,9 +317,9 @@ impl Scanner {
         match ttype {
             None => self.add_token(Identifier),
             Some(value) => match value {
-                False => self.add_token_object(False, Some(Literal::Boolean(false))),
-                True => self.add_token_object(True, Some(Literal::Boolean(true))),
-                Nil => self.add_token_object(Nil, Some(Literal::Nil)),
+                False => self.add_token_object(False, Some(LoxValue::Boolean(false))),
+                True => self.add_token_object(True, Some(LoxValue::Boolean(true))),
+                Nil => self.add_token_object(Nil, Some(LoxValue::Nil)),
                 _ => self.add_token(value.clone()),
             },
         }

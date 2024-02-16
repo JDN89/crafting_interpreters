@@ -2,13 +2,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::frontend::token::{Literal, Token};
+use crate::frontend::lox_value::LoxValue;
+use crate::frontend::token::Token;
 use crate::{LoxError, RuntimeError};
 
 #[derive(Debug, Clone)]
 pub struct Environment {
     pub enclosing_parent_environment: Option<Rc<RefCell<Environment>>>,
-    values: HashMap<String, Literal>,
+    values: HashMap<String, LoxValue>,
 }
 
 impl Environment {
@@ -29,12 +30,12 @@ impl Environment {
         return env;
     }
 
-    pub fn define(&mut self, name: &str, value: Literal) {
+    pub fn define(&mut self, name: &str, value: LoxValue) {
         self.values.insert(name.to_string(), value);
     }
 
     // If the variable isn't found in this environment, we simply try the enclosing one
-    pub fn get_literal(&self, name: &Token) -> Result<Literal, LoxError> {
+    pub fn get_literal(&self, name: &Token) -> Result<LoxValue, LoxError> {
         if let Some(value) = self.values.get(&name.lexeme) {
             Ok(value.clone())
         } else {
@@ -51,7 +52,7 @@ impl Environment {
     }
 
     // We get the current key and reassign a new value to it
-    pub fn assign(&mut self, name: &Token, value: &Literal) -> Result<(), LoxError> {
+    pub fn assign(&mut self, name: &Token, value: &LoxValue) -> Result<(), LoxError> {
         if self.values.contains_key(&name.lexeme) {
             self.values.insert(name.lexeme.to_string(), value.clone());
             Ok(())
