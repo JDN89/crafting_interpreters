@@ -1,7 +1,6 @@
 use crate::frontend::scanner::Scanner;
-use crate::tree_walker::ast::Stmt;
 use crate::tree_walker::interpreter::Interpreter;
-use crate::tree_walker::parser::Parser;
+use crate::tree_walker::parser::{Parser, Stmt};
 use crate::LoxError;
 use std::io::{BufRead, Write};
 use std::{fs, io, process};

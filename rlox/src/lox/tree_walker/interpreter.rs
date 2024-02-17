@@ -5,9 +5,10 @@ use std::rc::Rc;
 use crate::frontend::lox_callable::LoxCallable;
 use crate::frontend::lox_value::LoxValue;
 use crate::frontend::token_type::TokenType;
-use crate::tree_walker::ast::{Expr, Stmt};
 use crate::tree_walker::environment::Environment;
 use crate::{InterpreterError, LoxError, RuntimeError};
+
+use super::parser::{Expr, Stmt};
 
 // TODO: read about lifetimes and anonymous lifetimes!!
 

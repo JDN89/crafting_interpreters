@@ -1,35 +1,38 @@
+
 ## Review
+
 - Get a better grasps of how precendence rules are defined in the parser and get translated into an AST
 
 
 ## TODO
 
+name: name.clone(),
+    |                 ---- first borrow later used here
+SOLVE name. clone() -> just pass a borrow and remove the lifetimes!
 - ignore native functions for now aka clock, and just continue implementing the normal funciton flow
   - review that chapter later
 - cleanup runtime error message and impl fn
 - create builder patterns for structs -> see luke for inspiration
-- cleanup comments and describe what you learned with Rc RefCell and when to use it -> instead of box environment
-- check when we exit we should't just print the error instead and keep rlox running
+
+
 - profile interpreter once it's finished
-- Compare parser with PRAT parsing and later also with the book writing an interpreter in go. Apparently these forms of parsing are easier to understand and more efficient. The current parser makes to many function calls. We keep going deeper in the chain of calls until we reach the correct prescedence level which might not be te best way of doing it.
-  - https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
+  
+
 - when interpreter part is finished -> rewrite the parser:
   - https://www.journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
   - parser talk jonathan blow around minute 55. recursive descent when prescedence is increasing and logical parse single binary with while loop when precedence is decreasing
 - check equality, behaviour is weird? >5=6=7 >Ok("5")
-- remove #[allow(dead_code, unused_variables)]
+
 
 
 ### Example
 
 3 * (1 + 2) - 1
 
-__TOKENS__
+
 Lexeme: 3 - Literal: Integer: 3
 Lexeme: *
-Lexeme: (
 Lexeme: 1 - Literal: Integer: 1
-Lexeme: +
 Lexeme: 2 - Literal: Integer: 2
 Lexeme: )
 Lexeme: -

@@ -1,56 +1,121 @@
 use crate::frontend::lox_value::LoxValue;
 use crate::frontend::token::Token;
 use crate::frontend::token_type::TokenType::{self, *};
-use crate::tree_walker::ast::*;
 use crate::{Loc, LoxError, ParserError};
 
-// don't forget to compare this to the PRAT parser:
-// https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
-//
-// https://en.wikipedia.org/wiki/Order_of_operations#:~:text=Most%20programming%20languages%20use%20precedence,is%20strictly%20left%20to%20right).
-// In a top-down parser, you reach the lowest-precedence expressions first because they may in turn contain subexpressions of higher precedence.
-// each precedence calls a following function that deals with a higher precedence level
-// expression     → assignment ;
-// assignment     → IDENTIFIER "=" assignment | logic_or;
-// logic_or       → logic_and ("or" logic_and)*;
-// logic_and      → equality ("and" equality)*;
-// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-// term           → factor ( ( "-" | "+" ) factor )* ;
-// factor         → unary ( ( "/" | "*" ) unary )* ;
-// unary          → ( "!" | "-" ) unary | primary ;
-// primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+// STATEMENTS
+#[derive(Debug)]
+pub enum Stmt {
+    Expression(ExpressionStmt),
+    Function(FunctionDecl),
+    Var(VarStmt),
+    If(IfStmt),
+    Print(PrintStmt),
+    Block(BlockStmt),
+    While(WhileStmt),
+}
 
-//  STATEMENT GRAMAR RULES
-// | Production     | Expansion                                             |
-// |----------------|-------------------------------------------------------|
-// | program        | declaration* EOF ;                                    |
-// | declaration    | varDecel | statement;                                 |
-// | statement      | exprStmt |forStmt | ifStmt | printStmt | whileStmt |block|
-// | whileStmt      |  "while" "(" expression ")" statement;                |
-// | ifStmt         | "if" "("  expression ")" statement ("else" statement)?|
-// | block          | "{" declaration* "}";                                 |
-// | exprStmt       | expression ";"                                        |
-// | printStmt      | "print" expression ";"                                |
-//
-// the tricky part here is the GROUPING which in turn can call parse expression again
-// EXAMPLE ( 1 + 2) * 3
-//
-//      *
-//     / \
-//    +   3
-//   / \
-//  1   2
-//
-// we go down the recursive chain of call until we hit ( here we call recursively call expression,
-// which in turn parses 1 + 2 in a binary expression and wraps it in a grouping expression
-// we go up the chain of calls until we hit *.
-// The while loop places the previous grouping expression on the left side of the tree and the
-// remaining 3 on the right side of the tree.
-//
-// The recrusive calls build up the right leaning tree and the while statements build up the left
-// leaning tree. Everytime you hit a while statement the previously parsed expr get placed to the
-// left operand side
+#[derive(Debug)]
+pub struct BlockStmt {
+    pub statements: Vec<Stmt>,
+}
+
+#[derive(Debug)]
+pub struct FunctionDecl {
+    pub name: Token,
+    pub parameters: Vec<Token>,
+    pub body: Box<Vec<Stmt>>,
+}
+
+#[derive(Debug)]
+pub struct WhileStmt {
+    pub condition: Expr,
+    pub body: Box<Stmt>,
+}
+
+#[derive(Debug)]
+pub struct IfStmt {
+    pub condition: Expr,
+    pub then_branch: Box<Stmt>,
+    pub else_branch: Option<Box<Stmt>>,
+}
+
+#[derive(Debug)]
+pub struct ExpressionStmt {
+    pub expression: Expr,
+}
+
+#[derive(Debug)]
+pub struct PrintStmt {
+    pub expression: Expr,
+}
+#[derive(Debug)]
+pub struct VarStmt {
+    pub name: Token,
+    pub initializer: Option<Expr>,
+}
+
+// EXPRESSIONS
+
+#[derive(Debug, Clone)]
+pub enum Expr {
+    Assign(AssignExpr),
+    Binary(BinaryExpr),
+    Call(CallExpr),
+    Grouping(GroupingExpr),
+    Literal(LiteralExpr),
+    Logical(LogicalExpr),
+    Unary(UnaryExpr),
+    Variable(VariableExpr),
+}
+
+#[derive(Debug, Clone)]
+pub struct AssignExpr {
+    pub name: Token,
+    pub value: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BinaryExpr {
+    pub left: Box<Expr>,
+    pub operator: Token,
+    pub right: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CallExpr {
+    pub callee: Box<Expr>,
+    pub paren: Token,
+    pub arguments: Vec<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LogicalExpr {
+    pub left: Box<Expr>,
+    pub operator: Token,
+    pub right: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct GroupingExpr {
+    pub expression: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LiteralExpr {
+    pub value: LoxValue,
+}
+
+#[derive(Debug, Clone)]
+pub struct UnaryExpr {
+    pub operator: Token,
+    pub right: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct VariableExpr {
+    pub name: Token,
+}
 
 #[allow(dead_code, unused_variables)]
 #[derive(Debug)]
@@ -184,45 +249,48 @@ impl<'a> Parser<'a> {
 
     fn parse_function_statement(&mut self, kind: &str) -> Result<Stmt, LoxError> {
         let name = self.consume(Identifier, &format!("Expect {} name.", kind).as_str())?;
-        let _ = self.consume(
+        let _ignore = self.consume(
             LeftParen,
             format!("Expect ( after {} name.", &kind).as_str(),
         );
-        let mut parameters = Vec::new();
-        if !self.check(&RightParen) {
-            // todo: you should always consume first identifier if there is one
 
-            loop {
-                if parameters.len() >= 255 {
-                    return Err(LoxError::ParserError(ParserError::new(
-                        self.peek().unwrap().line,
-                        Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
-                        "Can't have more than 255 parameters",
-                    )));
-                }
+        let (parameters, body) = self.parse_fun_parameters_and_body()?;
 
-                parameters.push(self.consume(Identifier, "Expect parameter name.")?);
-
-                if !self.match_token_types(&[Comma]) {
-                    break;
-                }
-            }
-        }
-        self.consume(RightParen, "Expect ')' after parameters!");
-        self.consume(
-            LeftBrace,
-            format!("Expect {{ before {} body.", &kind).as_str(),
-        );
-        let body = self.block()?;
-        return Ok(Stmt::Function(FunctionStmt {
-            name: name.clone(),
-            params: parameters
-                .iter()
-                .cloned()
-                .map(|token| (*token).clone())
-                .collect(),
+        // let mut parameters = Vec::new();
+        // if !self.check(&RightParen) {
+        //     // todo: you should always consume first identifier if there is one
+        //
+        //     loop {
+        //         if parameters.len() >= 255 {
+        //             return Err(LoxError::ParserError(ParserError::new(
+        //                 self.peek().unwrap().line,
+        //                 Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
+        //                 "Can't have more than 255 parameters",
+        //             )));
+        //         }
+        //
+        //         parameters.push(self.consume(Identifier, "Expect parameter name.")?);
+        //
+        //         if !self.match_token_types(&[Comma]) {
+        //             break;
+        //         }
+        //     }
+        // }
+        // self.consume(RightParen, "Expect ')' after parameters!");
+        // self.consume(
+        //     LeftBrace,
+        //     format!("Expect {{ before {} body.", &kind).as_str(),
+        // );
+        // let body = self.block()?;
+        return Ok(Stmt::Function(FunctionDecl {
+            name,
+            parameters,
             body: Box::new(body),
         }));
+    }
+
+    fn parse_fun_parameters_and_body(&self) -> Result<(Vec<Token>, Vec<Stmt>), LoxError> {
+        todo!()
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
@@ -478,22 +546,23 @@ impl<'a> Parser<'a> {
         self.peek().unwrap().token_type == *ttype
     }
 
-    fn peek(&self) -> Option<&Token> {
-        self.tokens.get(self.current)
+    fn peek(&self) -> Option<Token> {
+        self.tokens.get(self.current).clone().cloned()
     }
 
-    fn advance(&mut self) -> &Token {
+    fn advance(&mut self) -> Token {
         if !self.is_at_end() {
             self.current += 1
         }
-        return self.previous().unwrap();
+        return self.previous().unwrap().clone();
     }
 
     fn is_at_end(&self) -> bool {
         self.peek().unwrap().token_type == Eof
     }
 
-    fn consume(&mut self, ttype: TokenType, error_message: &str) -> Result<&Token, LoxError> {
+    // We clone token to take ownershiop of the value and avoid borrower issues later on
+    fn consume(&mut self, ttype: TokenType, error_message: &str) -> Result<Token, LoxError> {
         if self.check(&ttype) {
             return Ok(self.advance());
         }
