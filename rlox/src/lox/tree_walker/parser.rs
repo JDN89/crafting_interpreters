@@ -3,6 +3,8 @@ use crate::frontend::token::Token;
 use crate::frontend::token_type::TokenType::{self, *};
 use crate::{Loc, LoxError, ParserError};
 
+const PARAM_LIMIT: usize = 255;
+
 // STATEMENTS
 #[derive(Debug)]
 pub enum Stmt {
@@ -290,6 +292,33 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_fun_parameters_and_body(&self) -> Result<(Vec<Token>, Vec<Stmt>), LoxError> {
+        let mut parameters = Vec::new();
+        if !self.check(&RightParen) {
+            // todo: you should always consume first identifier if there is one
+
+            loop {
+                if parameters.len() >= PARAM_LIMIT {
+                    return Err(LoxError::ParserError(ParserError::new(
+                        self.peek().unwrap().line,
+                        Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
+                        "Can't have more than 255 parameters",
+                    )));
+                }
+
+                parameters.push(self.consume(Identifier, "Expect parameter name.")?);
+
+                if !self.match_token_types(&[Comma]) {
+                    break;
+                }
+            }
+        }
+        self.consume(RightParen, "Expect ')' after parameters!");
+        self.consume(
+            LeftBrace,
+            format!("Expect {{ before {} body."
+        );
+        let body = self.block()?;
+
         todo!()
     }
 
