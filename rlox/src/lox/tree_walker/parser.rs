@@ -291,7 +291,7 @@ impl<'a> Parser<'a> {
         }));
     }
 
-    fn parse_fun_parameters_and_body(&self) -> Result<(Vec<Token>, Vec<Stmt>), LoxError> {
+    fn parse_fun_parameters_and_body(&mut self) -> Result<(Vec<Token>, Vec<Stmt>), LoxError> {
         let mut parameters = Vec::new();
         if !self.check(&RightParen) {
             // todo: you should always consume first identifier if there is one
@@ -312,14 +312,16 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        self.consume(RightParen, "Expect ')' after parameters!");
-        self.consume(
+        let _ = self.consume(RightParen, "Expect ')' after parameters!");
+
+        let _ = self.consume(
             LeftBrace,
-            format!("Expect {{ before {} body."
+            "Expect { after function body"
         );
         let body = self.block()?;
+        
+        return Ok((parameters,body));
 
-        todo!()
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
