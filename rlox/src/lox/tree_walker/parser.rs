@@ -63,7 +63,7 @@ pub struct VarStmt {
 pub enum Expr {
     Assign(AssignExpr),
     Binary(BinaryExpr),
-    Call(CallExpr),
+    Call(FunctionCallExpr),
     Grouping(GroupingExpr),
     Literal(LiteralExpr),
     Logical(LogicalExpr),
@@ -85,7 +85,7 @@ pub struct BinaryExpr {
 }
 
 #[derive(Debug, Clone)]
-pub struct CallExpr {
+pub struct FunctionCallExpr {
     pub callee: Box<Expr>,
     pub paren: Token,
     pub arguments: Vec<Expr>,
@@ -314,14 +314,10 @@ impl<'a> Parser<'a> {
         }
         let _ = self.consume(RightParen, "Expect ')' after parameters!");
 
-        let _ = self.consume(
-            LeftBrace,
-            "Expect { after function body"
-        );
+        let _ = self.consume(LeftBrace, "Expect { after function body");
         let body = self.block()?;
-        
-        return Ok((parameters,body));
 
+        return Ok((parameters, body));
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
@@ -501,7 +497,7 @@ impl<'a> Parser<'a> {
             }
         }
         let parenthesis = self.consume(RightParen, "Expect ')' after arguments.");
-        return Ok(Expr::Call(CallExpr {
+        return Ok(Expr::Call(FunctionCallExpr {
             callee: Box::new(callee.clone()),
             paren: parenthesis.unwrap().clone(),
             arguments,

@@ -119,7 +119,7 @@ impl Interpreter {
     // code that messed everyitng up!
     // let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
     // TODO write in learned and look up details of std::mem::replace!
-    fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+    pub fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         // crate a pointer to the parrent env
         let parent_env = self.environment.clone();
         // new env that holds previous env as an enclosing field (BOX ENV)
