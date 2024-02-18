@@ -4,6 +4,8 @@ use std::rc::Rc;
 
 use crate::tree_walker::lox_function::LoxFunction;
 
+use super::lox_callable::LoxCallable;
+
 #[derive(Debug, Clone)]
 pub enum LoxValue {
     String(String),
@@ -32,7 +34,7 @@ impl LoxValue {
             LoxValue::Integer(num) => num.to_string(),
             LoxValue::Boolean(b) => b.to_string(),
             LoxValue::Nil => String::from("nil"),
-            LoxValue::Function(_) => todo!(),
+            LoxValue::Function(fun) => String::from(fun.name()),
         }
     }
 }
@@ -48,8 +50,20 @@ impl PartialEq for LoxValue {
             (Self::Nil, Self::Nil) => true,
             (Self::Nil, _) => false,
             (_, Self::Nil) => false,
-
-            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+            (LoxValue::String(_), LoxValue::Integer(_)) => todo!(),
+            (LoxValue::String(_), LoxValue::Boolean(_)) => todo!(),
+            (LoxValue::String(_), LoxValue::Function(_)) => todo!(),
+            (LoxValue::Integer(_), LoxValue::String(_)) => todo!(),
+            (LoxValue::Integer(_), LoxValue::Boolean(_)) => todo!(),
+            (LoxValue::Integer(_), LoxValue::Function(_)) => todo!(),
+            (LoxValue::Boolean(_), LoxValue::String(_)) => todo!(),
+            (LoxValue::Boolean(_), LoxValue::Integer(_)) => todo!(),
+            (LoxValue::Boolean(_), LoxValue::Function(_)) => todo!(),
+            (LoxValue::Function(_), LoxValue::String(_)) => todo!(),
+            (LoxValue::Function(_), LoxValue::Integer(_)) => todo!(),
+            (LoxValue::Function(_), LoxValue::Boolean(_)) => todo!(),
+            (LoxValue::Function(_), LoxValue::Function(_)) => todo!(),
+            // _ => core::mem::discriminant(self) == core::mem::discriminant(other),
         }
     }
 }

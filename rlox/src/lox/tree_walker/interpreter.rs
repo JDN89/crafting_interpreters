@@ -8,6 +8,7 @@ use crate::frontend::token_type::TokenType;
 use crate::tree_walker::environment::Environment;
 use crate::{InterpreterError, LoxError, RuntimeError};
 
+use super::lox_function::LoxFunction;
 use super::parser::{Expr, Stmt};
 
 // TODO: read about lifetimes and anonymous lifetimes!!
@@ -67,6 +68,14 @@ impl Interpreter {
                 let _expr = self.evaluate_expression(&stmt.expression)?;
                 return Ok(());
             }
+            Stmt::Function(fun) => {
+                let function = LoxFunction::new(fun.clone());
+                self.environment
+                    .borrow_mut()
+                    .define(&fun.name.lexeme, LoxValue::Function(Rc::new(function)));
+
+                return Ok(());
+            }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
                 println!("{:?}", value);
@@ -106,7 +115,6 @@ impl Interpreter {
                 }
                 return Ok(());
             }
-            Stmt::Function(_) => todo!(),
         }
 
         // return statement.accept(self);
@@ -286,9 +294,10 @@ impl Interpreter {
                     LoxValue::Function(callee) => {
                         let n_arguments = arguments.len();
                         if callee.arity() != n_arguments {
-                            return Err(LoxError::Runtime(
-                                RuntimeError::arity_mismatch(callee.arity(), n_arguments),
-                            ));
+                            return Err(LoxError::Runtime(RuntimeError::arity_mismatch(
+                                callee.arity(),
+                                n_arguments,
+                            )));
                         }
 
                         return Ok(callee.call(self, arguments)?);

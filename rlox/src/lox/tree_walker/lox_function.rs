@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use super::{interpreter::Interpreter, parser::FunctionDecl};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LoxFunction {
     pub declaration: FunctionDecl,
 }

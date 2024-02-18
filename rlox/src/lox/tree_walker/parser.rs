@@ -6,7 +6,7 @@ use crate::{Loc, LoxError, ParserError};
 const PARAM_LIMIT: usize = 255;
 
 // STATEMENTS
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Stmt {
     Expression(ExpressionStmt),
     Function(FunctionDecl),
@@ -17,41 +17,41 @@ pub enum Stmt {
     While(WhileStmt),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockStmt {
     pub statements: Vec<Stmt>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FunctionDecl {
     pub name: Token,
     pub parameters: Vec<Token>,
     pub body: Box<Vec<Stmt>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WhileStmt {
     pub condition: Expr,
     pub body: Box<Stmt>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfStmt {
     pub condition: Expr,
     pub then_branch: Box<Stmt>,
     pub else_branch: Option<Box<Stmt>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExpressionStmt {
     pub expression: Expr,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PrintStmt {
     pub expression: Expr,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarStmt {
     pub name: Token,
     pub initializer: Option<Expr>,
