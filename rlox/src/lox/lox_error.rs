@@ -19,7 +19,7 @@ impl RuntimeError {
         }
     }
 
-    pub fn arity_mismatch(expected: u8, found: u8) -> Self {
+    pub fn arity_mismatch(expected: usize, found: usize) -> Self {
         Self {
             message: format!("Expect {expected} arguments, but got {found} arguments."),
         }

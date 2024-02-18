@@ -8,7 +8,7 @@ use std::rc::Rc;
 use super::{interpreter::Interpreter, parser::FunctionDecl};
 
 #[derive(Debug)]
-struct LoxFunction {
+pub struct LoxFunction {
     pub declaration: FunctionDecl,
 }
 
@@ -19,12 +19,12 @@ impl LoxFunction {
 }
 
 impl LoxCallable for LoxFunction {
-    fn arity(&self) -> u8 {
-        (self.declaration.parameters.len()).try_into().unwrap()
+    fn arity(&self) -> usize {
+        self.declaration.parameters.len().clone()
     }
 
     fn call(
-        self,
+        &self,
         interpreter: &mut Interpreter,
         args: Vec<LoxValue>,
     ) -> Result<LoxValue, LoxError> {
@@ -46,4 +46,3 @@ impl LoxCallable for LoxFunction {
         &self.declaration.name.lexeme
     }
 }
-

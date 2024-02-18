@@ -284,10 +284,10 @@ impl Interpreter {
 
                 match callee {
                     LoxValue::Function(callee) => {
-                        let n_arguments = arguments.len() as u8;
+                        let n_arguments = arguments.len();
                         if callee.arity() != n_arguments {
                             return Err(LoxError::Runtime(
-                                RuntimeError::arity_mismatch(callee.arity(), n_arguments).into(),
+                                RuntimeError::arity_mismatch(callee.arity(), n_arguments),
                             ));
                         }
 

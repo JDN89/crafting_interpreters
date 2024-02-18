@@ -8,12 +8,12 @@ use super::interpreter;
 pub struct Clock {}
 
 impl LoxCallable for Clock {
-    fn arity(&self) -> u8 {
+    fn arity(&self) -> usize {
         0
     }
 
     fn call(
-        self,
+        &self,
         _: &mut interpreter::Interpreter,
         _: Vec<LoxValue>,
     ) -> Result<LoxValue, crate::LoxError> {

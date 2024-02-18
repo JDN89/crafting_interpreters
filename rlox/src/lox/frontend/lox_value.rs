@@ -1,17 +1,17 @@
 use core::fmt;
 use std::fmt::Display;
+use std::rc::Rc;
+
+use crate::tree_walker::lox_function::LoxFunction;
 
 #[derive(Debug, Clone)]
 pub enum LoxValue {
     String(String),
     Integer(f64),
     Boolean(bool),
-    Function(Function),
+    Function(Rc<LoxFunction>),
     Nil,
 }
-
-#[derive(Debug, Clone)]
-pub struct Function {}
 
 impl Display for LoxValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
