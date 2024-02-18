@@ -34,9 +34,9 @@ print c;"#,
 
     // WHEN
 
-    match run(&input, &mut interpreter){
-        Ok(_) => () ,
-        Err(e) => println!("{:?}",e)
+    match run(&input, &mut interpreter) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
     }
 
     // THEN
@@ -72,9 +72,9 @@ print a;"#,
     let processed_expected = remove_whitespace(expected);
 
     //WHEN
-    match run(&input, &mut interpreter){
-        Ok(_) => () ,
-        Err(e) => println!("{:?}",e)
+    match run(&input, &mut interpreter) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
     }
 
     //THEN
@@ -102,3 +102,30 @@ fn convert_to_string(output: Vec<u8>) -> String {
         .join(" ")
 }
 
+#[test]
+fn function_declaration() {
+    //given
+    let mut interpreter = Interpreter::new();
+    let input = String::from(
+        r#"
+        fun sayhi (first,last) { print "Hi, " + first + "" + last + "!"; }
+        sayhi("dear","reader");
+"#,
+    );
+    let expected = r#" Hi, dearreader!
+    "#;
+    let processed_expected = remove_whitespace(expected);
+
+    //WHEN
+    match run(&input, &mut interpreter) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
+    }
+
+    //THEN
+    let output = interpreter.get_outpout();
+
+    let output_str = convert_to_string(output);
+
+    assert_eq!(output_str, processed_expected.trim());
+}
