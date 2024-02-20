@@ -6,17 +6,14 @@
 
 ## TODO
 
-name: name.clone(),
-    |                 ---- first borrow later used here
-SOLVE name. clone() -> just pass a borrow and remove the lifetimes!
+- set up CI/CD that runst integration tests when you push to github
+- fix fun sayHi error -> capital H is the issue
+- sep through function flow to really understand
 - ignore native functions for now aka clock, and just continue implementing the normal funciton flow
   - review that chapter later
 - cleanup runtime error message and impl fn
 - create builder patterns for structs -> see luke for inspiration
-
-
 - profile interpreter once it's finished
-  
 
 - when interpreter part is finished -> rewrite the parser:
   - https://www.journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/

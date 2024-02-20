@@ -137,7 +137,7 @@ impl Scanner {
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
 
-            // String start with var identifier = "String value between quorts"
+            // String starts with var
             '"' => self.string()?,
 
             c => {
@@ -327,7 +327,7 @@ impl Scanner {
     }
 
     fn is_alpha(&self, c: char) -> bool {
-        return c >= 'a' && c <= 'z' || c >= 'A' && c >= 'Z' || c == '_';
+        return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
     }
     fn is_alpha_numeric(&self, option_c: Option<char>) -> bool {
         if let Some(c) = option_c {
