@@ -13,6 +13,7 @@ pub enum Stmt {
     Var(VarStmt),
     If(IfStmt),
     Print(PrintStmt),
+    Return(ReturnStmt),
     Block(BlockStmt),
     While(WhileStmt),
 }
@@ -20,6 +21,12 @@ pub enum Stmt {
 #[derive(Debug, Clone)]
 pub struct BlockStmt {
     pub statements: Vec<Stmt>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReturnStmt {
+    pub keyword: Token,
+    pub value: Option<Expr>,
 }
 
 #[derive(Debug, Clone)]
@@ -173,6 +180,9 @@ impl<'a> Parser<'a> {
         if self.match_token_types(&[Print]) {
             return Ok(self.parse_print_statement()?);
         }
+        if self.match_token_types(&[Return]) {
+            return Ok(self.return_statment()?);
+        }
         if self.match_token_types(&[While]) {
             return Ok(self.parse_while_statement())?;
         }
@@ -242,6 +252,20 @@ impl<'a> Parser<'a> {
         return Ok(Stmt::Print(PrintStmt { expression: value }));
     }
 
+    // returnStmt     → "return" expression? ";" ;
+    fn return_statment(&mut self) -> Result<Stmt, LoxError> {
+        let token = self.previous().unwrap().clone();
+        let mut return_value = None;
+        if !self.check(&Semicolon) {
+            return_value = Some(self.expression()?);
+        }
+        self.consume(Semicolon, "Expect ';' after return value");
+        return Ok(Stmt::Return(ReturnStmt {
+            keyword: token,
+            value: return_value,
+        }));
+    }
+
     // exprStmt       → expression ";" ;
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
         let expression = self.expression()?;
@@ -258,32 +282,6 @@ impl<'a> Parser<'a> {
 
         let (parameters, body) = self.parse_fun_parameters_and_body()?;
 
-        // let mut parameters = Vec::new();
-        // if !self.check(&RightParen) {
-        //     // todo: you should always consume first identifier if there is one
-        //
-        //     loop {
-        //         if parameters.len() >= 255 {
-        //             return Err(LoxError::ParserError(ParserError::new(
-        //                 self.peek().unwrap().line,
-        //                 Loc::Lexeme(self.peek().unwrap().lexeme.to_owned()),
-        //                 "Can't have more than 255 parameters",
-        //             )));
-        //         }
-        //
-        //         parameters.push(self.consume(Identifier, "Expect parameter name.")?);
-        //
-        //         if !self.match_token_types(&[Comma]) {
-        //             break;
-        //         }
-        //     }
-        // }
-        // self.consume(RightParen, "Expect ')' after parameters!");
-        // self.consume(
-        //     LeftBrace,
-        //     format!("Expect {{ before {} body.", &kind).as_str(),
-        // );
-        // let body = self.block()?;
         return Ok(Stmt::Function(FunctionDecl {
             name,
             parameters,
