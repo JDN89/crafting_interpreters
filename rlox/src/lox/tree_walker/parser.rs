@@ -259,7 +259,7 @@ impl<'a> Parser<'a> {
         if !self.check(&Semicolon) {
             return_value = Some(self.expression()?);
         }
-        self.consume(Semicolon, "Expect ';' after return value");
+        let _ = self.consume(Semicolon, "Expect ';' after return value");
         return Ok(Stmt::Return(ReturnStmt {
             keyword: token,
             value: return_value,

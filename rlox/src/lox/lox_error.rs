@@ -1,11 +1,14 @@
 use std::usize;
 
+use crate::frontend::lox_value::LoxValue;
+
 #[derive(Debug)]
 pub enum LoxError {
     Interpreter(InterpreterError),
     ParserError(ParserError),
     ScannerError(ParserError),
     Runtime(RuntimeError),
+    Return(LoxValue),
 }
 
 #[derive(Debug)]

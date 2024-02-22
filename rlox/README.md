@@ -6,6 +6,7 @@
 
 ## TODO
 
+- in user interface:         if let Err(e) = run(&buf, &mut interpreter) { => probably not all the errors need to interupt the program and report an error?
 - set up CI/CD that runst integration tests when you push to github
 - fix fun sayHi error -> capital H is the issue
 - sep through function flow to really understand

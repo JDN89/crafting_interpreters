@@ -51,7 +51,7 @@ impl Interpreter {
         for statement in statements {
             self.execute(&statement)?;
         }
-        return Ok(());
+        Ok(())
     }
 
     fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
@@ -66,7 +66,7 @@ impl Interpreter {
             }
             Stmt::Expression(stmt) => {
                 let _expr = self.evaluate_expression(&stmt.expression)?;
-                return Ok(());
+                Ok(())
             }
             Stmt::Function(fun) => {
                 let function = LoxFunction::new(fun.clone());
@@ -74,7 +74,7 @@ impl Interpreter {
                     .borrow_mut()
                     .define(&fun.name.lexeme, LoxValue::Function(Rc::new(function)));
 
-                return Ok(());
+                Ok(())
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
@@ -113,9 +113,21 @@ impl Interpreter {
                 } {
                     let _ = self.execute(&stmt.body);
                 }
-                return Ok(());
+                Ok(())
             }
-            Stmt::Return(_) => todo!(),
+            Stmt::Return(stmt) => {
+                let mut value = LoxValue::Nil;
+
+                // TODO!!
+                // I don't like that we throw an error here an match on it the Lox_funciton
+                // look for a better solution
+
+                value = match &stmt.value {
+                    Some(value) => self.evaluate_expression(&value)?,
+                    None => value, // catch newly defined error in lox_funciton
+                };
+                Err(LoxError::Return(value))
+            }
         }
 
         // return statement.accept(self);

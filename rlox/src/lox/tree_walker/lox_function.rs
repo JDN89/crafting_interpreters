@@ -37,9 +37,13 @@ impl LoxCallable for LoxFunction {
             env.define(&parameter.clone().lexeme, value.clone());
         }
 
-        let _ = interpreter.execute_block(&self.declaration.body, env);
-
-        return Ok(LoxValue::Nil);
+        let result = interpreter.execute_block(&self.declaration.body, env);
+        // TODO: I don't like that we wrap the return value in an error!!
+        match result {
+            Ok(()) => Ok(LoxValue::Nil),
+            Err(LoxError::Return(value)) => Ok(value),
+            Err(e) => Err(e),
+        }
     }
 
     fn name(&self) -> &str {

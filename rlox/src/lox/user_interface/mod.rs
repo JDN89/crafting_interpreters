@@ -29,6 +29,7 @@ pub fn run_file(file_path: &str) -> Result<(), io::Error> {
                 e.report();
                 process::exit(1)
             }
+            LoxError::Return(_) => todo!(),
         }
     }
     Ok(())
@@ -60,6 +61,7 @@ pub fn run_prompt() -> Result<(), io::Error> {
                 LoxError::ParserError(e) => e.report(),
                 LoxError::ScannerError(e) => e.report(),
                 LoxError::Runtime(e) => e.report(),
+                LoxError::Return(_) => todo!(),
             }
         }
     }
