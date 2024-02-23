@@ -3,6 +3,28 @@
 
 - Get a better grasps of how precendence rules are defined in the parser and get translated into an AST
 
+## BUG
+
+bug with parsing of return statement;
+parser line 634
+
+```> fun foo() {return print "hello";} ```
+thread 'main' panicked at src/lox/tree_walker/parser.rs:634:22:
+internal error: entered unreachable code
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+jdn@jdn ~/C/c/rlox (master) [101]> cargo run --bin lox
+    Finished dev [unoptimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/lox`
+> fun foo() {print "hello:;}
+[line 1, position 27] Error: Unterminated tring
+
+> fun foo() {print "hello";} 
+> foo()
+[line 1, lexeme ''] Error: Expect ';' expression.
+> foo ();
+String("hello")
+>
+
 
 ## TODO
 
