@@ -116,17 +116,11 @@ impl Interpreter {
                 Ok(())
             }
             Stmt::Return(stmt) => {
-                let mut value = LoxValue::Nil;
-
-                // TODO!!
-                // I don't like that we throw an error here an match on it the Lox_funciton
-                // look for a better solution
-
-                value = match &stmt.value {
-                    Some(value) => self.evaluate_expression(&value)?,
-                    None => value, // catch newly defined error in lox_funciton
-                };
-                Err(LoxError::Return(value))
+                if let Some(value) = stmt.value.clone() {
+                    Err(LoxError::Return(self.evaluate_expression(&value)?))
+                } else {
+                    Err(LoxError::Return(LoxValue::Nil))
+                }
             }
         }
 
@@ -284,25 +278,36 @@ impl Interpreter {
                     return Ok(LoxValue::Boolean(bool));
                 }
                 // unreachable
-                return Ok(LoxValue::Nil);
+                Ok(LoxValue::Nil)
             }
-            Expr::Variable(expr) => {
-                return Ok(self
-                    .environment
-                    .borrow_mut()
-                    .get_literal(&expr.name)?
-                    .clone());
-            }
+            Expr::Variable(expr) => Ok(self
+                .environment
+                .borrow_mut()
+                .get_literal(&expr.name)?
+                .clone()),
             Expr::Call(expr) => {
                 let callee = self.evaluate_expression(&expr.callee)?;
 
-                let arguments = expr
-                    .arguments
-                    .clone()
-                    .into_iter()
-                    .map(|a| self.evaluate_expression(&a))
-                    .collect::<Result<Vec<_>, _>>()?;
+                let mut arguments = Vec::with_capacity(expr.arguments.len());
+                // expr.arguments
+                //     .clone()
+                //     .into_iter()
+                //     .for_each(|a| println!("parse arg: {:?}", a));
+                //
+                for expr in &expr.arguments {
+                    arguments.push(self.evaluate_expression(&expr)?);
+                }
 
+                // let arguments = expr
+                //     .arguments
+                //     .clone()
+                //     .into_iter()
+                //     .map(|a| self.evaluate_expression(&a))
+                //     .collect::<Result<Vec<_>, _>>()?;
+
+                println!("args: {:?}", arguments);
+
+                // println!("args:  {:?}", arguments);
                 match callee {
                     LoxValue::Function(callee) => {
                         let n_arguments = arguments.len();

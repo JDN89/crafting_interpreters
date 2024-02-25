@@ -58,6 +58,7 @@ pub struct ExpressionStmt {
 pub struct PrintStmt {
     pub expression: Expr,
 }
+
 #[derive(Debug, Clone)]
 pub struct VarStmt {
     pub name: Token,
@@ -148,6 +149,7 @@ impl<'a> Parser<'a> {
             match self.declaration() {
                 Ok(stmt) => statements.push(stmt),
                 Err(error) => {
+                    println!("Error: {:?}", error);
                     let _ = self.synchronize();
                     return Err(error);
                 }
@@ -254,15 +256,17 @@ impl<'a> Parser<'a> {
 
     // returnStmt     → "return" expression? ";" ;
     fn return_statment(&mut self) -> Result<Stmt, LoxError> {
+        let expr = if !self.check(&Semicolon) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+
         let token = self.previous().unwrap().clone();
-        let mut return_value = None;
-        if !self.check(&Semicolon) {
-            return_value = Some(self.expression()?);
-        }
-        let _ = self.consume(Semicolon, "Expect ';' after return value");
+        self.consume(Semicolon, "Expect ';' after return value")?;
         return Ok(Stmt::Return(ReturnStmt {
             keyword: token,
-            value: return_value,
+            value: expr,
         }));
     }
 
@@ -315,7 +319,7 @@ impl<'a> Parser<'a> {
         let _ = self.consume(LeftBrace, "Expect { after function body");
         let body = self.block()?;
 
-        return Ok((parameters, body));
+        Ok((parameters, body))
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxError> {
@@ -324,7 +328,7 @@ impl<'a> Parser<'a> {
             statements.push(self.declaration()?);
         }
         let _ = self.consume(RightBrace, "Expect '}' after block");
-        return Ok(statements);
+        Ok(statements)
     }
 
     // expression     → assingment ;
@@ -468,15 +472,15 @@ impl<'a> Parser<'a> {
         let mut expr = self.primary()?;
         loop {
             if self.match_token_types(&[LeftParen]) {
-                expr = self.finish_call(&expr)?
+                expr = self.finish_call(expr)?
             } else {
                 break;
             }
         }
-        return Ok(expr);
+        Ok(expr)
     }
 
-    fn finish_call(&mut self, callee: &Expr) -> Result<Expr, LoxError> {
+    fn finish_call(&mut self, callee: Expr) -> Result<Expr, LoxError> {
         let mut arguments = Vec::new();
         if !self.check(&RightParen) {
             loop {
@@ -495,11 +499,11 @@ impl<'a> Parser<'a> {
             }
         }
         let parenthesis = self.consume(RightParen, "Expect ')' after arguments.");
-        return Ok(Expr::Call(FunctionCallExpr {
+        Ok(Expr::Call(FunctionCallExpr {
             callee: Box::new(callee.clone()),
             paren: parenthesis.unwrap().clone(),
             arguments,
-        }));
+        }))
     }
 
     // primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;

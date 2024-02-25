@@ -38,6 +38,7 @@ impl LoxCallable for LoxFunction {
         }
 
         let result = interpreter.execute_block(&self.declaration.body, env);
+
         // TODO: I don't like that we wrap the return value in an error!!
         match result {
             Ok(()) => Ok(LoxValue::Nil),

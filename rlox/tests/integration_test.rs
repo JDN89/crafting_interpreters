@@ -5,6 +5,24 @@ extern crate rulox;
 use rulox::tree_walker::interpreter::Interpreter;
 use rulox::user_interface::run;
 
+// Helper function to remove whitespace for comparison
+fn remove_whitespace(input: &str) -> String {
+    input
+        .lines()
+        .map(|line| line.trim())
+        .collect::<Vec<&str>>()
+        .join("")
+}
+
+fn convert_to_string(output: Vec<u8>) -> String {
+    String::from_utf8_lossy(&output)
+        .lines()
+        .map(|line| line)
+        .collect::<Vec<&str>>()
+        .join(" ")
+}
+
+
 #[test]
 fn test_scope() {
     // SETUP
@@ -85,22 +103,6 @@ print a;"#,
     assert_eq!(output_str, processed_expected.trim());
 }
 
-// Helper function to remove whitespace for comparison
-fn remove_whitespace(input: &str) -> String {
-    input
-        .lines()
-        .map(|line| line.trim())
-        .collect::<Vec<&str>>()
-        .join("")
-}
-
-fn convert_to_string(output: Vec<u8>) -> String {
-    String::from_utf8_lossy(&output)
-        .lines()
-        .map(|line| line)
-        .collect::<Vec<&str>>()
-        .join(" ")
-}
 
 #[test]
 fn function_declaration() {
@@ -114,6 +116,78 @@ fn function_declaration() {
     );
     let expected = r#" Hi, dearreader!
     "#;
+    let processed_expected = remove_whitespace(expected);
+
+    //WHEN
+    match run(&input, &mut interpreter) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
+    }
+
+    //THEN
+    let output = interpreter.get_outpout();
+
+    let output_str = convert_to_string(output);
+
+    assert_eq!(output_str, processed_expected.trim());
+}
+
+#[test]
+fn return_statement() {
+    //given
+    let mut interpreter = Interpreter::new();
+    let input = String::from(r#"fun foo() {return 1;} print foo(); "#);
+    let expected = r#"Hello "#;
+    let processed_expected = remove_whitespace(expected);
+
+    //WHEN
+    match run(&input, &mut interpreter) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
+    }
+
+    //THEN
+    let output = interpreter.get_outpout();
+
+    let output_str = convert_to_string(output);
+
+    assert_eq!(output_str, processed_expected.trim());
+}
+
+#[test]
+fn return_statement_v2() {
+    //given
+    let mut interpreter = Interpreter::new();
+    let input = String::from(r#" fun fib(n) {
+     if (n <= 1) return n;
+    return fib(n - 2) + fib(n - 1);
+}
+for (var i = 2; i < 4; i = i + 1) {
+  print fib(i);
+}  "#);
+    let expected = r#"Hello "#;
+    let processed_expected = remove_whitespace(expected);
+
+    //WHEN
+    match run(&input, &mut interpreter) {
+        Ok(_) => (),
+        Err(e) => println!("{:?}", e),
+    }
+
+    //THEN
+    let output = interpreter.get_outpout();
+
+    let output_str = convert_to_string(output);
+
+    assert_eq!(output_str, processed_expected.trim());
+}
+
+#[test]
+fn smaller_or_equals() {
+    //given
+    let mut interpreter = Interpreter::new();
+    let input = String::from(r#" var a =1; if (a <=1) print a; else print "hello";  "#);
+    let expected = r#"Hello "#;
     let processed_expected = remove_whitespace(expected);
 
     //WHEN
