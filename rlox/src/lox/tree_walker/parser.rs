@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::frontend::lox_value::LoxValue;
 use crate::frontend::token::Token;
 use crate::frontend::token_type::TokenType::{self, *};
@@ -94,9 +96,9 @@ pub struct BinaryExpr {
 
 #[derive(Debug, Clone)]
 pub struct FunctionCallExpr {
-    pub callee: Box<Expr>,
+    pub callee: Rc<Expr>,
     pub paren: Token,
-    pub arguments: Vec<Expr>,
+    pub arguments: Vec<Rc<Expr>>,
 }
 
 #[derive(Debug, Clone)]
@@ -156,17 +158,17 @@ impl<'a> Parser<'a> {
             }
         }
 
-        return Ok(statements);
+        Ok(statements)
     }
 
     fn declaration(&mut self) -> Result<Stmt, LoxError> {
         if self.match_token_types(&[Fun]) {
-            return Ok(self.parse_function_statement("function")?);
+            Ok(self.parse_function_statement("function")?)
         } else if self.match_token_types(&[Var]) {
-            return Ok(self.var_declaration()?);
+            Ok(self.var_declaration()?)
         } else {
-            return Ok(self.statement()?);
-        };
+            Ok(self.statement()?)
+        }
     }
 
     //parse statement syntax trees
@@ -194,7 +196,7 @@ impl<'a> Parser<'a> {
             }));
         }
 
-        return Ok(self.expression_statement()?);
+        Ok(self.expression_statement()?)
     }
 
     fn parse_if_statement(&mut self) -> Result<Stmt, LoxError> {
@@ -208,11 +210,11 @@ impl<'a> Parser<'a> {
         } else {
             None
         };
-        return Ok(Stmt::If(IfStmt {
+        Ok(Stmt::If(IfStmt {
             condition,
             then_branch,
             else_branch,
-        }));
+        }))
     }
     fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
         // Separate scope for the mutable borrow of `self` for `name`
@@ -233,7 +235,7 @@ impl<'a> Parser<'a> {
         }
 
         let _consumed_semicolon = self.consume(Semicolon, "Expect ';' after variable declaration.");
-        return Ok(Stmt::Var(VarStmt { name, initializer }));
+        Ok(Stmt::Var(VarStmt { name, initializer }))
     }
 
     fn parse_while_statement(&mut self) -> Result<Stmt, LoxError> {
@@ -241,17 +243,17 @@ impl<'a> Parser<'a> {
         let condition = self.expression()?;
         self.consume(RightParen, "Expect ')' after condition. ")?;
         let body = self.statement()?;
-        return Ok(Stmt::While(WhileStmt {
+        Ok(Stmt::While(WhileStmt {
             condition,
             body: Box::new(body),
-        }));
+        }))
     }
 
     // printStmt      → "print" expression ";" ;
     fn parse_print_statement(&mut self) -> Result<Stmt, LoxError> {
         let value = self.expression()?;
         self.consume(Semicolon, "Expect ';' after value.")?;
-        return Ok(Stmt::Print(PrintStmt { expression: value }));
+        Ok(Stmt::Print(PrintStmt { expression: value }))
     }
 
     // returnStmt     → "return" expression? ";" ;
@@ -264,17 +266,17 @@ impl<'a> Parser<'a> {
 
         let token = self.previous().unwrap().clone();
         self.consume(Semicolon, "Expect ';' after return value")?;
-        return Ok(Stmt::Return(ReturnStmt {
+        Ok(Stmt::Return(ReturnStmt {
             keyword: token,
             value: expr,
-        }));
+        }))
     }
 
     // exprStmt       → expression ";" ;
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
         let expression = self.expression()?;
         self.consume(Semicolon, "Expect ';' expression.")?;
-        return Ok(Stmt::Expression(ExpressionStmt { expression }));
+        Ok(Stmt::Expression(ExpressionStmt { expression }))
     }
 
     fn parse_function_statement(&mut self, kind: &str) -> Result<Stmt, LoxError> {
@@ -286,11 +288,11 @@ impl<'a> Parser<'a> {
 
         let (parameters, body) = self.parse_fun_parameters_and_body()?;
 
-        return Ok(Stmt::Function(FunctionDecl {
+        Ok(Stmt::Function(FunctionDecl {
             name,
             parameters,
             body: Box::new(body),
-        }));
+        }))
     }
 
     fn parse_fun_parameters_and_body(&mut self) -> Result<(Vec<Token>, Vec<Stmt>), LoxError> {
@@ -465,7 +467,7 @@ impl<'a> Parser<'a> {
             }));
         }
 
-        return Ok(self.call()?);
+        Ok(self.call()?)
     }
 
     fn call(&mut self) -> Result<Expr, LoxError> {
@@ -492,7 +494,7 @@ impl<'a> Parser<'a> {
                         "Can't have more than 255 arguments",
                     )));
                 }
-                arguments.push(self.expression()?);
+                arguments.push(Rc::new(self.expression()?));
                 if !self.match_token_types(&[Comma]) {
                     break;
                 }
@@ -500,7 +502,7 @@ impl<'a> Parser<'a> {
         }
         let parenthesis = self.consume(RightParen, "Expect ')' after arguments.");
         Ok(Expr::Call(FunctionCallExpr {
-            callee: Box::new(callee.clone()),
+            callee: Rc::new(callee.clone()),
             paren: parenthesis.unwrap().clone(),
             arguments,
         }))
