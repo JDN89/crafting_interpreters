@@ -3,22 +3,18 @@ use crate::{
     tree_walker::environment::Environment,
     LoxError,
 };
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
 use super::{interpreter::Interpreter, parser::FunctionDecl};
 
 #[derive(Debug, Clone)]
 pub struct LoxFunction {
     pub declaration: FunctionDecl,
-    pub closure: Rc<RefCell<Environment>>,
 }
 
 impl LoxFunction {
-    pub fn new(declaration: FunctionDecl, closure: Rc<RefCell<Environment>>) -> Self {
-        Self {
-            declaration,
-            closure,
-        }
+    pub fn new(declaration: FunctionDecl) -> Self {
+        Self { declaration }
     }
 }
 

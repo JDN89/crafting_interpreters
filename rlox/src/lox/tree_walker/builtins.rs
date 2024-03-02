@@ -17,7 +17,7 @@ impl LoxCallable for Clock {
         _: &mut interpreter::Interpreter,
         _: Vec<LoxValue>,
     ) -> Result<LoxValue, crate::LoxError> {
-        Ok(LoxValue::Integer(Utc::now().timestamp() as f64))
+        return Ok(LoxValue::Integer(Utc::now().timestamp() as f64));
     }
 
     fn name(&self) -> &str {

@@ -1,3 +1,4 @@
+use crate::frontend::lox_callable::LoxCallable;
 use std::rc::Rc;
 use std::{
     cell::RefCell,
@@ -27,11 +28,14 @@ pub struct Interpreter {
 // pattern
 impl Interpreter {
     pub fn new() -> Self {
-        let globals = Rc::new(RefCell::new(Environment::global()));
+        let globals = Rc::new(RefCell::new(Environment::new()));
+
+        // define the clock
+        //env.define(Clock.name().into(), Value::Callable(Rc::new(Clock)));
 
         Interpreter {
-            globals: globals.clone(),
-            environment: globals.clone(),
+            globals: Rc::clone(&globals),
+            environment: Rc::clone(&globals), // Corrected line
             output_buffer: RefCell::new(Cursor::new(Vec::new())),
         }
     }
@@ -67,7 +71,7 @@ impl Interpreter {
                 Ok(())
             }
             Stmt::Function(fun) => {
-                let function = LoxFunction::new(fun.clone(), self.environment.clone());
+                let function = LoxFunction::new(fun.clone());
                 self.environment
                     .borrow_mut()
                     .define(&fun.name.lexeme, LoxValue::Function(Rc::new(function)));

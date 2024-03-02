@@ -27,17 +27,7 @@ impl Environment {
             enclosing_parent_environment: Some(parent_environment),
             values: HashMap::new(),
         };
-        env
-    }
-
-    pub fn global() -> Environment {
-        let env = Environment::new();
-        env
-
-        // env.define(
-        //     "clock".to_string(),
-        //     LoxValue::Func(Rc::new(native::ClockFunc::new())),
-        // );
+        return env;
     }
 
     pub fn define(&mut self, name: &str, value: LoxValue) {
