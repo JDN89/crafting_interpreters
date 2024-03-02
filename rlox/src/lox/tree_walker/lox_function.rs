@@ -36,21 +36,18 @@ impl LoxCallable for LoxFunction {
         //pass the env to execute code block where the code gets executed with the vars bounded to
         //the environement.
         //the parent env gets restored after the function environment has been interpreted
-        let mut env = Environment::new_inner_environment(self.closure.clone());
-
+        let mut env = Environment::new_inner_environment(Rc::clone(&interpreter.globals));
         for (parameter, value) in self.declaration.parameters.iter().zip(args.iter()) {
             env.define(&parameter.clone().lexeme, value.clone());
         }
 
-        let result = interpreter.execute_block(&self.declaration.body, RefCell::new(env))?;
+        let result = interpreter.execute_block(&self.declaration.body, env);
 
         // TODO: I don't like that we wrap the return value in an error!!
         match result {
-            Some(result) => Ok(result),
-            None => Ok(LoxValue::Nil),
-            // Ok(()) => Ok(Some(LoxValue::Nil)),
-            // Err(LoxError::Return(value)) => Ok(value),
-            // Err(e) => Err(e),
+            Ok(()) => Ok(LoxValue::Nil),
+            Err(LoxError::Return(value)) => Ok(value),
+            Err(e) => Err(e),
         }
     }
 
