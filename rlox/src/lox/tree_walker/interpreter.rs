@@ -331,7 +331,7 @@ impl Interpreter {
         LoxError::Interpreter(InterpreterError::throw(
             location,
             format!(
-                "Execution of {:?} operator, is not supporterd for values: {}, {}",
+                "Execution of {:?} operator, is not supported for values: {}, {}",
                 token_type, left, right
             ),
         ))
