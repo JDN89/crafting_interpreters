@@ -28,7 +28,7 @@ pub struct BlockStmt {
 #[derive(Debug, Clone)]
 pub struct ReturnStmt {
     pub keyword: Token,
-    pub value: Option<Expr>,
+    pub value: Box<Expr>,
 }
 
 #[derive(Debug, Clone)]
@@ -258,17 +258,20 @@ impl<'a> Parser<'a> {
 
     // returnStmt     → "return" expression? ";" ;
     fn return_statment(&mut self) -> Result<Stmt, LoxError> {
+        let token = self.previous().unwrap().clone();
+
         let expr = if !self.check(&Semicolon) {
-            Some(self.expression()?)
+            self.expression()?
         } else {
-            None
+            Expr::Literal(LiteralExpr {
+                value: LoxValue::Nil,
+            })
         };
 
-        let token = self.previous().unwrap().clone();
         self.consume(Semicolon, "Expect ';' after return value")?;
         Ok(Stmt::Return(ReturnStmt {
             keyword: token,
-            value: expr,
+            value: Box::new(expr),
         }))
     }
 

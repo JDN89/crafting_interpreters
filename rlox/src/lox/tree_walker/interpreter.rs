@@ -52,19 +52,19 @@ impl Interpreter {
         Ok(())
     }
 
-    fn execute(&mut self, statement: &Stmt) -> Result<(), LoxError> {
+    fn execute(&mut self, statement: &Stmt) -> Result<Option<LoxValue>, LoxError> {
         match statement {
             Stmt::Block(stmt) => {
-                let _block = self.execute_block(
+                let env = Environment::new_inner_environment(self.environment.clone());
+                self.execute_block(
                     &stmt.statements,
                     // create a pointer to the current env
-                    Environment::new_inner_environment(Rc::clone(&self.environment)),
-                );
-                Ok(())
+                    RefCell::new(env.clone()),
+                )
             }
             Stmt::Expression(stmt) => {
                 let _expr = self.evaluate_expression(&stmt.expression)?;
-                Ok(())
+                Ok(None)
             }
             Stmt::Function(fun) => {
                 let function = LoxFunction::new(fun.clone(), self.environment.clone());
@@ -72,14 +72,14 @@ impl Interpreter {
                     .borrow_mut()
                     .define(&fun.name.lexeme, LoxValue::Function(Rc::new(function)));
 
-                Ok(())
+                Ok(None)
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
                 println!("{:?}", value);
                 // write to buffer so you get the output of the buffer for testing
                 self.write_to_buffer(&value.as_str());
-                Ok(())
+                Ok(None)
             }
             Stmt::Var(stmt) => {
                 let value: LoxValue;
@@ -90,7 +90,7 @@ impl Interpreter {
                 self.environment
                     .borrow_mut()
                     .define(&stmt.name.lexeme, value);
-                Ok(())
+                Ok(None)
             }
             Stmt::If(stmt) => {
                 let evaluate_if_condition = self.evaluate_expression(&stmt.condition)?;
@@ -100,7 +100,7 @@ impl Interpreter {
                 } else if let Some(else_statement) = &stmt.else_branch {
                     self.execute(else_statement)
                 } else {
-                    Ok(())
+                    Ok(None)
                 }
             }
             Stmt::While(stmt) => {
@@ -111,15 +111,9 @@ impl Interpreter {
                 } {
                     let _ = self.execute(&stmt.body);
                 }
-                Ok(())
+                Ok(None)
             }
-            Stmt::Return(stmt) => {
-                if let Some(value) = stmt.value.clone() {
-                    Err(LoxError::Return(self.evaluate_expression(&value)?))
-                } else {
-                    Err(LoxError::Return(LoxValue::Nil))
-                }
-            }
+            Stmt::Return(stmt) => Ok(Some(self.evaluate_expression(&stmt.value)?)),
         }
 
         // return statement.accept(self);
@@ -132,20 +126,30 @@ impl Interpreter {
     // code that messed everyitng up!
     // let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
     // TODO: write in learned and look up details of std::mem::replace!
-    pub fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
+    pub fn execute_block(
+        &mut self,
+        statements: &[Stmt],
+        env: RefCell<Environment>,
+    ) -> Result<Option<LoxValue>, LoxError> {
         // crate a pointer to the parrent env
+        let return_value = None;
+
         let parent_env = self.environment.clone();
+        self.environment = Rc::new(env);
+
         // new env that holds previous env as an enclosing field (BOX ENV)
 
-        {
-            self.environment = Rc::new(RefCell::new(env));
-            for stmt in statements {
-                self.execute(stmt)?;
+        for stmt in statements {
+            let return_value = self.execute(stmt)?;
+
+            if return_value.is_some() {
+                println!("{:?}", return_value);
+                break;
             }
         }
 
         self.environment = parent_env;
-        Ok(())
+        Ok(return_value)
     }
 
     fn evaluate_expression(&mut self, expression: &Expr) -> Result<LoxValue, LoxError> {
