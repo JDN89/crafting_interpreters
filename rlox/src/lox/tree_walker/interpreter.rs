@@ -1,8 +1,10 @@
-use std::cell::RefCell;
-use std::io::{Cursor, Write};
-use std::rc::Rc;
-
 use crate::frontend::lox_callable::LoxCallable;
+use std::rc::Rc;
+use std::{
+    cell::RefCell,
+    io::{Cursor, Write},
+};
+
 use crate::frontend::lox_value::LoxValue;
 use crate::frontend::token_type::TokenType;
 use crate::tree_walker::environment::Environment;
@@ -133,7 +135,7 @@ impl Interpreter {
     // referring to the same enviroment
     // code that messed everyitng up!
     // let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
-    // TODO write in learned and look up details of std::mem::replace!
+    // TODO: write in learned and look up details of std::mem::replace!
     pub fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         // crate a pointer to the parrent env
         let parent_env = self.environment.clone();
@@ -155,7 +157,7 @@ impl Interpreter {
             Expr::Assign(expr) => {
                 let value = self.evaluate_expression(&expr.value)?;
                 self.environment.borrow_mut().assign(&expr.name, &value)?;
-                return Ok(value);
+                Ok(value)
             }
             // OR and first is truthy return left
             // AND and first is false return left
@@ -173,7 +175,7 @@ impl Interpreter {
                     }
                 }
                 let right = self.evaluate_expression(&expr.right)?;
-                return Ok(right);
+                Ok(right)
             }
             Expr::Binary(expr) => {
                 let left = self.evaluate_expression(&expr.left)?;
@@ -253,12 +255,8 @@ impl Interpreter {
                     )),
                 }
             }
-            Expr::Grouping(expr) => {
-                return self.evaluate_expression(&expr.expression);
-            }
-            Expr::Literal(expr) => {
-                return Ok(expr.value.clone());
-            }
+            Expr::Grouping(expr) => self.evaluate_expression(&expr.expression),
+            Expr::Literal(expr) => Ok(expr.value.clone()),
             Expr::Unary(expr) => {
                 // first evauluate the operand subexpression before we evaluate the unary operator
                 // recursevly walk the AST
@@ -288,22 +286,10 @@ impl Interpreter {
             Expr::Call(expr) => {
                 let callee = self.evaluate_expression(&expr.callee)?;
 
-                let mut arguments = Vec::with_capacity(expr.arguments.len());
-                // expr.arguments
-                //     .clone()
-                //     .into_iter()
-                //     .for_each(|a| println!("parse arg: {:?}", a));
-                //
+                let mut arguments: Vec<LoxValue> = Vec::with_capacity(expr.arguments.len());
                 for expr in &expr.arguments {
                     arguments.push(self.evaluate_expression(&expr)?);
                 }
-
-                // let arguments = expr
-                //     .arguments
-                //     .clone()
-                //     .into_iter()
-                //     .map(|a| self.evaluate_expression(&a))
-                //     .collect::<Result<Vec<_>, _>>()?;
 
                 println!("args: {:?}", arguments);
 
@@ -318,17 +304,15 @@ impl Interpreter {
                             )));
                         }
 
-                        return Ok(callee.call(self, arguments)?);
+                        Ok(callee.call(self, arguments)?)
                     }
                     LoxValue::String(_)
                     | LoxValue::Integer(_)
                     | LoxValue::Boolean(_)
-                    | LoxValue::Nil => {
-                        return Err(LoxError::Runtime(RuntimeError::throw(format!(
-                            "Can only call functions and classes: {:?}",
-                            expr.paren
-                        ))));
-                    }
+                    | LoxValue::Nil => Err(LoxError::Runtime(RuntimeError::throw(format!(
+                        "Can only call functions and classes: {:?}",
+                        expr.paren
+                    )))),
                 }
             }
         }
@@ -349,12 +333,12 @@ impl Interpreter {
         left: LoxValue,
         right: LoxValue,
     ) -> LoxError {
-        return LoxError::Interpreter(InterpreterError::throw(
+        LoxError::Interpreter(InterpreterError::throw(
             location,
             format!(
                 "Execution of {:?} operator, is not supporterd for values: {}, {}",
                 token_type, left, right
             ),
-        ));
+        ))
     }
 }

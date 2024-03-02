@@ -1,13 +1,13 @@
+use crate::frontend::lox_value::LoxValue;
 use std::rc::Rc;
 
-use crate::frontend::lox_value::LoxValue;
 use crate::frontend::token::Token;
 use crate::frontend::token_type::TokenType::{self, *};
 use crate::{Loc, LoxError, ParserError};
 
 const PARAM_LIMIT: usize = 255;
 
-// STATEMENTS
+// NOTE: STATEMENTS
 #[derive(Debug, Clone)]
 pub enum Stmt {
     Expression(ExpressionStmt),
@@ -67,7 +67,7 @@ pub struct VarStmt {
     pub initializer: Option<Expr>,
 }
 
-// EXPRESSIONS
+// NOTE: EXPRESSIONS
 
 #[derive(Debug, Clone)]
 pub enum Expr {
@@ -96,9 +96,9 @@ pub struct BinaryExpr {
 
 #[derive(Debug, Clone)]
 pub struct FunctionCallExpr {
-    pub callee: Rc<Expr>,
+    pub callee: Box<Expr>,
     pub paren: Token,
-    pub arguments: Vec<Rc<Expr>>,
+    pub arguments: Vec<Expr>,
 }
 
 #[derive(Debug, Clone)]
@@ -146,7 +146,7 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements: Vec<Stmt> = Vec::new();
 
-        // TODO with if let we can call synchronize() in case of an error
+        // TODO: with if let we can call synchronize() in case of an error
         while !self.is_at_end() {
             match self.declaration() {
                 Ok(stmt) => statements.push(stmt),
@@ -494,7 +494,7 @@ impl<'a> Parser<'a> {
                         "Can't have more than 255 arguments",
                     )));
                 }
-                arguments.push(Rc::new(self.expression()?));
+                arguments.push(self.expression()?);
                 if !self.match_token_types(&[Comma]) {
                     break;
                 }
@@ -502,7 +502,7 @@ impl<'a> Parser<'a> {
         }
         let parenthesis = self.consume(RightParen, "Expect ')' after arguments.");
         Ok(Expr::Call(FunctionCallExpr {
-            callee: Rc::new(callee.clone()),
+            callee: Box::new(callee.clone()),
             paren: parenthesis.unwrap().clone(),
             arguments,
         }))
@@ -539,9 +539,9 @@ impl<'a> Parser<'a> {
             }));
         }
         if self.match_token_types(&[Identifier]) {
-            return Ok(Expr::Variable(VariableExpr {
+            Ok(Expr::Variable(VariableExpr {
                 name: self.previous().unwrap().clone(),
-            }));
+            }))
         }
         // If none of the cases in there match, it means we are sitting on a token that can’t start an expression. We need to handle that error too.
         else {
@@ -585,7 +585,7 @@ impl<'a> Parser<'a> {
         if !self.is_at_end() {
             self.current += 1
         }
-        return self.previous().unwrap().clone();
+        self.previous().unwrap().clone()
     }
 
     fn is_at_end(&self) -> bool {

@@ -28,7 +28,7 @@ impl RuntimeError {
         }
     }
 
-    //Todo get access to token so we can get the line where the error originated
+    //TODO: get access to token so we can get the line where the error originated
     pub fn report(&self) {
         eprintln!("{:?}", self.message);
     }

@@ -3,30 +3,27 @@
 
 - Get a better grasps of how precendence rules are defined in the parser and get translated into an AST
 
-## BUG
-
+## FIX:
 bug with parsing of return statement;
-parser line 634
 
-```> fun foo() {return print "hello";} ```
-thread 'main' panicked at src/lox/tree_walker/parser.rs:634:22:
-internal error: entered unreachable code
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-jdn@jdn ~/C/c/rlox (master) [101]> cargo run --bin lox
-    Finished dev [unoptimized + debuginfo] target(s) in 0.00s
-     Running `target/debug/lox`
-> fun foo() {print "hello:;}
-[line 1, position 27] Error: Unterminated tring
-
+ ERROR:
+> fun foo() {return print "hello";}
+WORKS:
 > fun foo() {print "hello";} 
 > foo()
-[line 1, lexeme ''] Error: Expect ';' expression.
-> foo ();
-String("hello")
->
+
+## Fuck recursion:
+- Can't get Fibonnaccy to work. Problem with manipulating shared arg in scope: fib(n-1) + fib(n-2) -> n in second function call is (n-1) instead of n
+- create branch
+  - clone: https://github.com/julioolvr/rlox/blob/master/src/rlox/lox_value/lox_func.rs
+  - go over chapters of functions again, comapre and spot the differences
+- other repos that can be usefull:
+  - https://github.com/DarthMax/crafting_interpreters/blob/main/lox/src/evaluation.rs
+  - https://github.com/toyboot4e/loxrs/blob/master/loxrs_treewalk/src/runtime/interpreter.rs#L66
+  - https://github.com/mariosangiorgio/rulox/blob/master/src/treewalk/interpreter.rs#L42
 
 
-## TODO
+## TODO:
 
 - in user interface:         if let Err(e) = run(&buf, &mut interpreter) { => probably not all the errors need to interupt the program and report an error?
 - set up CI/CD that runst integration tests when you push to github
