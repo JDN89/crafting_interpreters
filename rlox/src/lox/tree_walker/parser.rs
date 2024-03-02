@@ -284,7 +284,7 @@ impl<'a> Parser<'a> {
         let _ignore = self.consume(
             LeftParen,
             format!("Expect ( after {} name.", &kind).as_str(),
-        );
+        )?;
 
         let (parameters, body) = self.parse_fun_parameters_and_body()?;
 
