@@ -20,7 +20,7 @@ impl LoxFunction {
 
 impl LoxCallable for LoxFunction {
     fn arity(&self) -> usize {
-        self.declaration.parameters.len().clone()
+        self.declaration.parameters.len()
     }
 
     fn call(

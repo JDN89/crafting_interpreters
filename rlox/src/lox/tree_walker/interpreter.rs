@@ -284,41 +284,36 @@ impl Interpreter {
                 .get_literal(&expr.name)?
                 .clone()),
             Expr::Call(expr) => {
-                let callee = self.evaluate_expression(&expr.callee)?;
+                let callable = self
+                    .evaluate_expression(&expr.callee)?
+                    .get_callable()
+                    .ok_or_else(|| {
+                        LoxError::Runtime(RuntimeError::throw(format!(
+                            "not callable : {:?}",
+                            expr.paren
+                        )))
+                    })?;
 
                 let mut arguments: Vec<LoxValue> = Vec::with_capacity(expr.arguments.len());
                 for expr in &expr.arguments {
                     arguments.push(self.evaluate_expression(&expr)?);
                 }
 
-                println!("args: {:?}", arguments);
-
-                // println!("args:  {:?}", arguments);
-                match callee {
-                    LoxValue::Function(callee) => {
-                        let n_arguments = arguments.len();
-                        if callee.arity() != n_arguments {
-                            return Err(LoxError::Runtime(RuntimeError::arity_mismatch(
-                                callee.arity(),
-                                n_arguments,
-                            )));
-                        }
-
-                        Ok(callee.call(self, arguments)?)
-                    }
-                    LoxValue::String(_)
-                    | LoxValue::Integer(_)
-                    | LoxValue::Boolean(_)
-                    | LoxValue::Nil => Err(LoxError::Runtime(RuntimeError::throw(format!(
-                        "Can only call functions and classes: {:?}",
-                        expr.paren
-                    )))),
+                let n_arguments = arguments.len();
+                if callable.arity() != arguments.len() {
+                    return Err(LoxError::Runtime(RuntimeError::arity_mismatch(
+                        callable.arity(),
+                        n_arguments,
+                    )));
                 }
+
+                Ok(callable.call(self, arguments)?)
             }
         }
 
         // return expression.accept(self);
     }
+
     fn is_truthy(&mut self, right: &LoxValue) -> bool {
         match right {
             LoxValue::Nil | LoxValue::Boolean(false) => false,

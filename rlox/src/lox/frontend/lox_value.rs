@@ -2,8 +2,6 @@ use core::fmt;
 use std::fmt::Display;
 use std::rc::Rc;
 
-use crate::tree_walker::lox_function::LoxFunction;
-
 use super::lox_callable::LoxCallable;
 
 #[derive(Debug, Clone)]
@@ -11,7 +9,7 @@ pub enum LoxValue {
     String(String),
     Integer(f64),
     Boolean(bool),
-    Function(Rc<LoxFunction>),
+    Function(Rc<dyn LoxCallable>),
     Nil,
 }
 
@@ -35,6 +33,13 @@ impl LoxValue {
             LoxValue::Boolean(b) => b.to_string(),
             LoxValue::Nil => String::from("nil"),
             LoxValue::Function(fun) => String::from(fun.name()),
+        }
+    }
+
+    pub fn get_callable(&self) -> Option<Rc<dyn LoxCallable>> {
+        match *self {
+            LoxValue::Function(ref func) => Some(func.clone()),
+            _ => None,
         }
     }
 }
