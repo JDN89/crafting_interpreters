@@ -294,7 +294,7 @@ impl Scanner {
                 return Err(LoxError::ScannerError(ParserError::new(
                     self.line,
                     Loc::Pos(self.current),
-                    "Couldn't parse integer",
+                    "Couldn't parse integer ",
                 )))
             }
         }
