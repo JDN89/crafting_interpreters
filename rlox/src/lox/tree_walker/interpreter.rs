@@ -153,15 +153,36 @@ impl Interpreter {
         // return statement.accept(self);
     }
 
+    // BUG: the issue is that with execute block we keep defining n in the function scope
+    // but the scope is a ref to the outer scope -> so when we define in the inner scope we adjust
+    // the outer scope!
+    // or we retrieve anding a DropBomb initialized with the given message. This is returned from the function.
+    // we define recursion mutiple times on the same environemnt
+    // run code and check print statments -> when do we lewve execute block? 
+    // if you run these print statements in the master branch
+    // you'll see taht we get n from the parent
+    // for example with fib(2)
+    // environment {n : 2 inner {n: 0 inner {n -1}} }
+    // we keep creating new inner environments with each functions calls on the master branch and
+    // retrieving n from the previous scope! instead of retrieving it from the outer layer (parent
+    // scope where it was first defined!
+    // how do we keep track of the layers of scopes where we defined the variable the first time?)
+    // 
+    // now here we don't create a new inner environemnt and we keep overwriting the current env
+    //
+    // std mem replace in function call?
     pub fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
         let parent_env = self.environment.clone();
+        println!("enter execute block");
         {
             self.environment = Rc::new(RefCell::new(env));
             for stmt in statements {
+                println!("execute statement");
                 self.execute(stmt)?;
             }
         }
 
+        println!("leaving execute block");
         self.environment = parent_env;
         Ok(())
     }
@@ -289,6 +310,7 @@ impl Interpreter {
             }
             Expr::Variable(expr) => {
                 let env_value = self.environment.borrow().get_literal(&expr.name)?.clone();
+                println!("getting variable with value ");
                 Ok(env_value)
             }
             Expr::Call(expr) => {

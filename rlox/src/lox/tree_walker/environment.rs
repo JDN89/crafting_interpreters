@@ -37,9 +37,12 @@ impl Environment {
     // If the variable isn't found in this environment, we simply try the enclosing one
     pub fn get_literal(&self, name: &Token) -> Result<LoxValue, LoxError> {
         let key = &name.lexeme;
+        println!("get variable {:?}",key);
         if let Some(value) = self.variables.get(key) {
+            println!("get form inner scope");
             Ok(value.clone())
         } else {
+            println!("get form parent scope");
             self.parent_env.as_ref().map_or_else(
                 || {
                     Err(LoxError::Runtime(RuntimeError::throw(format!(

@@ -29,8 +29,31 @@ impl LoxCallable for LoxFunction {
         interpreter: &mut Interpreter,
         args: Vec<LoxValue>,
     ) -> Result<LoxValue, LoxError> {
+
+        // how do i create a whole new enviroment without mutating the original environment!!
+        // but is this the solution to create with each function call a new env?
+        // the solution is with recursion to keep track of the levels deep we are?
+        // how i don't know
+        // should i start with recursion in the parent block?
+
+
+        // on master branch try to make a deep copy of the environment 
+        // or use std;;mem replace 
+        // store current env somewhere else
+        //
+        //
+        // or should i create a reset function in here
+        // like in execute block
+        // we take copy of the current env
+        // execute the function call
+        // reset to previous env settings after settinf function call
+        //
+        // DEBUG tomorrow on master and see what happens i need to have a look into Environment and
+        // its variables that's the only way!! I can confirm my theory of what is going wrong
         let mut scoped_interpreter = interpreter.fork(Rc::clone(&self.closure));
         for (parameter, value) in self.declaration.parameters.iter().zip(args.iter()) {
+          
+            println!("define {} {}", &parameter.lexeme, value);
             scoped_interpreter.environment.borrow_mut().define(&parameter.lexeme, value.clone());
         }
 
