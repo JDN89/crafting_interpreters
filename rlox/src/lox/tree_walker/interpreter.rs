@@ -19,9 +19,9 @@ use super::parser::{Expr, Stmt};
 pub struct Interpreter {
     pub globals: Rc<RefCell<Environment>>,
     // We store env as a field directly in Interpreter so that the variables stay in memory as long as the interpreter is still running.
-    environment: Rc<RefCell<Environment>>,
+    pub environment: Rc<RefCell<Environment>>,
     //Write to an in memory buffer to test our interpreter:
-    output_buffer: RefCell<Cursor<Vec<u8>>>,
+    output_buffer: Rc<RefCell<Cursor<Vec<u8>>>>,
 }
 
 // We rely on this helper method that sends the expression back into the interpreter's visitor
@@ -36,9 +36,19 @@ impl Interpreter {
         Interpreter {
             globals: Rc::clone(&globals),
             environment: Rc::clone(&globals), // Corrected line
-            output_buffer: RefCell::new(Cursor::new(Vec::new())),
+            output_buffer: Rc::new(RefCell::new(Cursor::new(Vec::new()))),
         }
     }
+
+    pub fn fork(&self, environment: Rc<RefCell<Environment>> ) -> Interpreter {
+        Interpreter {
+            globals: environment.clone(),
+            environment:environment.clone(),
+            output_buffer: Rc::clone(&self.output_buffer)
+
+        }
+    }
+    
 
     pub fn write_to_buffer(&self, text: &str) {
         let mut buffer = self.output_buffer.borrow_mut();
@@ -71,10 +81,24 @@ impl Interpreter {
                 Ok(())
             }
             Stmt::Function(fun) => {
-                let function = LoxFunction::new(fun.clone());
-                self.environment
-                    .borrow_mut()
-                    .define(&fun.name.lexeme, LoxValue::Function(Rc::new(function)));
+                let function = LoxFunction::new(fun.clone(),Rc::new(RefCell::new(self.environment.borrow().to_owned())));
+
+        (*self.environment).borrow_mut().define(
+
+                    // TODO: replace loxcallable by lox function
+                    // cleanup dynamic dispatch en globals
+                    // not going to use it and don't want to use it
+
+                    &function.declaration.name.clone().lexeme,
+                    LoxValue::Function(Box::new(function.clone())),
+                );
+                
+                      // We need the function itself to exist in the environment it closes over,
+                // otherwise recursion won't work.
+                (*function.closure).borrow_mut().define(
+                    &function.declaration.name.clone().lexeme,
+                    LoxValue::Function(Box::new(function.clone())),
+                );
 
                 Ok(())
             }
