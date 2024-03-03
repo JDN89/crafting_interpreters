@@ -129,18 +129,8 @@ impl Interpreter {
         // return statement.accept(self);
     }
 
-    // we create a new env for blocks scope and pass it to this funciton
-    // When i reset the code to the old env i was not keeping up to date with the previous
-    // enviroment and this was becasue I was creating a new object via mem::replace so I was no
-    // referring to the same enviroment
-    // code that messed everyitng up!
-    // let previous = std::mem::replace(&mut *self.environment, *Box::new(env));
-    // TODO: write in learned and look up details of std::mem::replace!
     pub fn execute_block(&mut self, statements: &[Stmt], env: Environment) -> Result<(), LoxError> {
-        // crate a pointer to the parrent env
         let parent_env = self.environment.clone();
-        // new env that holds previous env as an enclosing field (BOX ENV)
-
         {
             self.environment = Rc::new(RefCell::new(env));
             for stmt in statements {
@@ -159,8 +149,6 @@ impl Interpreter {
                 self.environment.borrow_mut().assign(&expr.name, &value)?;
                 Ok(value)
             }
-            // OR and first is truthy return left
-            // AND and first is false return left
             Expr::Logical(expr) => {
                 let left = self.evaluate_expression(&expr.left)?;
                 if expr.operator.token_type == TokenType::Or {
@@ -183,7 +171,6 @@ impl Interpreter {
 
                 match (&left, &right) {
                     (LoxValue::Integer(left_value), LoxValue::Integer(right_value)) => {
-                        // println!("left: {:?} - right: {:?}", left_value, right_value);
                         match expr.operator.token_type {
                             TokenType::Minus => Ok(LoxValue::Integer(left_value - right_value)),
                             TokenType::Slash => Ok(LoxValue::Integer(left_value / right_value)),
@@ -259,8 +246,6 @@ impl Interpreter {
             Expr::Grouping(expr) => self.evaluate_expression(&expr.expression),
             Expr::Literal(expr) => Ok(expr.value.clone()),
             Expr::Unary(expr) => {
-                // first evauluate the operand subexpression before we evaluate the unary operator
-                // recursevly walk the AST
                 let right = self.evaluate_expression(&expr.right)?;
 
                 if expr.operator.token_type == TokenType::Minus {
@@ -276,12 +261,10 @@ impl Interpreter {
                     let bool = self.is_truthy(&right);
                     return Ok(LoxValue::Boolean(bool));
                 }
-                // unreachable
                 Ok(LoxValue::Nil)
             }
             Expr::Variable(expr) => {
                 let env_value = self.environment.borrow().get_literal(&expr.name)?.clone();
-                // println!("stored_env_value: {}", env_value);
                 Ok(env_value)
             }
             Expr::Call(expr) => {
@@ -296,14 +279,9 @@ impl Interpreter {
                     })?;
 
                 let mut arguments: Vec<LoxValue> = Vec::with_capacity(expr.arguments.len());
-                // TODO: go through evaluate expression. and see where we reuse the same n value!!
-                //
                 for expr in &expr.arguments {
-                    // println!("Expression to be evaluated: {} \n", expr);
                     arguments.push(self.evaluate_expression(&expr)?);
-                    // println!("arg pushed: {:?}", arguments);
                 }
-                // print!("arguments in Expr::Call: {:?} \n", arguments);
 
                 let n_arguments = arguments.len();
                 if callable.arity() != arguments.len() {
@@ -313,8 +291,6 @@ impl Interpreter {
                     )));
                 }
 
-                // NOTE: error can't be here because we execute the code block and all the rest
-                // with the wrong arguments!!
                 Ok(callable.call(self, arguments)?)
             }
         }
