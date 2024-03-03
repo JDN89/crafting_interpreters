@@ -20,7 +20,7 @@ impl Display for LoxValue {
             LoxValue::Integer(num) => num.fmt(f),
             LoxValue::Boolean(b) => b.fmt(f),
             LoxValue::Nil => write!(f, "`nil`"),
-            LoxValue::Function(_) => todo!(),
+            LoxValue::Function(fun) => write!(f, "Funciont {:?}", fun),
         }
     }
 }

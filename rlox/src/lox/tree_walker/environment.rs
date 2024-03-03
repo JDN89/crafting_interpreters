@@ -8,15 +8,15 @@ use crate::{LoxError, RuntimeError};
 
 #[derive(Debug, Clone)]
 pub struct Environment {
-    pub enclosing_parent_environment: Option<Rc<RefCell<Environment>>>,
-    values: HashMap<String, LoxValue>,
+    pub parent_env: Option<Rc<RefCell<Environment>>>,
+    variables: HashMap<String, LoxValue>,
 }
 
 impl Environment {
     pub fn new() -> Self {
         Environment {
-            enclosing_parent_environment: None,
-            values: HashMap::new(),
+            parent_env: None,
+            variables: HashMap::new(),
         }
     }
 }
@@ -24,39 +24,41 @@ impl Environment {
 impl Environment {
     pub fn new_inner_environment(parent_environment: Rc<RefCell<Environment>>) -> Self {
         let env = Environment {
-            enclosing_parent_environment: Some(parent_environment),
-            values: HashMap::new(),
+            parent_env: Some(parent_environment),
+            variables: HashMap::new(),
         };
-        return env;
+        env
     }
 
     pub fn define(&mut self, name: &str, value: LoxValue) {
-        self.values.insert(name.to_string(), value);
+        self.variables.insert(name.to_string(), value);
     }
 
     // If the variable isn't found in this environment, we simply try the enclosing one
     pub fn get_literal(&self, name: &Token) -> Result<LoxValue, LoxError> {
-        if let Some(value) = self.values.get(&name.lexeme) {
+        let key = &name.lexeme;
+        if let Some(value) = self.variables.get(key) {
             Ok(value.clone())
         } else {
-            self.enclosing_parent_environment.as_ref().map_or_else(
+            self.parent_env.as_ref().map_or_else(
                 || {
                     Err(LoxError::Runtime(RuntimeError::throw(format!(
                         "undefined variable: {}",
                         name.lexeme
                     ))))
                 },
-                |enclosed| enclosed.borrow_mut().get_literal(name),
+                |enclosed| enclosed.borrow().get_literal(name),
             )
         }
     }
 
     // We get the current key and reassign a new value to it
     pub fn assign(&mut self, name: &Token, value: &LoxValue) -> Result<(), LoxError> {
-        if self.values.contains_key(&name.lexeme) {
-            self.values.insert(name.lexeme.to_string(), value.clone());
+        if self.variables.contains_key(&name.lexeme) {
+            self.variables
+                .insert(name.lexeme.to_string(), value.clone());
             Ok(())
-        } else if let Some(ref mut enclosed) = self.enclosing_parent_environment {
+        } else if let Some(ref mut enclosed) = self.parent_env {
             enclosed.borrow_mut().assign(name, value)
         } else {
             Err(LoxError::Runtime(RuntimeError::throw(format!(

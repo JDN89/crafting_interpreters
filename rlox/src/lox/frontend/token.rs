@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::frontend::token_type::TokenType;
 
 #[allow(dead_code)]
@@ -23,5 +25,11 @@ impl Token {
             literal,
             line,
         }
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Token: '{:?}', literal: {:?}", self.lexeme, self.literal)
     }
 }

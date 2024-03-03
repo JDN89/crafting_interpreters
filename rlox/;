@@ -28,7 +28,7 @@ impl LoxCallable for LoxFunction {
         interpreter: &mut Interpreter,
         args: Vec<LoxValue>,
     ) -> Result<LoxValue, LoxError> {
-        // println!("execute call -> mutating global environemnts?");
+        println!("execute call -> mutating global environemnts?");
         // NOTE: instead of getting access to the environemt I made a copy of the pointer to the
         // parent environment. Which broke recursion because we kept mutating the global
         // environment instead of creating a scope for each function call.
@@ -52,7 +52,6 @@ impl LoxCallable for LoxFunction {
         //the parent env gets restored after the function environment has been interpreted
         // NOTE: we new inner env has pointer to globals!!! ERROR found?
         let mut env = Environment::new_inner_environment(Rc::clone(&interpreter.globals));
-        // println!(" \n environment variables: {:?} \n", env);
         for (parameter, value) in self.declaration.parameters.iter().zip(args.iter()) {
             env.define(&parameter.clone().lexeme, value.clone());
         }

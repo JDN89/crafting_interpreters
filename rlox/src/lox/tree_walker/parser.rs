@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::frontend::lox_value::LoxValue;
-use std::rc::Rc;
 
 use crate::frontend::token::Token;
 use crate::frontend::token_type::TokenType::{self, *};
@@ -81,10 +82,31 @@ pub enum Expr {
     Variable(VariableExpr),
 }
 
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Expr::Assign(assign_expr) => write!(f, "ASSIGN_EXPR - {}", assign_expr),
+            Expr::Binary(binary_expr) => write!(f, "BINARY_EXPR - {}", binary_expr),
+            Expr::Call(function_call_expr) => write!(f, "CALL_EXPR - {}", function_call_expr),
+            Expr::Grouping(grouping_expr) => write!(f, "GROUPING_EXPR - {}", grouping_expr),
+            Expr::Literal(literal_expr) => write!(f, "LITERAL_EXPR - {}", literal_expr),
+            Expr::Logical(logical_expr) => write!(f, "LOGICAL_EXPR - {}", logical_expr),
+            Expr::Unary(unary_expr) => write!(f, "UNARY_EXPR - {}", unary_expr),
+            Expr::Variable(variable_expr) => write!(f, "VARIABLE_EXPR - {}", variable_expr),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct AssignExpr {
     pub name: Token,
     pub value: Box<Expr>,
+}
+
+impl fmt::Display for AssignExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} = {}", self.name, self.value)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -94,11 +116,32 @@ pub struct BinaryExpr {
     pub right: Box<Expr>,
 }
 
+impl fmt::Display for BinaryExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({} {} {})", self.left, self.operator, self.right)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct FunctionCallExpr {
     pub callee: Box<Expr>,
     pub paren: Token,
     pub arguments: Vec<Expr>,
+}
+
+impl fmt::Display for FunctionCallExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}({})",
+            self.callee,
+            self.arguments
+                .iter()
+                .map(|arg| arg.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -108,14 +151,30 @@ pub struct LogicalExpr {
     pub right: Box<Expr>,
 }
 
+impl fmt::Display for LogicalExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({} {} {})", self.left, self.operator, self.right)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct GroupingExpr {
     pub expression: Box<Expr>,
+}
+impl fmt::Display for GroupingExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({})", self.expression)
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct LiteralExpr {
     pub value: LoxValue,
+}
+impl fmt::Display for LiteralExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -124,9 +183,21 @@ pub struct UnaryExpr {
     pub right: Box<Expr>,
 }
 
+impl fmt::Display for UnaryExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}{})", self.operator, self.right)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct VariableExpr {
     pub name: Token,
+}
+
+impl fmt::Display for VariableExpr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 #[allow(dead_code, unused_variables)]
@@ -482,6 +553,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
+    // TODO: why do we add multiple arguments??
     fn finish_call(&mut self, callee: Expr) -> Result<Expr, LoxError> {
         let mut arguments = Vec::new();
         if !self.check(&RightParen) {
@@ -500,6 +572,7 @@ impl<'a> Parser<'a> {
                 }
             }
         }
+
         let parenthesis = self.consume(RightParen, "Expect ')' after arguments.");
         Ok(Expr::Call(FunctionCallExpr {
             callee: Box::new(callee.clone()),

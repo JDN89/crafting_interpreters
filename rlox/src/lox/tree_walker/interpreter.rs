@@ -80,7 +80,7 @@ impl Interpreter {
             }
             Stmt::Print(stmt) => {
                 let value = self.evaluate_expression(&stmt.expression)?;
-                println!("{:?}", value);
+                println!("{:?}\n", value);
                 // write to buffer so you get the output of the buffer for testing
                 self.write_to_buffer(&value.as_str());
                 Ok(())
@@ -183,6 +183,7 @@ impl Interpreter {
 
                 match (&left, &right) {
                     (LoxValue::Integer(left_value), LoxValue::Integer(right_value)) => {
+                        // println!("left: {:?} - right: {:?}", left_value, right_value);
                         match expr.operator.token_type {
                             TokenType::Minus => Ok(LoxValue::Integer(left_value - right_value)),
                             TokenType::Slash => Ok(LoxValue::Integer(left_value / right_value)),
@@ -278,11 +279,11 @@ impl Interpreter {
                 // unreachable
                 Ok(LoxValue::Nil)
             }
-            Expr::Variable(expr) => Ok(self
-                .environment
-                .borrow_mut()
-                .get_literal(&expr.name)?
-                .clone()),
+            Expr::Variable(expr) => {
+                let env_value = self.environment.borrow().get_literal(&expr.name)?.clone();
+                // println!("stored_env_value: {}", env_value);
+                Ok(env_value)
+            }
             Expr::Call(expr) => {
                 let callable = self
                     .evaluate_expression(&expr.callee)?
@@ -295,9 +296,14 @@ impl Interpreter {
                     })?;
 
                 let mut arguments: Vec<LoxValue> = Vec::with_capacity(expr.arguments.len());
+                // TODO: go through evaluate expression. and see where we reuse the same n value!!
+                //
                 for expr in &expr.arguments {
+                    // println!("Expression to be evaluated: {} \n", expr);
                     arguments.push(self.evaluate_expression(&expr)?);
+                    // println!("arg pushed: {:?}", arguments);
                 }
+                // print!("arguments in Expr::Call: {:?} \n", arguments);
 
                 let n_arguments = arguments.len();
                 if callable.arity() != arguments.len() {
@@ -307,6 +313,8 @@ impl Interpreter {
                     )));
                 }
 
+                // NOTE: error can't be here because we execute the code block and all the rest
+                // with the wrong arguments!!
                 Ok(callable.call(self, arguments)?)
             }
         }
