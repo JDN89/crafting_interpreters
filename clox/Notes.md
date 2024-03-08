@@ -3,6 +3,8 @@
 [Compiler Explorer] (https://godbolt.org) 
 
 
+As I understand it now is that we store chunks of executions in an array (compcat, O(1) index lookup, O(1) insertions at the end).
+
 ## 14 Chuncks of Bytecode
 
 ### Why is walking the AST slow

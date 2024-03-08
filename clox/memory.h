@@ -3,8 +3,12 @@
 
 #include "common.h"
 
+// Grow capacity grows the capacity field and keeps track of the number of
+// elements the array can store
 #define GROW_CAPACITY(capacity) ((capacity) < 8 ? 8 : (capacity) * 2)
 
+// Grow array does the actual memory allocation or resizing based on the type it
+// hodls and the count
 #define GROW_ARRAY(type, pointer, oldCount, newCount)                          \
   (type *)reallocate(pointer, sizeof(type) * (oldCount),                       \
                      sizeof(type) * (newCount))
