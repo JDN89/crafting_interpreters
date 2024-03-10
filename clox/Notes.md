@@ -12,3 +12,6 @@ As I understand it now is that we store chunks of executions in an array (compca
 
 ### 
 __Bytecode__ : one byte operation code represents instructions (add, subtract,...).
+
+
+### What will we use isntead of __AST__ ?

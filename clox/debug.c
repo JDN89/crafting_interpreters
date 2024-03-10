@@ -28,8 +28,14 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset) {
 }
 
 int disassembleInstruction(Chunk *chunk, int offset) {
-
+  // the index looks like 000X because we chose 4d -> empties are 0
   printf("%04d ", offset);
+  if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
+    // print | when the OP_CODE is located on the same line
+    printf("  |");
+  } else {
+    printf("%4d ", chunk->lines[offset]);
+  }
   uint8_t instruction = chunk->code[offset];
 
   switch (instruction) {
