@@ -8,6 +8,14 @@
 
 As I understand it now is that we store chunks of executions in an array (compcat, O(1) index lookup, O(1) insertions at the end).
 
+## Project setup
+
+<!-- TODO: -->
+Reread chapter 14. I had forgotten that in chunk.code we store the operation code as well as the index of the constant we encounter
+The constant value we store in the chunk.Value array -> we can look it up using the index stored in code 
+so when we encounter OP_CONSTANT in code we know that the next value will be the index which we retrieve using chunk.ip (which is a pointer pointing to code)
+
+
 ## 14 Chuncks of Bytecode
 
 ### Why is walking the AST slow
