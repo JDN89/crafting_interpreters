@@ -4,9 +4,17 @@
 #include "chunk.h"
 #include <stdint.h>
 
+#define STACK_MAX 256
+
 typedef struct {
   Chunk *chunk;
   uint8_t *ip;
+  Value stack[STACK_MAX];
+  // NOTE: we use a pointer, to track the top of the stack, because it's faster
+  // to dereference a pointer than to calculate the offset from the index each
+  // time we need it. The top points to where the next value in the stack will
+  // go
+  Value *stackTop;
 } VM;
 
 typedef enum {
@@ -18,5 +26,7 @@ typedef enum {
 void initVM();
 void freeVM();
 InterpretResult interpret(Chunk *chunk);
+void push(Value value);
+Value pop();
 
 #endif
