@@ -33,11 +33,25 @@ Value pop() {
 }
 
 static InterpretResult run() {
+
   // *vm.ip dereferences the pointer, returns the value stored in memory
   // This is a fundamental operation in pointer manipulation
   // READ BYTE moves the pointer to the next byteCode in the Chunk.code array
+
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+
+  // NOTE: whe use to do while loop to keep the statements in the same scope ->
+  // C tricky trick
+  // we evaluate left to right -> right is top of stack so we assign the first
+  // pop to value : b
+
+#define BINARY_OP(op)                                                          \
+  do {                                                                         \
+    double b = pop();                                                          \
+    double a = pop();                                                          \
+    push(a op b);                                                              \
+  } while (false)
 
   for (;;) {
 // NOTE: To get visibility into the stack: we’ll show the current contents
@@ -61,6 +75,18 @@ static InterpretResult run() {
       push(constant);
       break;
     }
+    case OP_ADD:
+      BINARY_OP(+);
+      break;
+    case OP_SUBTRACT:
+      BINARY_OP(-);
+      break;
+    case OP_MULTIPLY:
+      BINARY_OP(*);
+      break;
+    case OP_DIVIDE:
+      BINARY_OP(/);
+      break;
     case OP_NEGATE:
       push(-pop());
       break;
@@ -74,6 +100,7 @@ static InterpretResult run() {
 
 #undef READ_BYTE
 #undef READ_CONSTANT
+#undef BINARY_OP
 }
 
 InterpretResult interpret(Chunk *chunk) {
