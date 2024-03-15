@@ -19,6 +19,7 @@ int main(int argc, const char *argv[]) {
   // so we store the index in de code array instead of the actual constatn
   // value!
   writeChunk(&chunk, constant, 123);
+  writeChunk(&chunk, OP_NEGATE, 123);
 
   writeChunk(&chunk, OP_RETURN, 123);
 
