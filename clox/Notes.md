@@ -38,3 +38,16 @@ It’s also much better known in the literature and the community. Even though y
 
 The Lua dev team—Roberto Ierusalimschy, Waldemar Celes, and Luiz Henrique de Figueiredo—wrote a fantastic paper on this, one of my all time favorite computer science papers, “The Implementation of Lua 5.0” (PDF).
 [Lua 5 -> from stackbased to register-based](https://www.lua.org/doc/jucs05.pdf)
+
+## Compiler
+
+In the context of the Clox compiler, there are a few key differences in how tokens are managed compared to Jlox:
+
+Error Handling:
+
+In Jlox, the scanner itself reports errors like unterminated strings or unrecognized characters.
+In Clox, the scanner produces a synthetic "error" token for such errors and passes it to the compiler. This allows the compiler to initiate error recovery before reporting the error.
+Representation of Lexemes:
+
+In Jlox, each token stores its lexeme as a separate string object.
+In Clox, tokens store references to the original source string. Each token consists of a pointer to the first character of its lexeme and the length of the lexeme. This eliminates the need to manage memory for lexemes separately and simplifies token handling. As long as the main source code string outlives all tokens, this approach works fine.
