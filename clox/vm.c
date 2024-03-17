@@ -1,6 +1,7 @@
 #include "vm.h"
 #include "chunk.h"
 #include "common.h"
+#include "compiler.h"
 #include "debug.h"
 #include "value.h"
 #include <stdio.h>
@@ -103,11 +104,7 @@ static InterpretResult run() {
 #undef BINARY_OP
 }
 
-InterpretResult interpret(Chunk *chunk) {
-  vm.chunk = chunk;
-  // NOTE: vm.ip is a pointer that points to the bytecode being executed.
-  // Sets the ip field of the VM structure to the beginning of the bytecode
-  // array (chunk->code).
-  vm.ip = vm.chunk->code;
-  return run();
+InterpretResult interpret(const char *source) {
+  compile(source);
+  return INTERPRET_OK;
 }
