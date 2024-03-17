@@ -39,7 +39,7 @@ It’s also much better known in the literature and the community. Even though y
 The Lua dev team—Roberto Ierusalimschy, Waldemar Celes, and Luiz Henrique de Figueiredo—wrote a fantastic paper on this, one of my all time favorite computer science papers, “The Implementation of Lua 5.0” (PDF).
 [Lua 5 -> from stackbased to register-based](https://www.lua.org/doc/jucs05.pdf)
 
-## Compiler
+## Chapter 16: Scanning
 
 In the context of the Clox compiler, there are a few key differences in how tokens are managed compared to Jlox:
 
@@ -51,3 +51,10 @@ Representation of Lexemes:
 
 In Jlox, each token stores its lexeme as a separate string object.
 In Clox, tokens store references to the original source string. Each token consists of a pointer to the first character of its lexeme and the length of the lexeme. This eliminates the need to manage memory for lexemes separately and simplifies token handling. As long as the main source code string outlives all tokens, this approach works fine.
+
+#### Recognizing identifiers via tries and state machines
+Very interesting part with some good links:
+[syntax diagrams](https://en.wikipedia.org/wiki/Syntax_diagram)
+[Trie](https://en.wikipedia.org/wiki/Trie)
+[Deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)
+[State design pattern](https://gameprogrammingpatterns.com/state.html)
