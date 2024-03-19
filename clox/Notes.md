@@ -15,6 +15,9 @@ Reread chapter 14. I had forgotten that in chunk.code we store the operation cod
 The constant value we store in the chunk.Value array -> we can look it up using the index stored in code 
 so when we encounter OP_CONSTANT in code we know that the next value will be the index which we retrieve using chunk.ip (which is a pointer pointing to code)
 
+__Scanner__: The __Token__ doesn't contain the raw lexeme. It just points to the start of the source code and contains the length. See notes chapter 16
+
+__Compiler__: A __parser__ produces an AST—just like jlox does—and then a __code generator__ traverses the AST and outputs target code
 
 ## 14 Chuncks of Bytecode
 
