@@ -12,6 +12,7 @@ void initChunk(Chunk *chunk) {
   chunk->capacity = 0;
   chunk->code = NULL;
   chunk->lines = NULL;
+  // we store the constants in the value array
   initValueArray(&chunk->constants);
 }
 

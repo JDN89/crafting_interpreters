@@ -55,6 +55,15 @@ Representation of Lexemes:
 In Jlox, each token stores its lexeme as a separate string object.
 In Clox, tokens store references to the original source string. Each token consists of a pointer to the first character of its lexeme and the length of the lexeme. This eliminates the need to manage memory for lexemes separately and simplifies token handling. As long as the main source code string outlives all tokens, this approach works fine.
 
+
+## Chapter 17 : Compiling expressions
+
+
+To address the issue described, where the unary() function mistakenly __consumes more tokens__ than intended due to calling expression() which parses any expression regardless of precedence, you need to revise the parsing strategy to consider operator precedence.
+
+One common approach to handle operator precedence in parsing expressions is to use a technique called __precedence climbing or Pratt parsing__. In this approach, each operator has a precedence level, and parsing functions are organized in a way that respects these precedence levels.
+
+
 #### Recognizing identifiers via tries and state machines
 Very interesting part with some good links:
 [syntax diagrams](https://en.wikipedia.org/wiki/Syntax_diagram)
