@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g
-SOURCES = main.c chunk.c debug.c memory.c value.c vm.c
+SOURCES = main.c chunk.c debug.c memory.c value.c vm.c scanner.c compiler.c
 EXECUTABLE = clox
 
 all: $(EXECUTABLE)
