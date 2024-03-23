@@ -139,6 +139,7 @@ static void binary() {
   parsePrecedence((Precedence)(rule->precedence + 1));
 
   switch (operatorType) {
+
   case TOKEN_PLUS:
     emitByte(OP_ADD);
     break;
@@ -192,9 +193,8 @@ static void unary() {
 }
 
 static void expression() {
-
+  printf("start parsing expression");
   parsePrecedence(PREC_ASSIGNMENT);
-  // What goes here?
 }
 
 ParseRule rules[] = {
@@ -241,16 +241,32 @@ ParseRule rules[] = {
 };
 
 static void parsePrecedence(Precedence precedence) {
+  // 1 + 2 + 3 + 4 -> ((1+2)+3)+4
+
+  // we enter with basecase PREC_ASSIGNMENT
+  // each time we unwind the stack, we end up at PREC_ASSIGNMENT
+  // we advance and execute the while loop -> when we are at number 4
+  // we advance and encounter and EOF token ->  there is no infixrule to execute
+  // At this point, there are no infix rules to execute, so the recursion
+  // unwinds, returning control back to the previous levels of parsing.
+
+  // round 2 : after binary(we re enter parse precendence with precedence level
+  // + 1)
   advance();
+  // previous is a number
+  //  previous is again a number ->
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
     error("Expect expression.");
     return;
   }
 
+  // parse number fo example
   prefixRule();
+  //  current is +
   while (precedence <= getRule(parser.current.type)->precedence) {
     advance();
+    // current is 2
     ParseFn infixRule = getRule(parser.previous.type)->infix;
     infixRule();
   }

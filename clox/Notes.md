@@ -63,6 +63,15 @@ To address the issue described, where the unary() function mistakenly __consumes
 
 One common approach to handle operator precedence in parsing expressions is to use a technique called __precedence climbing or Pratt parsing__. In this approach, each operator has a precedence level, and parsing functions are organized in a way that respects these precedence levels.
 
+### PRAT and recursion
+
+#### Recursion
+A recursive function is a function that call's itself. Each function call goes on the __call stack__. Here each function exists with each own environment and variables. We keep call the function until we reach the basecase. Then we start to unwind the stack poping the calls of the stack from most recent to oldest call - __LIFO__.
+
+In our compiler we keep calling __parsePrecendence__ until we encounter an operator with a lower precendence. Each recursive call we add at minimum +1 to the precedence leve, because binary operations are left asociative. Meaning 1+2+3+4 -> ((1+2)+3)+4. By adding +1, We make sure that we parse (1+2) add it to the chunk array as OP_CONSTANT OP_CONSTANT and OP_ADD. Then we add
+
+[recursion explenation](https://www.freecodecamp.org/news/how-recursion-works-explained-with-flowcharts-and-a-video-de61f40cb7f9/)
+
 
 #### Recognizing identifiers via tries and state machines
 Very interesting part with some good links:
