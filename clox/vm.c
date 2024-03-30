@@ -4,6 +4,7 @@
 #include "compiler.h"
 #include "debug.h"
 #include "value.h"
+#include <stdarg.h>
 #include <stdio.h>
 
 // Author decided to declare global vm instead of declaring a pointer to the vm
@@ -17,13 +18,31 @@ VM vm;
 // The top points to the beginning of the array
 static void resetStack() { vm.stackTop = vm.stack; }
 
+static void runtimeError(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+  fputs("\n", stderr);
+
+  // Index -1 because the interpreter advances past each instruction before
+  // executing it
+  size_t instruction = vm.ip - vm.chunk->code - 1;
+  int line = vm.chunk->lines[instruction];
+  fprintf(stderr, "[line %d] in script\n", line);
+  resetStack();
+}
+
 void initVM() { resetStack(); }
 
 void freeVM() {}
 
 // NOTE: value is for now a double, because we only do arithmetics for the
 // moment and so we only need to store numbers
+
 void push(Value value) {
+  // NOTE: we dereference the stackTop pointer to put a value on the vm.stack
+  // array
   *vm.stackTop = value;
   vm.stackTop++;
 }
@@ -33,12 +52,13 @@ Value pop() {
   return *vm.stackTop;
 }
 
-static InterpretResult run() {
+static Value peek(int distance) { return vm.stackTop[-1 - distance]; }
 
+static InterpretResult run() {
   // *vm.ip dereferences the pointer, returns the value stored in memory
   // This is a fundamental operation in pointer manipulation
   // READ BYTE moves the pointer to the next byteCode in the Chunk.code array
-
+  // In this case the index of the constant in the valueArray
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 
@@ -47,17 +67,22 @@ static InterpretResult run() {
   // we evaluate left to right -> right is top of stack so we assign the first
   // pop to value : b
 
-#define BINARY_OP(op)                                                          \
+#define BINARY_OP(valueType, op)                                               \
   do {                                                                         \
-    double b = pop();                                                          \
-    double a = pop();                                                          \
-    push(a op b);                                                              \
+    if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {                          \
+      runtimeError("Operands must be numbers.");                               \
+      return INTERPRET_RUNTIME_ERROR;                                          \
+    }                                                                          \
+    double b = AS_NUMBER(pop());                                               \
+    double a = AS_NUMBER(pop());                                               \
+    push(valueType(a op b));                                                   \
   } while (false)
 
   for (;;) {
-// NOTE: To get visibility into the stack: we’ll show the current contents
-// of the stack before we interpret each instruction.
+    // NOTE: To get visibility into the stack: we’ll show the current contents
+    // of the stack before we interpret each instruction.
 #ifdef DEBUG_TRACE_EXECUTION
+
     printf("          ");
     // NOTE: pointer points to beginning of stack and we move it up to the top
     for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
@@ -76,20 +101,26 @@ static InterpretResult run() {
       push(constant);
       break;
     }
+      // We wrap the result before pushing it on the stack by passing the
+      // wrapping macro as a paramter
     case OP_ADD:
-      BINARY_OP(+);
+      BINARY_OP(NUMBER_VAL, +);
       break;
     case OP_SUBTRACT:
-      BINARY_OP(-);
+      BINARY_OP(NUMBER_VAL, -);
       break;
     case OP_MULTIPLY:
-      BINARY_OP(*);
+      BINARY_OP(NUMBER_VAL, *);
       break;
     case OP_DIVIDE:
-      BINARY_OP(/);
+      BINARY_OP(NUMBER_VAL, /);
       break;
     case OP_NEGATE:
-      push(-pop());
+      if (!IS_NUMBER(peek(0))) {
+        runtimeError("Operand must be a number.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      push(NUMBER_VAL(-AS_NUMBER(pop())));
       break;
     case OP_RETURN: {
       printValue(pop());
@@ -115,6 +146,13 @@ InterpretResult interpret(const char *source) {
 
   vm.chunk = &chunk;
   vm.ip = vm.chunk->code;
+
+  printf("CHUNK CONSTANT ARRAY:  ");
+  for (int i = 0; i < vm.chunk->constants.count; i++) {
+    printf("[ ");
+    printValue(vm.chunk->constants.values[i]);
+    printf(" ]\n");
+  }
 
   InterpretResult result = run();
 

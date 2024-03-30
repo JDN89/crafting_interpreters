@@ -8,6 +8,13 @@
 
 As I understand it now is that we store chunks of executions in an array (compcat, O(1) index lookup, O(1) insertions at the end).
 
+## General overview
+
+In The compiler we scan the source code, tokenize and emit byte code. Our compiler als contains the parser struct where we store the current operator and the previous operator for PRATT parsing -> comparing precedence levels of the operators (prefix and infix) (see explanation chapter 17). We have a single pass compiler: the compiler processes the source code in a linear manner, from start to finish, without the need for multiple passes. This approach can simplify the compiler's implementation and make it more efficient in terms of memory usage and processing time.
+We store the information in a chunk Struct, which contains a OP_CODE array, where we store the OP instructions and index values of the correlating constant values and an ValueArray where we store the constant values. This struct acts as an intermediary between the compiler and the virtual machine.
+We pass the chunk to the Virtual machine where we iterate continiuosly over the OP_CODE array, executing instructions sequentially and passing values from the Chunk constant array to the VM stack according to the instructions we have to execute. It maintains a constant stack for storing and manipulating values as instructed by the bytecode. 
+
+
 ## Project setup
 
 <!-- TODO: -->
@@ -68,7 +75,8 @@ One common approach to handle operator precedence in parsing expressions is to u
 #### Recursion
 A recursive function is a function that call's itself. Each function call goes on the __call stack__. Here each function exists with each own environment and variables. We keep call the function until we reach the basecase. Then we start to unwind the stack poping the calls of the stack from most recent to oldest call - __LIFO__.
 
-In our compiler we keep calling __parsePrecendence__ until we encounter an operator with a lower precendence. Each recursive call we add at minimum +1 to the precedence leve, because binary operations are left asociative. Meaning 1+2+3+4 -> ((1+2)+3)+4. By adding +1, We make sure that we parse (1+2) add it to the chunk array as OP_CONSTANT OP_CONSTANT and OP_ADD. Then we add
+In our compiler we keep calling __parsePrecendence__ until we encounter an operator with a lower precendence. Each recursive call we add at minimum +1 to the precedence leve, because binary operations are left asociative. Meaning 1+2+3+4 -> ((1+2)+3)+4. By adding +1, We make sure that we parse (1+2) add it to the chunk array as OP_CONSTANT OP_CONSTANT and OP_ADD. 
+We compare two operator types with eachoter. Over each number we advance and emit the value to the value stack, the prvious operator is stored in Parser.previous and the currrent operator gets stored in parser.current. We compare the precendence of these two operators and if the precedence is lower we skip the while loop, emit the operator and unwind the stack until the base case PREC_ASSIGNMENT. Here we encounter a number again, emit the bytecode, compare the current token with the next token in the while loop, whilst advancing over the number and pushing them on the value stack.
 
 [recursion explenation](https://www.freecodecamp.org/news/how-recursion-works-explained-with-flowcharts-and-a-video-de61f40cb7f9/)
 

@@ -3,6 +3,7 @@
 
 #include "compiler.h"
 #include "scanner.h"
+#include "value.h"
 
 typedef struct {
   Token current;
@@ -168,7 +169,7 @@ static void grouping() {
 
 static void number() {
   double value = strtod(parser.previous.start, NULL);
-  emitConstant(value);
+  emitConstant(NUMBER_VAL(value));
 }
 
 // NOTE: we evaluate the operand first which leaves it value on the stack
@@ -192,10 +193,7 @@ static void unary() {
   }
 }
 
-static void expression() {
-  printf("start parsing expression");
-  parsePrecedence(PREC_ASSIGNMENT);
-}
+static void expression() { parsePrecedence(PREC_ASSIGNMENT); }
 
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
@@ -240,7 +238,7 @@ ParseRule rules[] = {
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
-static void parsePrecedence(Precedence precedence) {
+static void bparsePrecedence(Precedence precedence) {
   // 1 + 2 + 3 + 4 -> ((1+2)+3)+4
 
   // we enter with basecase PREC_ASSIGNMENT
