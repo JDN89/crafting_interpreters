@@ -3,6 +3,9 @@
 
 #include "common.h"
 
+#define ALLOCATE(type, count)                                                  \
+  (type *)reallocate(NULL, 0, sizeof(type) * (count))
+
 // Grow capacity grows the capacity field and keeps track of the number of
 // elements the array can store
 #define GROW_CAPACITY(capacity) ((capacity) < 8 ? 8 : (capacity) * 2)
