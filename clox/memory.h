@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+// sizeof(type) gives the size of each element of the array being allocated.
+// (count) is the number of elements in the array.
+// sizeof(type) * (count) calculates the total size required for the array in
+// bytes.
 #define ALLOCATE(type, count)                                                  \
   (type *)reallocate(NULL, 0, sizeof(type) * (count))
 
