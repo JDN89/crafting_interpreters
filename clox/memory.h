@@ -2,6 +2,7 @@
 #define clox_memory_h
 
 #include "common.h"
+#include "object.h"
 
 // sizeof(type) gives the size of each element of the array being allocated.
 // (count) is the number of elements in the array.
@@ -9,6 +10,8 @@
 // bytes.
 #define ALLOCATE(type, count)                                                  \
   (type *)reallocate(NULL, 0, sizeof(type) * (count))
+
+#define FREE(type, pointer) reallocate(pointer, sizeof(type), 0)
 
 // Grow capacity grows the capacity field and keeps track of the number of
 // elements the array can store
@@ -24,5 +27,7 @@
   reallocate(pointer, sizeof(type) * (oldCount), 0)
 
 void *reallocate(void *pointer, size_t oldSize, size_t newSize);
+
+void freeObjects();
 
 #endif

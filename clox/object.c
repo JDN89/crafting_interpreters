@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "object.h"
 #include "value.h"
+#include "vm.h"
 
 // NOTE: Like the previous macro, this exists mainly to avoid the need to
 // redundantly cast a void* back to the desired type. The actual functionality
@@ -16,6 +17,9 @@
 static Obj *allocateObject(size_t size, ObjType type) {
   Obj *object = (Obj *)reallocate(NULL, 0, size);
   object->type = type;
+  object->next = vm.objects;
+  vm.objects = object;
+
   return object;
 }
 
@@ -24,6 +28,15 @@ static ObjString *allocateString(char *chars, int length) {
   string->length = length;
   string->chars = chars;
   return string;
+}
+
+// NOTE: When we created a new String we made a copy and placed it on the heap
+// with concatenation we take owenership of the previous created character
+// arrays on the heap. No need to create and copy a new one
+//
+
+ObjString *takeString(char *chars, int length) {
+  return allocateString(chars, length);
 }
 
 ObjString *copyString(const char *chars, int length) {

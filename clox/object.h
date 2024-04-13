@@ -22,6 +22,7 @@ typedef enum {
 
 struct Obj {
   ObjType type;
+  struct Obj *next;
 };
 
 struct ObjString {
@@ -29,6 +30,8 @@ struct ObjString {
   int length;
   char *chars;
 };
+
+ObjString *takeString(char *chars, int length);
 
 ObjString *copyString(const char *chars, int length);
 

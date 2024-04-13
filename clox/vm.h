@@ -15,6 +15,7 @@ typedef struct {
   // time we need it. The top points to where the next value in the stack will
   // go
   Value *stackTop;
+  Obj *objects;
 } VM;
 
 typedef enum {
@@ -22,6 +23,8 @@ typedef enum {
   INTERPRET_COMPILE_ERROR,
   INTERPRET_RUNTIME_ERROR
 } InterpretResult;
+
+extern VM vm;
 
 void initVM();
 void freeVM();
