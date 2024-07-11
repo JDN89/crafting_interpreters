@@ -101,11 +101,12 @@ static InterpretResult run() {
     push(valueType(a op b));                                                   \
   } while (false)
 
+  // for loop that loops over the OP values and the constants located there
   for (;;) {
+
     // NOTE: To get visibility into the stack: we’ll show the current contents
     // of the stack before we interpret each instruction.
 #ifdef DEBUG_TRACE_EXECUTION
-
     printf("          ");
     // NOTE: pointer points to beginning of stack and we move it up to the top
     for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {

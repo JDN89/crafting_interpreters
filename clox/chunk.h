@@ -24,6 +24,7 @@ typedef enum {
 typedef struct {
   int count;
   int capacity;
+  // number elements in the code byte array and the total capacity
   uint8_t *code;
   int *lines;
   ValueArray constants;
