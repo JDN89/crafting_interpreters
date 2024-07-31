@@ -281,6 +281,8 @@ ParseRule rules[] = {
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
+// we call expression PREC assingment and call parseprecedence -> we scan the
+// first token
 static void parsePrecedence(Precedence precedence) {
   // 1 + 2 + 3 + 4 -> ((1+2)+3)+4
 

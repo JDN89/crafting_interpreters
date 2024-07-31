@@ -64,7 +64,6 @@ static void runFile(const char *path) {
 // code array: OP_CODES + index of the value store in de Values array
 // VM -> we pass the chunk to the vm where we interpret the chunk -> swithc on
 // OP_code and lookup the corresponding value if necessary
-
 int main(int argc, const char *argv[]) {
   initVM();
 
