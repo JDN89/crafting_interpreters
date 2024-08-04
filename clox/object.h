@@ -25,10 +25,14 @@ struct Obj {
   struct Obj *next;
 };
 
+// each objString stores the hasCode of it's string
+// String are immutable and allocation the string is allready an O(n) operation
+// so hashing 0(n) makes sense
 struct ObjString {
   Obj obj;
   int length;
   char *chars;
+  uint32_t hash;
 };
 
 ObjString *takeString(char *chars, int length);
